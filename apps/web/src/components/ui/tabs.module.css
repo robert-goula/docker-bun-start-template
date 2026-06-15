@@ -1,0 +1,154 @@
+@reference "../../styles.css";
+
+/* ── Root container ─────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: var(--spacing-xl);
+
+  &[data-orientation="horizontal"] {
+    flex-direction: column;
+  }
+
+  &[data-orientation="vertical"] {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* ── Tab list ───────────────────────────────────────────── */
+.tabsList {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-lg);
+
+  :global([data-orientation="vertical"]) & {
+    flex-direction: column;
+    width: 160px;
+    flex-shrink: 0;
+    align-items: stretch;
+  }
+}
+
+.tabsListLine {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  gap: 0;
+
+  :global([data-orientation="horizontal"]) & {
+    border-bottom: var(--borderWidth-md) solid var(--border-default);
+    width: 100%;
+  }
+
+  :global([data-orientation="vertical"]) & {
+    border-inline-end: var(--borderWidth-md) solid var(--border-default);
+    width: auto;
+  }
+}
+
+/* ── Trigger ────────────────────────────────────────────── */
+.tabsTrigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--borderRadius-md);
+  font-size: var(--fontSize-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+  user-select: none;
+
+  :global(svg) {
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &:focus-visible {
+    outline: var(--borderWidth-sm) solid var(--border-focus);
+    /*outline-offset: 0;*/
+    /*var(--borderWidth-sm);*/
+  }
+
+  &[data-active] {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--text-primary) 10%, transparent);
+  }
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  /* Vertical: full-width, left-aligned */
+  :global([data-orientation="vertical"]) & {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Line variant: no pill, colored border replaces the track border on active */
+  :global([data-variant="line"]) & {
+    border-radius: 0;
+
+    &[data-active] {
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  /* Line + horizontal: bottom border indicator */
+  :global([data-orientation="horizontal"]) :global([data-variant="line"]) & {
+    padding-block: var(--spacing-md);
+    border-bottom: var(--borderWidth-lg) solid transparent;
+    margin-bottom: calc(-1 * var(--borderWidth-lg));
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+
+    &[data-active] {
+      border-bottom-color: var(--primary-base);
+    }
+  }
+
+  /* Line + vertical: inline-end border indicator (right in LTR, left in RTL — always toward the content) */
+  :global([data-orientation="vertical"]) :global([data-variant="line"]) & {
+    justify-content: flex-start;
+    padding-block: var(--spacing-md);
+    border-inline-end: var(--borderWidth-lg) solid transparent;
+    margin-inline-end: calc(-1 * var(--borderWidth-lg));
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+
+    &[data-active] {
+      border-inline-end-color: var(--primary-base);
+    }
+  }
+}
+
+/* ── Panel ──────────────────────────────────────────────── */
+.tabsContent {
+  flex: 1;
+  outline: none;
+  font-size: var(--fontSize-sm);
+  line-height: 1.6;
+
+  :global([data-orientation="vertical"]) & {
+    min-width: 0;
+  }
+}

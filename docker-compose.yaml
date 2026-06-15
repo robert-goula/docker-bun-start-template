@@ -1,0 +1,189 @@
+services:
+  nginx:
+    image: nginx:latest
+    hostname: ${SERVER_NAME:-docker.localhost}
+    depends_on:
+      - web
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-docker.localhost}
+      NODE_ENV: ${NODE_ENV:-development}
+      HOST_PORT: ${HOST_PORT:-80}
+      HOST_PORT_SSL: ${HOST_PORT_SSL:-443}
+    networks:
+       default:
+         aliases:
+           - docker.localhost
+    ports:
+      - ${HOST_PORT:-80}:80
+      - ${HOST_PORT_SSL:-443}:443
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certs:/etc/nginx/certs:ro
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web/Dockerfile
+      target: builder
+    depends_on:
+      db:
+          condition: service_started
+      redis:
+          condition: service_started
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      HOST: 0.0.0.0
+      PORT: 3000
+    init: true
+    restart: unless-stopped
+    volumes:
+      - ./apps/web:/app:rw
+      - /app/node_modules
+
+  db:
+    hostname: db
+    image: dhi.io/postgres:18-alpine3.23-dev
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+    networks:
+       default:
+         aliases:
+           - db
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    profiles:
+      - db
+    restart: unless-stopped
+    volumes:
+      - ./dbdata:/var/lib/postgresql:rw
+      - ./docker/postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+      - ./docker/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+
+  redis:
+    image: dhi.io/redis:8.8-compat
+    networks:
+       default:
+         aliases:
+           - redis
+    ports:
+      - ${REDIS_PORT:-6379}:6379
+    profiles:
+      - kv
+    restart: unless-stopped
+    volumes:
+      - ./redisdata:/data:rw
+    command: ["redis-server", "--appendonly", "yes", "--protected-mode", "no"]
+
+  mq:
+    image: dhi.io/rabbitmq:4.3-debian
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    networks:
+        default:
+            aliases:
+              - mq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    profiles:
+      - mq
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq:rw
+      - ./docker/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+
+  mailhog:
+    image: "mailhog/mailhog"
+    ports:
+      - "8025:8025"
+    networks:
+        default:
+            aliases:
+            - mailhog
+    profiles:
+      - mail
+
+  s3:
+    image: rustfs/rustfs:latest
+    security_opt:
+      - "no-new-privileges:true"
+    environment:
+      RUSTFS_VOLUMES: /data/rustfs{0...3}
+      RUSTFS_ADDRESS: "0.0.0.0:9000"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:9001"
+      RUSTFS_CONSOLE_ENABLE: true
+      RUSTFS_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS: "*"
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY}
+    ports:
+      - "9000:9000" # S3 API port
+      - "9001:9001" # Console port
+    profiles:
+      - s3
+    networks:
+      default:
+        aliases:
+          - s3
+    volumes:
+      - rustfs_data_0:/data/rustfs0
+      - rustfs_data_1:/data/rustfs1
+      - rustfs_data_2:/data/rustfs2
+      - rustfs_data_3:/data/rustfs3
+      - rustfs_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          "curl -f http://127.0.0.1:9000/health && curl -f http://127.0.0.1:9001/rustfs/console/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # RustFS volume permissions fixer service
+  volume-permission-helper:
+    image: alpine
+    volumes:
+      - rustfs_data_0:/data0
+      - rustfs_data_1:/data1
+      - rustfs_data_2:/data2
+      - rustfs_data_3:/data3
+      - rustfs_logs:/logs
+    command: >
+      sh -c "
+        chown -R 10001:10001 /data0 /data1 /data2 /data3 /logs &&
+        echo 'Volume Permissions fixed' &&
+        exit 0
+      "
+    profiles:
+      - s3
+    restart: "no"
+    networks:
+        default:
+            aliases:
+              - volume-permission-helper
+
+networks:
+  default:
+    name: ${PROJECT_NAME:-project}_net
+
+volumes:
+  rabbitmq_data:
+  rustfs_data_0:
+  rustfs_data_1:
+  rustfs_data_2:
+  rustfs_data_3:
+  rustfs_logs:

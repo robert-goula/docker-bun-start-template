@@ -1,0 +1,769 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/figtree";
+
+@layer reset, base, layout, utility;
+
+/*
+ * Metric-matched fallbacks. Each fallback re-shapes a local system font (Arial /
+ * Liberation Sans) so it occupies the same space as the web font while it loads,
+ * eliminating the reflow ("swap") that drives CLS. Overrides computed from
+ * @capsizecss/metrics (size-adjust matches average glyph advance width).
+ */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  src: local("Liberation Sans");
+  size-adjust: 107.2%;
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Figtree Fallback";
+  src: local("Arial");
+  size-adjust: 100.72%;
+  ascent-override: 94.32%;
+  descent-override: 24.82%;
+  line-gap-override: 0%;
+}
+
+@theme {
+  --font-sans: "Inter Variable", "Inter Fallback", sans-serif;
+  --font-heading: "Figtree Variable", "Figtree Fallback", sans-serif;
+}
+
+:root {
+  color-scheme: light dark;
+
+  --fontSize-xs: 0.695rem;
+  --fontSize-sm: 0.875rem;
+  --fontSize-base: 1rem;
+  --fontSize-md: 1rem;
+  --fontSize-lg: 1.2rem;
+  --fontSize-xl: 1.44rem;
+  --fontSize-2xl: 1.728rem;
+  --fontSize-3xl: 2.073rem;
+  --fontSize-4xl: 2.488rem;
+
+  --fontWeight-normal: 400;
+  --fontWeight-bold: 700;
+
+  --lineHeight-normal: 1.5;
+  --lineHeight-tight: 1.2;
+
+  --borderRadius-md: 0.25rem;
+  --borderRadius-sm: 0.125rem;
+  --borderRadius-lg: 0.5rem;
+
+  --borderWidth-sm: 1px;
+  --borderWidth-md: 2px;
+  --borderWidth-lg: 3px;
+
+  --spacing-xs: 0.125rem;
+  --spacing-sm: 0.25rem;
+  --spacing-md: 0.5rem;
+  --spacing-lg: 0.75rem;
+  --spacing-xl: 1.5rem;
+
+  --pageMaxWidth: 54rem;
+  --breakoutMaxWidth: 56rem;
+  --contentMaxWidth: 68ch;
+  --breakoutSize: calc((var(--breakoutMaxWidth) - var(--pageMaxWidth)) / 2);
+
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1), 0 2px 4px -2px oklch(0 0 0 / 0.1);
+  --shadow-page: 0 0 2px 1px oklch(0 0 0/0.2), 0 0 6px 3px oklch(0 0 0/0.1);
+
+  /* ───────────────────────────────────────────────────────────
+     NEUTRAL — Usuzumi (warm gray, washi-paper undertone)
+     H ≈ 60° (warm yellow-gray)
+     ─────────────────────────────────────────────────────────── */
+
+  --neutral-50: light-dark(oklch(0.96 0.01 68), oklch(0.14 0.008 68));
+  --neutral-100: light-dark(oklch(0.92 0.014 66), oklch(0.18 0.01 66));
+  --neutral-200: light-dark(oklch(0.85 0.016 64), oklch(0.24 0.012 64));
+  --neutral-300: light-dark(oklch(0.74 0.018 62), oklch(0.34 0.014 62));
+  --neutral-400: light-dark(oklch(0.62 0.018 60), oklch(0.46 0.016 60));
+  --neutral-500: light-dark(oklch(0.5 0.016 60), oklch(0.58 0.016 60));
+  --neutral-600: light-dark(oklch(0.38 0.014 60), oklch(0.72 0.014 60));
+  --neutral-700: light-dark(oklch(0.26 0.012 60), oklch(0.84 0.012 62));
+  --neutral-800: light-dark(oklch(0.17 0.01 60), oklch(0.92 0.01 64));
+
+  /* ───────────────────────────────────────────────────────────
+     PRIMARY — Tsuchi-iro (earth brown, clay and aged wood)
+     H ≈ 50° (warm amber-brown)
+     ─────────────────────────────────────────────────────────── */
+
+  --primary-50: light-dark(oklch(0.94 0.02 60), oklch(0.16 0.018 55));
+  --primary-100: light-dark(oklch(0.88 0.032 56), oklch(0.22 0.024 55));
+  --primary-200: light-dark(oklch(0.8 0.044 54), oklch(0.3 0.034 54));
+  --primary-300: light-dark(oklch(0.7 0.056 52), oklch(0.4 0.046 53));
+  --primary-400: light-dark(oklch(0.58 0.068 50), oklch(0.52 0.058 52));
+  --primary-500: light-dark(oklch(0.47 0.076 48), oklch(0.63 0.066 51));
+  --primary-600: light-dark(oklch(0.36 0.068 47), oklch(0.74 0.058 51));
+  --primary-700: light-dark(oklch(0.26 0.054 46), oklch(0.84 0.044 52));
+  --primary-800: light-dark(oklch(0.18 0.038 45), oklch(0.91 0.03 53));
+
+  /* ───────────────────────────────────────────────────────────
+     SECONDARY — Koke-iro (moss green, subdued organic green)
+     H ≈ 135° (muted yellow-green)
+     ─────────────────────────────────────────────────────────── */
+
+  --secondary-50: light-dark(oklch(0.94 0.016 140), oklch(0.15 0.014 138));
+  --secondary-100: light-dark(oklch(0.87 0.026 138), oklch(0.21 0.02 138));
+  --secondary-200: light-dark(oklch(0.78 0.038 136), oklch(0.29 0.03 136));
+  --secondary-300: light-dark(oklch(0.67 0.048 135), oklch(0.4 0.04 135));
+  --secondary-400: light-dark(oklch(0.55 0.056 133), oklch(0.52 0.052 134));
+  --secondary-500: light-dark(oklch(0.44 0.056 132), oklch(0.63 0.052 134));
+  --secondary-600: light-dark(oklch(0.34 0.05 132), oklch(0.74 0.044 135));
+  --secondary-700: light-dark(oklch(0.24 0.04 132), oklch(0.84 0.034 136));
+  --secondary-800: light-dark(oklch(0.16 0.028 132), oklch(0.91 0.022 137));
+
+  /* ───────────────────────────────────────────────────────────
+     ACCENT A — Ai-iro (traditional Japanese indigo)
+     H ≈ 270° (blue-violet)
+     ─────────────────────────────────────────────────────────── */
+
+  --accent-indigo-50: light-dark(oklch(0.94 0.022 272), oklch(0.15 0.02 270));
+  --accent-indigo-100: light-dark(oklch(0.86 0.04 271), oklch(0.22 0.034 270));
+  --accent-indigo-200: light-dark(oklch(0.76 0.062 270), oklch(0.32 0.054 270));
+  --accent-indigo-300: light-dark(oklch(0.65 0.082 269), oklch(0.44 0.074 270));
+  --accent-indigo-400: light-dark(oklch(0.54 0.098 268), oklch(0.56 0.09 269));
+  --accent-indigo-500: light-dark(oklch(0.44 0.106 267), oklch(0.67 0.096 269));
+  --accent-indigo-600: light-dark(oklch(0.34 0.094 267), oklch(0.78 0.08 270));
+  --accent-indigo-700: light-dark(oklch(0.25 0.076 267), oklch(0.87 0.06 271));
+  --accent-indigo-800: light-dark(oklch(0.17 0.054 267), oklch(0.93 0.038 272));
+
+  /* ───────────────────────────────────────────────────────────
+     ACCENT B — Beni-iro (crimson clay, terracotta red)
+     H ≈ 22° (red-orange)
+     ─────────────────────────────────────────────────────────── */
+
+  --accent-red-50: light-dark(oklch(0.94 0.024 24), oklch(0.16 0.022 22));
+  --accent-red-100: light-dark(oklch(0.87 0.044 23), oklch(0.22 0.036 22));
+  --accent-red-200: light-dark(oklch(0.77 0.068 22), oklch(0.31 0.058 22));
+  --accent-red-300: light-dark(oklch(0.66 0.094 22), oklch(0.43 0.082 22));
+  --accent-red-400: light-dark(oklch(0.55 0.116 21), oklch(0.55 0.108 21));
+  --accent-red-500: light-dark(oklch(0.46 0.124 20), oklch(0.65 0.112 21));
+  --accent-red-600: light-dark(oklch(0.36 0.108 20), oklch(0.76 0.09 22));
+  --accent-red-700: light-dark(oklch(0.26 0.082 20), oklch(0.86 0.064 23));
+  --accent-red-800: light-dark(oklch(0.18 0.056 20), oklch(0.93 0.04 24));
+
+  /* ───────────────────────────────────────────────────────────
+     ACCENT C — Yamabuki (golden flower, warm amber)
+     H ≈ 75° (yellow-gold)
+     ─────────────────────────────────────────────────────────── */
+
+  --accent-gold-50: light-dark(oklch(0.96 0.028 82), oklch(0.16 0.024 78));
+  --accent-gold-100: light-dark(oklch(0.9 0.054 80), oklch(0.22 0.04 78));
+  --accent-gold-200: light-dark(oklch(0.82 0.082 78), oklch(0.3 0.06 77));
+  --accent-gold-300: light-dark(oklch(0.72 0.108 77), oklch(0.42 0.086 76));
+  --accent-gold-400: light-dark(oklch(0.61 0.128 76), oklch(0.55 0.11 76));
+  --accent-gold-500: light-dark(oklch(0.51 0.136 75), oklch(0.67 0.118 76));
+  --accent-gold-600: light-dark(oklch(0.4 0.118 74), oklch(0.78 0.098 77));
+  --accent-gold-700: light-dark(oklch(0.29 0.09 74), oklch(0.87 0.07 78));
+  --accent-gold-800: light-dark(oklch(0.2 0.062 73), oklch(0.94 0.044 80));
+
+  /* ───────────────────────────────────────────────────────────
+     ACCENT D — Tokusa (horsetail, deep moss green)
+     H ≈ 148° (mid green)
+     ─────────────────────────────────────────────────────────── */
+
+  --accent-moss-50: light-dark(oklch(0.94 0.028 148), oklch(0.14 0.024 148));
+  --accent-moss-100: light-dark(oklch(0.87 0.048 147), oklch(0.21 0.038 147));
+  --accent-moss-200: light-dark(oklch(0.77 0.07 147), oklch(0.3 0.058 147));
+  --accent-moss-300: light-dark(oklch(0.65 0.09 146), oklch(0.42 0.078 147));
+  --accent-moss-400: light-dark(oklch(0.54 0.106 146), oklch(0.54 0.096 146));
+  --accent-moss-500: light-dark(oklch(0.44 0.108 146), oklch(0.65 0.1 146));
+  --accent-moss-600: light-dark(oklch(0.34 0.094 146), oklch(0.76 0.08 147));
+  --accent-moss-700: light-dark(oklch(0.24 0.072 146), oklch(0.86 0.056 147));
+  --accent-moss-800: light-dark(oklch(0.16 0.048 147), oklch(0.93 0.034 148));
+
+  /* ───────────────────────────────────────────────────────────
+     ACCENT E — Nezumi (mouse/slate, blue-gray)
+     H ≈ 225° (cool blue-gray)
+     ─────────────────────────────────────────────────────────── */
+
+  --accent-slate-50: light-dark(oklch(0.94 0.016 228), oklch(0.15 0.014 226));
+  --accent-slate-100: light-dark(oklch(0.86 0.028 227), oklch(0.22 0.022 226));
+  --accent-slate-200: light-dark(oklch(0.76 0.042 226), oklch(0.31 0.036 226));
+  --accent-slate-300: light-dark(oklch(0.64 0.056 225), oklch(0.44 0.05 225));
+  --accent-slate-400: light-dark(oklch(0.53 0.068 224), oklch(0.56 0.062 225));
+  --accent-slate-500: light-dark(oklch(0.43 0.072 224), oklch(0.67 0.066 225));
+  --accent-slate-600: light-dark(oklch(0.34 0.064 224), oklch(0.77 0.054 226));
+  --accent-slate-700: light-dark(oklch(0.25 0.05 224), oklch(0.87 0.038 227));
+  --accent-slate-800: light-dark(oklch(0.17 0.034 224), oklch(0.93 0.022 228));
+
+  --primary-muted: light-dark(var(--primary-400), var(--primary-400));
+  --primary-subtle: light-dark(var(--primary-400), var(--primary-400));
+  --primary-base: light-dark(var(--primary-500), var(--primary-300));
+  --primary-strong: light-dark(var(--primary-600), var(--primary-400));
+  --primary-text: light-dark(var(--primary-100), var(--primary-800));
+
+  --secondary-muted: light-dark(var(--secondary-400), var(--secondary-400));
+  --secondary-subtle: light-dark(var(--secondary-400), var(--secondary-400));
+  --secondary-base: light-dark(var(--secondary-500), var(--secondary-300));
+  --secondary-strong: light-dark(var(--secondary-600), var(--secondary-400));
+  --secondary-text: light-dark(var(--secondary-100), var(--secondary-800));
+
+  /* ───────────────────────────────────────────────────────────
+     ACTIVE ACCENT — generic scale remapped by [data-accent]
+     Defaults to Tokusa (moss). Override the scale per accent
+     below; everything else consumes the semantic shorthands.
+     ─────────────────────────────────────────────────────────── */
+
+  --accent-50: var(--accent-moss-50);
+  --accent-100: var(--accent-moss-100);
+  --accent-200: var(--accent-moss-200);
+  --accent-300: var(--accent-moss-300);
+  --accent-400: var(--accent-moss-400);
+  --accent-500: var(--accent-moss-500);
+  --accent-600: var(--accent-moss-600);
+  --accent-700: var(--accent-moss-700);
+  --accent-800: var(--accent-moss-800);
+
+  /* Each scale step is internally light-dark(), so a single step adapts per
+     mode. Steps chosen for WCAG AA (>=4.5:1) against the neutral surfaces:
+     base=600 for body-text links, strong=700 for hover, muted=500 for the
+     (non-text) underline decoration. Do NOT wrap these in an outer
+     light-dark() that swaps steps — that drops dark-mode links below AA. */
+  --accent-subtle: var(--accent-400);
+  --accent-muted: var(--accent-500);
+  --accent-base: var(--accent-600);
+  --accent-strong: var(--accent-700);
+  --accent-text: light-dark(var(--accent-400), var(--accent-700));
+
+  /* ───────────────────────────────────────────────────────────
+     SEMANTIC — Success (Matcha, muted sage green)
+     H ≈ 140° — calm, organic, not electric
+     ─────────────────────────────────────────────────────────── */
+
+  --success-subtle: light-dark(oklch(0.93 0.04 140), oklch(0.18 0.036 140));
+  --success-muted: light-dark(oklch(0.74 0.08 140), oklch(0.38 0.072 140));
+  --success-base: light-dark(oklch(0.52 0.1 140), oklch(0.6 0.096 140));
+  --success-strong: light-dark(oklch(0.36 0.086 140), oklch(0.78 0.076 140));
+  --success-text: light-dark(oklch(0.24 0.064 140), oklch(0.9 0.048 140));
+
+  /* ───────────────────────────────────────────────────────────
+     SEMANTIC — Info (Asagi, pale blue-gray)
+     H ≈ 218° — informational, calm, not alarming
+     ─────────────────────────────────────────────────────────── */
+
+  --info-subtle: light-dark(oklch(0.93 0.028 220), oklch(0.17 0.024 218));
+  --info-muted: light-dark(oklch(0.74 0.058 220), oklch(0.36 0.05 218));
+  --info-base: light-dark(oklch(0.54 0.08 219), oklch(0.58 0.072 219));
+  --info-strong: light-dark(oklch(0.38 0.07 218), oklch(0.76 0.06 220));
+  --info-text: light-dark(oklch(0.24 0.054 218), oklch(0.9 0.036 220));
+
+  /* ───────────────────────────────────────────────────────────
+     SEMANTIC — Warning (Kincha, golden amber)
+     H ≈ 68° — earthy caution, not harsh neon yellow
+     ─────────────────────────────────────────────────────────── */
+
+  --warning-subtle: light-dark(oklch(0.95 0.048 72), oklch(0.17 0.04 68));
+  --warning-muted: light-dark(oklch(0.8 0.096 70), oklch(0.36 0.08 68));
+  --warning-base: light-dark(oklch(0.62 0.128 69), oklch(0.58 0.116 69));
+  --warning-strong: light-dark(oklch(0.44 0.112 68), oklch(0.76 0.096 70));
+  --warning-text: light-dark(oklch(0.28 0.08 67), oklch(0.91 0.06 72));
+
+  /* ───────────────────────────────────────────────────────────
+     SEMANTIC — Danger (Kurenai, terracotta red)
+     H ≈ 18° — serious, earthy, not alarm-bell orange
+     ─────────────────────────────────────────────────────────── */
+
+  --danger-subtle: light-dark(oklch(0.93 0.034 20), oklch(0.17 0.03 18));
+  --danger-muted: light-dark(oklch(0.74 0.082 20), oklch(0.34 0.072 18));
+  --danger-base: light-dark(oklch(0.54 0.118 25), oklch(0.42 0.106 18));
+  --danger-strong: light-dark(oklch(0.38 0.106 18), oklch(0.56 0.086 20));
+  --danger-text: light-dark(oklch(0 0 20), oklch(1 0 20));
+
+  /* ───────────────────────────────────────────────────────────
+     SEMANTIC SURFACE TOKENS
+     Composed from the scale tokens above for direct use in UI
+     ─────────────────────────────────────────────────────────── */
+
+  /* Backgrounds */
+  --bg-surface: light-dark(var(--neutral-100), var(--neutral-300));
+  --bg-header: light-dark(var(--neutral-200), var(--neutral-200));
+  --bg-footer: light-dark(var(--neutral-200), var(--neutral-100));
+  --bg-page: light-dark(var(--neutral-100), var(--neutral-200));
+  --bg-sunken: light-dark(var(--neutral-50), var(--neutral-100));
+  --bg-raised: var(--neutral-300);
+  --bg-overlay: var(--neutral-50);
+  /*--bg-surface: light-dark(oklch(0.99 0.004 68), oklch(0.12 0.007 66));*/
+  /*--bg-elevated: light-dark(oklch(1 0 0), oklch(0.16 0.008 65));*/
+  /*--bg-overlay: light-dark(oklch(0.96 0.008 66), oklch(0.18 0.008 64));*/
+  --fg-controls: light-dark(var(--neutral-700), var(--neutral-700));
+  --fg-muted: color-mix(in lklch, currentColor 50%, var(--neutral-700) 10%);
+
+  /* Text */
+  --text-primary: light-dark(oklch(0.18 0.016 62), oklch(0.93 0.01 66));
+  --text-secondary: light-dark(oklch(0.4 0.016 62), oklch(0.7 0.012 65));
+  --text-tertiary: light-dark(oklch(0.58 0.014 62), oklch(0.52 0.012 64));
+  --text-disabled: light-dark(oklch(0.72 0.01 62), oklch(0.36 0.01 63));
+  --text-muted: light-dark(oklch(0.72 0.01 62), oklch(0.46 0.01 63));
+  --text-inverse: light-dark(oklch(0.96 0.008 66), oklch(0.16 0.01 64));
+
+  /* Borders */
+  /*--border-subtle: light-dark(var(--neutral-300) / 0.5, var(--color-secondary) / 0.5);*/
+  --border-subtle: var(--bg-raised);
+  --border-default: light-dark(oklch(0.74 0.016 63 / 0.6), oklch(0.4 0.012 63 / 0.6));
+  --border-strong: light-dark(oklch(0.56 0.018 62 / 0.7), oklch(0.6 0.014 63 / 0.7));
+  --border-focus: var(--primary-400);
+
+  /* Semantic surface shorthands */
+  --bg-success: var(--success-subtle);
+  --border-success: var(--success-muted);
+  --text-success: var(--success-text);
+
+  --bg-info: var(--info-subtle);
+  --border-info: var(--info-muted);
+  --text-info: var(--info-text);
+
+  --bg-warning: var(--warning-subtle);
+  --border-warning: var(--warning-muted);
+  --text-warning: var(--warning-text);
+
+  --bg-danger: var(--danger-subtle);
+  --border-danger: var(--danger-muted);
+  --text-danger: var(--danger-text);
+}
+
+/* ───────────────────────────────────────────────────────────
+   ACCENT SELECTION — remap the generic --accent-* scale onto the
+   palette chosen by the user (persisted via the `accent` cookie,
+   applied to <html data-accent> on the server for flash-free SSR).
+   ─────────────────────────────────────────────────────────── */
+
+:root[data-accent="indigo"] {
+  --accent-50: var(--accent-indigo-50);
+  --accent-100: var(--accent-indigo-100);
+  --accent-200: var(--accent-indigo-200);
+  --accent-300: var(--accent-indigo-300);
+  --accent-400: var(--accent-indigo-400);
+  --accent-500: var(--accent-indigo-500);
+  --accent-600: var(--accent-indigo-600);
+  --accent-700: var(--accent-indigo-700);
+  --accent-800: var(--accent-indigo-800);
+}
+
+:root[data-accent="red"] {
+  --accent-50: var(--accent-red-50);
+  --accent-100: var(--accent-red-100);
+  --accent-200: var(--accent-red-200);
+  --accent-300: var(--accent-red-300);
+  --accent-400: var(--accent-red-400);
+  --accent-500: var(--accent-red-500);
+  --accent-600: var(--accent-red-600);
+  --accent-700: var(--accent-red-700);
+  --accent-800: var(--accent-red-800);
+}
+
+:root[data-accent="gold"] {
+  --accent-50: var(--accent-gold-50);
+  --accent-100: var(--accent-gold-100);
+  --accent-200: var(--accent-gold-200);
+  --accent-300: var(--accent-gold-300);
+  --accent-400: var(--accent-gold-400);
+  --accent-500: var(--accent-gold-500);
+  --accent-600: var(--accent-gold-600);
+  --accent-700: var(--accent-gold-700);
+  --accent-800: var(--accent-gold-800);
+}
+
+:root[data-accent="moss"] {
+  --accent-50: var(--accent-moss-50);
+  --accent-100: var(--accent-moss-100);
+  --accent-200: var(--accent-moss-200);
+  --accent-300: var(--accent-moss-300);
+  --accent-400: var(--accent-moss-400);
+  --accent-500: var(--accent-moss-500);
+  --accent-600: var(--accent-moss-600);
+  --accent-700: var(--accent-moss-700);
+  --accent-800: var(--accent-moss-800);
+}
+
+:root[data-accent="slate"] {
+  --accent-50: var(--accent-slate-50);
+  --accent-100: var(--accent-slate-100);
+  --accent-200: var(--accent-slate-200);
+  --accent-300: var(--accent-slate-300);
+  --accent-400: var(--accent-slate-400);
+  --accent-500: var(--accent-slate-500);
+  --accent-600: var(--accent-slate-600);
+  --accent-700: var(--accent-slate-700);
+  --accent-800: var(--accent-slate-800);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
+}
+
+@layer reset {
+  .root {
+    isolation: isolate;
+  }
+  * {
+    padding: 0;
+    margin: 0;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+@layer layout {
+  html {
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+    font-family: "Inter Variable", "Inter Fallback", sans-serif;
+    font-size: var(--baseFontSize, 100%);
+    min-height: 100vh;
+    display: grid;
+    background-color: var(--bg-surface);
+    grid-template-columns:
+      [fullwidth-start]
+      minmax(var(--spacing-md), 1fr)
+      [overflow-start]
+      minmax(0, var(--breakoutSize))
+      [content-start] min(100% - (var(--spacing-md) * 2), var(--pageMaxWidth)) [content-end]
+      minmax(0, var(--breakoutSize))
+      [overflow-end]
+      minmax(var(--spacing-md), 1fr)
+      [fullwidth-end];
+    grid-template-rows:
+      [
+      body-start
+      header-group-start
+      header-start]
+      minmax(4rem, max-content)
+      [
+      header-end
+      nav-start]
+      minmax(0, max-content)
+      [
+      nav-end
+      header-group-end
+      hero-start] minmax(0, max-content)
+      [
+      hero-end
+      main-start]
+      minmax(0, 1fr)
+      [
+      main-end
+      content-footer-start] minmax(0, max-content) [
+      content-footer-end
+      footer-start]
+      minmax(0, max-content)
+      [
+      footer-end body-end];
+
+    &::before {
+      content: "";
+      display: grid;
+      grid-area: header-group / fullwidth;
+      background-color: var(--bg-sunken);
+    }
+
+    &::after {
+      content: "";
+      display: grid;
+      grid-area: footer / fullwidth;
+      background-color: var(--bg-sunken);
+      z-index: -1;
+    }
+
+    &[data-size="xs"] {
+      --baseFontSize: 75%;
+    }
+    &[data-size="sm"] {
+      --baseFontSize: 87.5%;
+    }
+    &[data-size="md"] {
+      --baseFontSize: 100%;
+    }
+    &[data-size="lg"] {
+      --baseFontSize: 112.5%;
+    }
+    &[data-size="xl"] {
+      --baseFontSize: 125%;
+    }
+  }
+
+  body {
+    &[data-theme="light"] {
+      color-scheme: light;
+    }
+
+    &[data-theme="dark"] {
+      color-scheme: dark;
+    }
+    scrollbar-gutter: stable;
+    max-width: 100svw;
+    min-height: 100svh;
+    color: var(--text-primary);
+    background-color: var(--bg-page);
+    box-shadow: var(--shadow-page);
+    display: grid;
+    margin: 0 auto;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    grid-area: body / content;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    & > header {
+      /*color: hsl(var(--fg-primary));*/
+      background-color: var(--bg-header);
+      display: grid;
+      grid-area: header / content;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--spacing-lg);
+      padding-inline: var(--spacing-lg);
+      padding-block: var(--spacing-sm);
+      /*position: relative;*/
+      /*z-index: 1;*/
+      /*box-shadow: var(--shadowPage);*/
+    }
+    & > footer {
+      background-color: var(--bg-footer);
+      display: grid;
+      gap: var(--spacing-lg);
+      padding-block: var(--spacing-sm);
+      padding-inline: var(--spacing-lg);
+      grid-area: footer / content;
+      grid-template-columns: repeat(12, 1fr);
+      section {
+        padding: 0;
+      }
+    }
+
+    & > section {
+      padding-inline: var(--spacing-lg);
+      padding-block: var(--spacing-lg);
+    }
+  }
+}
+
+@layer utility {
+  .⅙ {
+    grid-column: span 2;
+  }
+
+  .¼ {
+    grid-column: span 3;
+  }
+
+  .⅓ {
+    grid-column: span 4;
+  }
+
+  .½ {
+    grid-column: span 6;
+  }
+
+  .⅔ {
+    grid-column: span 8;
+  }
+
+  .¾ {
+    grid-column: span 9;
+  }
+
+  .⅚ {
+    grid-column: span 10;
+  }
+
+  .full {
+    grid-column: span 12;
+  }
+
+  /* Optional 10 Grid */
+  .⅕ {
+    grid-column: span 2;
+  }
+
+  .⅖ {
+    grid-column: span 4;
+  }
+
+  .⅗ {
+    grid-column: span 6;
+  }
+
+  .⅘ {
+    grid-column: span 8;
+  }
+}
+
+
+/*body::after {*/
+/*  content: "";*/
+/*  position: fixed;*/
+/*  inset: 0;*/
+/*  pointer-events: none;*/
+/*  z-index: -1;*/
+/*  opacity: 0.14;*/
+/*  !*background-image:*!*/
+/*  !*  linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),*!*/
+/*  !*  linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);*!*/
+/*  !*background-size: 28px 28px;*!*/
+/*  !*mask-image: radial-gradient(circle at 50% 30%, black, transparent 78%);*!*/
+/*}*/
+
+#skip_link {
+  position: absolute;
+  top: -3rem;
+  left: calc(50% - 10rem / 2);
+  width: fit-content;
+  text-align: center;
+  background-color: var(--bg-raised);
+  margin-inline: auto;
+  color: var(--fg-controls);
+  clip-path: polygon(0 0, 100% 0%, 90% 100%, 10% 100%);
+  padding-inline: calc(var(--spacing-md) * 4);
+  padding-block: calc(var(--spacing-md) / 2);
+
+  z-index: 1;
+  transition: top 0.25s ease-in-out;
+
+  &:focus-within {
+    top: 0;
+  }
+}
+
+main {
+  color: inherit;
+  background-color: var(--bg-page);
+  grid-area: main / content;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: min-content;
+  gap: var(--spacing-lg);
+  padding-block: var(--spacing-lg);
+  padding-inline: var(--spacing-lg);
+}
+
+a {
+  color: var(--accent-text);
+  text-decoration-color: var(--accent-muted);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  &:hover {
+    color: var(--accent-strong);
+  }
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Figtree Variable", "Figtree Fallback", sans-serif;
+  font-family: "Inter Variable", "Inter Fallback", sans-serif;
+  font-weight: var(--fontWeight-bold);
+  color: light-dark(var(--neutral-100), var(--neutral-600));
+}
+h1 {
+  font-size: var(--fontSize-2xl);
+}
+h2 {
+  font-size: var(--fontSize-xl);
+}
+h3 {
+  font-size: var(--fontSize-lg);
+}
+h4 {
+  font-size: var(--fontSize-md);
+}
+h5 {
+  font-size: var(--fontSize-sm);
+}
+h6 {
+  font-size: var(--fontSize-xs);
+}
+
+blockquote {
+  margin-block: var(--spacing-lg);
+  border-inline-start: var(--borderWidth-lg) solid var(--accent-muted);
+  padding-inline-start: var(--spacing-lg);
+}
+input {
+  &[type="checkbox"] {
+    margin-inline-end: 0.5ch;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────
+     TOAST (Sonner) — intent-driven colours from the semantic
+     tokens, independent of the user's accent selection. Sonner's
+     base styles use :where() (zero specificity), so these
+     attribute selectors win without !important.
+     ─────────────────────────────────────────────────────────── */
+
+
+[data-sonner-toast] {
+
+  &[data-type="success"] {
+    background: var(--bg-success);
+    border-color: var(--border-success);
+    color: var(--text-success);
+  }
+
+  &[data-type="error"] {
+    background: var(--bg-danger);
+    border-color: var(--border-danger);
+    color: var(--text-danger);
+  }
+
+  &[data-type="warning"] {
+    background: var(--bg-warning);
+    border-color: var(--border-warning);
+    color: var(--text-warning);
+  }
+
+  &[data-type="info"] {
+    background: var(--bg-info);
+    border-color: var(--border-info);
+    color: var(--text-info);
+  }
+
+  [data-icon],
+  [data-title],
+  [data-description],
+  [data-close-button] {
+    color: inherit;
+  }
+  [data-description] {
+    opacity: 0.92;
+  }
+  /* Links inside a toast follow the toast's intent colour, not the accent. */
+  a {
+    color: inherit;
+    text-decoration-color: currentColor;
+  }
+}
+
+.rise-in {
+  animation: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

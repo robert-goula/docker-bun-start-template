@@ -1,0 +1,51 @@
+@reference "../../styles.css";
+
+.hdr {
+  color: var(--color-primary);
+  font-weight: var(--fontWeight-bold);
+  line-height: var(--lineHeight-tight);
+}
+
+.hdr:where(h1) {
+  font-size: var(--fontSize-4xl);
+}
+.hdr:where(h2) {
+  font-size: var(--fontSize-3xl);
+}
+.hdr:where(h3) {
+  font-size: var(--fontSize-2xl);
+}
+.hdr:where(h4) {
+  font-size: var(--fontSize-xl);
+}
+.hdr:where(h5) {
+  font-size: var(--fontSize-lg);
+}
+.hdr:where(h6) {
+  font-size: var(--fontSize-base);
+}
+
+.xs {
+  font-size: var(--fontSize-xs);
+}
+.sm {
+  font-size: var(--fontSize-sm);
+}
+.md {
+  font-size: var(--fontSize-base);
+}
+.lg {
+  font-size: var(--fontSize-lg);
+}
+.xl {
+  font-size: var(--fontSize-xl);
+}
+.xxl {
+  font-size: var(--fontSize-2xl);
+}
+.xxxl {
+  font-size: var(--fontSize-3xl);
+}
+.xxxxl {
+  font-size: var(--fontSize-4xl);
+}

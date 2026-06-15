@@ -1,0 +1,136 @@
+@reference "../../styles.css";
+
+/* ── Root ───────────────────────────────────────────────── */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--borderRadius-md);
+  border: 1px solid var(--border-default);
+}
+
+/* ── Item ───────────────────────────────────────────────── */
+.accordionItem {
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  &[data-open] {
+    background-color: color-mix(in srgb, var(--bg-sunken) 50%, transparent);
+  }
+}
+
+/* ── Trigger ────────────────────────────────────────────── */
+.accordionTrigger {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-md);
+  text-align: start;
+  font-size: var(--fontSize-xs);
+  line-height: 1.6;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  transition: text-decoration 0.15s ease;
+  width: 100%;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &[aria-disabled="true"] {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  :global(svg) {
+    pointer-events: none;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-muted);
+    margin-inline-start: auto;
+  }
+}
+
+.chevronDown {
+  display: block;
+
+  [aria-expanded="true"] & {
+    display: none;
+  }
+}
+
+.chevronUp {
+  display: none;
+
+  [aria-expanded="true"] & {
+    display: inline;
+  }
+}
+
+/* ── Panel ──────────────────────────────────────────────── */
+.accordionPanel {
+  overflow: hidden;
+  padding-inline: var(--spacing-md);
+  font-size: var(--fontSize-xs);
+  line-height: 1.6;
+
+  &[data-open] {
+    animation: accordionDown 0.2s ease-out;
+  }
+
+  &[data-closed] {
+    animation: accordionUp 0.2s ease-out;
+  }
+}
+
+.accordionPanelInner {
+  height: var(--accordion-panel-height);
+  padding-top: 0;
+  padding-bottom: var(--spacing-xl);
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    height: 0;
+  }
+
+  :global(a) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  :global(p:not(:last-child)) {
+    margin-bottom: var(--spacing-xl);
+  }
+}
+
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes accordionDown {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--accordion-panel-height);
+  }
+}
+
+@keyframes accordionUp {
+  from {
+    height: var(--accordion-panel-height);
+  }
+  to {
+    height: 0;
+  }
+}

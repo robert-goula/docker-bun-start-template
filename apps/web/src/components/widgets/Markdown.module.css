@@ -1,0 +1,76 @@
+@reference "@/styles.css";
+
+.view,
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.rendered {
+  /*color: var(--text-primary);*/
+  /*font-size: var(--fontSize-sm);*/
+  /*line-height: 1.6;*/
+
+  /*& :where(h1, h2, h3, h4, h5, h6) {*/
+  /*  font-weight: 600;*/
+  /*  line-height: 1.25;*/
+  /*  margin-block: var(--spacing-md) var(--spacing-sm);*/
+  /*}*/
+
+  /*& p {*/
+  /*  margin-block: var(--spacing-sm);*/
+  /*}*/
+
+  /*& :where(ul, ol) {*/
+  /*  padding-inline-start: var(--spacing-lg);*/
+  /*  margin-block: var(--spacing-sm);*/
+  /*  list-style: revert;*/
+  /*}*/
+
+  /*& a {*/
+  /*  color: var(--primary-base);*/
+  /*  text-decoration: underline;*/
+  /*}*/
+
+  & code {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.9em;
+    background: var(--bg-raised);
+    padding-inline: 0.25em;
+    border-radius: var(--borderRadius-sm);
+  }
+
+  & pre {
+    background: var(--bg-raised);
+    padding: var(--spacing-md);
+    border-radius: var(--borderRadius-md);
+    overflow-x: auto;
+  }
+
+  & > :first-child {
+    margin-block-start: 0;
+  }
+
+  & > :last-child {
+    margin-block-end: 0;
+  }
+}
+
+.empty {
+  color: var(--fg-muted);
+  font-size: var(--fontSize-sm);
+  font-style: italic;
+}
+
+.textarea {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--fontSize-sm);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}

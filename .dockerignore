@@ -1,0 +1,23 @@
+# Never copy host-installed dependencies into the image — they may be built for a
+# different platform (e.g. macOS) and will clobber the linux node_modules installed
+# during the build, breaking native bindings (rolldown/vite, etc.).
+**/node_modules
+
+# Build output / caches
+**/.output
+**/dist
+**/.vite
+**/.turbo
+
+# Local env & secrets (provided at runtime via direnv + varlock)
+**/.env.local
+**/.envrc.local
+
+# VCS / editor / OS cruft
+.git
+**/.DS_Store
+
+# Docker bind-mount data dirs
+dbdata
+redisdata
+certs

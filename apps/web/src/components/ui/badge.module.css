@@ -1,0 +1,121 @@
+@reference "../../styles.css";
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  border-radius: var(--borderRadius-lg);
+  border: 1px solid transparent;
+  font-weight: 500;
+  overflow: hidden;
+  flex-shrink: 0;
+  :global(svg) {
+    pointer-events: none;
+    flex-shrink: 0;
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+}
+
+/* Intents */
+.neutral {
+  background-color: var(--neutral-300);
+  color: var(--text-primary);
+}
+.primary {
+  background-color: var(--primary-base);
+  color: var(--primary-text);
+}
+.secondary {
+  background-color: var(--secondary-base);
+  color: var(--secondary-text);
+}
+.info {
+  background-color: var(--info-base);
+  color: var(--info-text);
+}
+.warning {
+  background-color: var(--warning-base);
+  color: var(--warning-text);
+}
+.danger {
+  background-color: var(--danger-base);
+  color: var(--danger-text);
+}
+
+/* Variants */
+.default {
+  /* color comes from intent */
+}
+.outline {
+  background-color: transparent;
+  border-color: currentColor;
+  &.neutral {
+    color: var(--text-primary);
+  }
+  &.primary {
+    color: var(--primary-strong);
+  }
+  &.secondary {
+    color: var(--secondary-strong);
+  }
+  &.info {
+    color: var(--info-strong);
+  }
+  &.warning {
+    color: var(--warning-strong);
+  }
+  &.danger {
+    color: var(--danger-strong);
+  }
+}
+.ghost {
+  background-color: transparent;
+  &.neutral {
+    color: var(--text-primary);
+  }
+  &.primary {
+    color: var(--primary-strong);
+  }
+  &.secondary {
+    color: var(--secondary-strong);
+  }
+  &.info {
+    color: var(--info-strong);
+  }
+  &.warning {
+    color: var(--warning-strong);
+  }
+  &.danger {
+    color: var(--danger-strong);
+  }
+}
+.link {
+  background-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* Sizes */
+.xs {
+  font-size: var(--fontSize-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+}
+.sm {
+  font-size: var(--fontSize-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+.md {
+  font-size: var(--fontSize-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+.lg {
+  font-size: var(--fontSize-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+}
+.xl {
+  font-size: var(--fontSize-base);
+  padding: var(--spacing-sm) var(--spacing-lg);
+}

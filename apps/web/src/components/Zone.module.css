@@ -1,0 +1,266 @@
+.zone {
+  border: 1px inset var(--border-subtle);
+  padding: 0;
+  background-color: var(--bg-surface);
+
+  .dragHandle {
+    color: var(--fg-muted);
+    pointer-events: all;
+    cursor: pointer;
+  }
+
+  header {
+    /*cursor: pointer;*/
+    display: flex;
+    grid-column: span 12;
+    justify-content: space-between;
+    line-height: 1.5;
+    padding-block: 0.125rem;
+    padding-inline: 0.25rem;
+    color: var(--fg-muted);
+    background-color: var(--neutral-300);
+    align-items: center;
+
+    menu {
+      color: var(--fg-controls);
+      line-height: 1;
+      padding-block: var(--spacing-xs);
+    }
+
+    button {
+      all: unset;
+      display: inline-block;
+      padding: 0;
+      line-height: 1;
+    }
+
+    span {
+      text-align: left;
+      flex-grow: 1;
+      background-color: transparent;
+      opacity: 0.8;
+    }
+
+    svg {
+      flex-grow: 0;
+      align-items: flex-end;
+      width: 1rem;
+      height: auto;
+    }
+
+    path {
+      fill: currentColor;
+    }
+  }
+
+  &[data-open] {
+    .zone__content {
+      height: max-content;
+      /*background-color: var(--colorPrimary);*/
+      /*color: var(--colorPage);*/
+      box-shadow: inset 0 0 0.25rem var(--bg-sunken);
+    }
+  }
+}
+
+.zone__title {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-grow: 1;
+  cursor: pointer;
+  text-wrap: nowrap;
+  text-align: left;
+}
+
+.zone__originalName {
+  color: var(--fg-muted);
+  font-weight: normal;
+}
+
+.zoneDragHandle {
+  display: contents;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.ghost {
+  opacity: 0.85;
+  box-shadow: var(--shadow-md);
+  cursor: grabbing;
+  pointer-events: none;
+}
+
+.zone__toggle {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.zoneIndicator {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg);
+
+  svg {
+    width: 1rem;
+    height: auto;
+    fill: currentColor;
+  }
+}
+
+.zoneIndicator.collapsed {
+  transform: rotate(-90deg);
+}
+
+.zone__content {
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-xs);
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--spacing-md);
+
+  /* When empty, show a centered "Drop here" hint on its own full-width row,
+     above the Add widget button (a ::before so it precedes the button child). */
+  &[data-empty]::before {
+    content: "Drop here";
+    grid-column: 1 / -1;
+    justify-self: center;
+    font-size: var(--fontSize-xs);
+    color: var(--text-muted);
+    pointer-events: none;
+    border: var(--borderWidth-sm) dashed var(--border-subtle);
+    border-radius: var(--borderRadius-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+  }
+
+  &[data-over] {
+    background-color: var(--primary-subtle, oklch(0.97 0.02 260));
+    outline: var(--borderWidth-md) dashed var(--primary-400, oklch(0.65 0.18 260));
+    outline-offset: -2px;
+  }
+}
+
+/* Full-width "Add widget" button on its own row at the bottom of the zone. */
+.addWidget {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: var(--borderWidth-sm) dashed var(--border-default);
+  border-radius: var(--borderRadius-md);
+  padding-block: var(--spacing-sm);
+  cursor: pointer;
+
+  svg {
+    width: 1rem;
+    height: auto;
+    fill: currentColor;
+  }
+
+  &:hover {
+    background: var(--bg-raised);
+    color: var(--text-primary);
+    border-color: var(--primary-400);
+  }
+}
+
+/* Add-widget picker dialog */
+.kindList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.kindOption {
+  text-align: left;
+  text-transform: capitalize;
+  font-size: var(--fontSize-sm);
+  color: var(--text-primary);
+  background: transparent;
+  border: var(--borderWidth-sm) solid var(--border-default);
+  border-radius: var(--borderRadius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-raised);
+    border-color: var(--primary-400);
+  }
+}
+
+/* Zone settings dialog */
+.sizeOptions {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sizeLabel {
+  font-size: var(--fontSize-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-block-end: var(--spacing-sm);
+}
+
+.sizeOption {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--fontSize-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  input[type="radio"] {
+    accent-color: var(--primary-400);
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+  }
+}
+
+.btnCancel {
+  font-size: var(--fontSize-xs);
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-lg);
+  border-radius: var(--borderRadius-md);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-raised);
+    color: var(--text-primary);
+  }
+}
+
+.btnApply {
+  font-size: var(--fontSize-xs);
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-lg);
+  border-radius: var(--borderRadius-md);
+  border: var(--borderWidth-sm) solid transparent;
+  background: var(--primary-base);
+  color: var(--primary-text);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--primary-strong);
+  }
+}

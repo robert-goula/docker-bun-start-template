@@ -1,0 +1,40 @@
+@reference "../../styles.css";
+
+.textarea {
+  display: flex;
+  width: 100%;
+  min-height: 4rem;
+  resize: none;
+  field-sizing: content;
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  background-color: var(--bg-sunken);
+  color: var(--text-primary);
+  font-size: var(--fontSize-sm);
+  line-height: 1.625;
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+  transition:
+    color 120ms ease-in-out,
+    background-color 120ms ease-in-out,
+    outline-color 120ms ease-in-out;
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  &:focus-visible {
+    outline-color: var(--border-focus);
+    outline-width: 2px;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &[aria-invalid="true"] {
+    outline-color: var(--danger-base);
+    outline-width: 2px;
+  }
+}

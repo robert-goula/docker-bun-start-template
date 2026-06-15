@@ -1,0 +1,136 @@
+@reference "../styles.css";
+
+/* ── Trigger ─────────────────────────────────────────────── */
+.triggerSwatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chevron {
+  width: 0.625rem;
+  height: 0.625rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-inline-start: var(--spacing-sm);
+}
+
+/* Each trigger swatch previews its own palette. */
+.triggerSwatch[data-accent="indigo"] {
+  background-color: var(--accent-indigo-500);
+}
+.triggerSwatch[data-accent="red"] {
+  background-color: var(--accent-red-500);
+}
+.triggerSwatch[data-accent="gold"] {
+  background-color: var(--accent-gold-500);
+}
+.triggerSwatch[data-accent="moss"] {
+  background-color: var(--accent-moss-500);
+}
+.triggerSwatch[data-accent="slate"] {
+  background-color: var(--accent-slate-500);
+}
+
+/* ── Popup ───────────────────────────────────────────────── */
+.popup {
+  transform-origin: var(--transform-origin);
+  border-radius: var(--borderRadius-lg);
+  background-color: var(--bg-overlay);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+  outline: var(--borderWidth-sm) solid oklch(from var(--text-primary) l c h / 0.1);
+  padding: var(--spacing-xs);
+  min-width: 9rem;
+
+  &[data-open] {
+    animation: accentMenuIn 100ms ease;
+  }
+  &[data-closed] {
+    animation: accentMenuOut 100ms ease;
+  }
+}
+
+@keyframes accentMenuIn {
+  from {
+    opacity: 0;
+    scale: 0.95;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes accentMenuOut {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+/* ── Item ────────────────────────────────────────────────── */
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 1.75rem;
+  width: 100%;
+  border-radius: var(--borderRadius-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--fontSize-xs);
+  cursor: default;
+  outline: none;
+  user-select: none;
+
+  &[data-highlighted] {
+    background-color: var(--bg-raised);
+  }
+}
+
+.itemSwatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Each item swatch previews its own palette. */
+.itemSwatch[data-accent="indigo"] {
+  background-color: var(--accent-indigo-500);
+}
+.itemSwatch[data-accent="red"] {
+  background-color: var(--accent-red-500);
+}
+.itemSwatch[data-accent="gold"] {
+  background-color: var(--accent-gold-500);
+}
+.itemSwatch[data-accent="moss"] {
+  background-color: var(--accent-moss-500);
+}
+.itemSwatch[data-accent="slate"] {
+  background-color: var(--accent-slate-500);
+}
+
+.itemLabel {
+  flex: 1;
+}
+
+.itemLabelSelected {
+  flex: 1;
+  font-weight: 600;
+}
+
+.itemCheck {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}

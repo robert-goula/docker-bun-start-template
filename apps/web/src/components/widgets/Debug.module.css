@@ -1,0 +1,31 @@
+@reference "@/styles.css";
+
+.debug {
+  margin: 0;
+  padding: var(--spacing-sm);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--fontSize-xs);
+  line-height: 1.5;
+  background: var(--bg-raised);
+  border: var(--borderWidth-sm) dashed var(--border-default);
+  border-radius: var(--borderRadius-md);
+  color: var(--text-secondary);
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: var(--spacing-sm);
+}
+
+.label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.value {
+  margin: 0;
+  word-break: break-all;
+}

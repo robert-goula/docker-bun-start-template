@@ -1,0 +1,63 @@
+@reference "../../styles.css";
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--bg-raised);
+  border-radius: var(--borderRadius-lg);
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
+  font-size: var(--fontSize-sm);
+}
+
+.inset {
+  background-color: var(--bg-sunken);
+}
+
+.md {
+  gap: var(--spacing-xl);
+  padding-block: var(--spacing-xl);
+}
+
+.sm {
+  gap: var(--spacing-lg);
+  padding-block: var(--spacing-lg);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-auto-rows: min-content;
+  align-items: start;
+  gap: var(--spacing-xs);
+  padding-inline: var(--spacing-xl);
+}
+
+.title {
+  font-size: var(--fontSize-base);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.description {
+  font-size: var(--fontSize-sm);
+  color: var(--text-secondary);
+}
+
+.action {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: start;
+  justify-self: end;
+}
+
+.content {
+  padding-inline: var(--spacing-xl);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--spacing-xl);
+}

@@ -1,0 +1,113 @@
+@reference "../../styles.css";
+
+/* ── ButtonGroup ────────────────────────────────────────── */
+.buttonGroup {
+  display: flex;
+  width: fit-content;
+  align-items: stretch;
+
+  & > * {
+    &:focus-visible {
+      position: relative;
+      z-index: 10;
+    }
+  }
+
+  & > input {
+    flex: 1;
+  }
+
+  & > [data-slot="select-trigger"] {
+    width: fit-content;
+  }
+
+  &:has(> [data-slot="button-group"]) {
+    gap: var(--spacing-md);
+  }
+}
+
+/* ── Orientation: horizontal ────────────────────────────── */
+.horizontal {
+  & > [data-slot] {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  & > [data-slot]:not(:has(~ [data-slot])) {
+    border-start-end-radius: var(--borderRadius-md);
+    border-end-end-radius: var(--borderRadius-md);
+  }
+
+  & > [data-slot] ~ [data-slot] {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border-inline-start-width: 0;
+  }
+
+  /* When last child is a hidden native select, restore radius on the trigger */
+  &:has(> select[aria-hidden="true"]:last-child) {
+    & > [data-slot="select-trigger"]:last-of-type {
+      border-start-end-radius: var(--borderRadius-md);
+      border-end-end-radius: var(--borderRadius-md);
+    }
+  }
+}
+
+/* ── Orientation: vertical ──────────────────────────────── */
+.vertical {
+  flex-direction: column;
+
+  & > [data-slot] {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  & > [data-slot]:not(:has(~ [data-slot])) {
+    border-end-start-radius: var(--borderRadius-md);
+    border-end-end-radius: var(--borderRadius-md);
+  }
+
+  & > [data-slot] ~ [data-slot] {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-top-width: 0;
+  }
+}
+
+/* ── ButtonGroupText ────────────────────────────────────── */
+.buttonGroupText {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  border-radius: var(--borderRadius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-sunken);
+  padding-inline: var(--spacing-lg);
+  font-size: var(--fontSize-xs);
+  line-height: 1.6;
+  font-weight: 500;
+
+  :global(svg) {
+    pointer-events: none;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* ── ButtonGroupSeparator ───────────────────────────────── */
+.buttonGroupSeparator {
+  position: relative;
+  align-self: stretch;
+  background-color: var(--border-default);
+
+  &[data-orientation="horizontal"] {
+    margin-inline: 1px;
+    width: auto;
+  }
+
+  &[data-orientation="vertical"] {
+    margin-block: 1px;
+    height: auto;
+  }
+}

@@ -1,0 +1,7 @@
+.rhs {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-content: flex-start;
+}

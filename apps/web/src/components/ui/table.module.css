@@ -1,0 +1,92 @@
+@reference "../../styles.css";
+
+/* ── Container ──────────────────────────────────────────── */
+.tableContainer {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* ── Table ──────────────────────────────────────────────── */
+.table {
+  width: 100%;
+  caption-side: bottom;
+  font-size: var(--fontSize-xs);
+  border-collapse: collapse;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.tableHeader {
+  tr {
+    border-bottom: 1px solid var(--border-default);
+  }
+}
+
+/* ── Body ───────────────────────────────────────────────── */
+.tableBody {
+  tr:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.tableFooter {
+  border-top: 1px solid var(--border-default);
+  background-color: color-mix(in srgb, var(--bg-sunken) 50%, transparent);
+  font-weight: 500;
+
+  tr:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Row ────────────────────────────────────────────────── */
+.tableRow {
+  border-bottom: 1px solid var(--border-default);
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--bg-sunken) 50%, transparent);
+  }
+
+  &:has([aria-expanded="true"]) {
+    background-color: color-mix(in srgb, var(--bg-sunken) 50%, transparent);
+  }
+
+  &[data-state="selected"] {
+    background-color: var(--bg-sunken);
+  }
+}
+
+/* ── Head cell ──────────────────────────────────────────── */
+.tableHead {
+  height: 2.5rem;
+  padding-inline: var(--spacing-md);
+  text-align: start;
+  vertical-align: middle;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-primary);
+
+  &:has([role="checkbox"]) {
+    padding-inline-end: 0;
+  }
+}
+
+/* ── Body cell ──────────────────────────────────────────── */
+.tableCell {
+  padding: var(--spacing-md);
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &:has([role="checkbox"]) {
+    padding-inline-end: 0;
+  }
+}
+
+/* ── Caption ────────────────────────────────────────────── */
+.tableCaption {
+  margin-top: 1rem;
+  font-size: var(--fontSize-xs);
+  color: var(--text-muted);
+}

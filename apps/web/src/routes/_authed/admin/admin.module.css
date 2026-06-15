@@ -1,0 +1,10 @@
+.nav {
+  grid-area: nav / content;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding-inline: var(--spacing-lg);
+  padding-block: var(--spacing-sm);
+  background-color: var(--bg-sunken);
+}

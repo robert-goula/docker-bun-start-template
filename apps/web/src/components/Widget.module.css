@@ -1,0 +1,157 @@
+@reference "@/styles.css";
+
+.widget {
+  margin-block-start: var(--spacing-sm);
+}
+
+.dragHandle {
+  color: var(--fg-muted);
+  cursor: grab;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  svg {
+    width: 1rem;
+    height: auto;
+    pointer-events: none;
+    fill: currentColor;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding-block: 0.125rem;
+  padding-inline: 0.25rem;
+  background-color: var(--neutral-200);
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+
+.title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.controls {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Drop target: insertion line above the widget */
+[data-slot="widget"][data-drop-target] {
+  box-shadow: 0 -3px 0 0 var(--primary-400);
+}
+
+.collapseToggle {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.collapseIcon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg);
+}
+
+.collapseIcon.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Widget settings dialog */
+.sizeOptions {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sizeLabel {
+  font-size: var(--fontSize-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-block-end: var(--spacing-sm);
+}
+
+.sizeOption {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--fontSize-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  input[type="radio"] {
+    accent-color: var(--primary-400);
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+  }
+}
+
+.btnCancel {
+  font-size: var(--fontSize-xs);
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-lg);
+  border-radius: var(--borderRadius-md);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-raised);
+    color: var(--text-primary);
+  }
+}
+
+.btnApply {
+  font-size: var(--fontSize-xs);
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-lg);
+  border-radius: var(--borderRadius-md);
+  border: var(--borderWidth-sm) solid transparent;
+  background: var(--primary-base);
+  color: var(--primary-text);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--primary-strong);
+  }
+}
+
+/* Ghost rendered in DragOverlay */
+.ghost {
+  background: var(--bg-overlay);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  opacity: 0.92;
+  cursor: grabbing;
+  pointer-events: none;
+
+  .header {
+    background-color: var(--neutral-200);
+  }
+
+  .title {
+    cursor: grabbing;
+  }
+}

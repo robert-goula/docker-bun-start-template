@@ -1,0 +1,7 @@
+.idea/
+dbdata/
+redisdata/
+apps/web/node_modules/
+.DS_Store
+.env*
+*.log

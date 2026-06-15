@@ -1,0 +1,20 @@
+input {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  /*line-height: 1.5;*/
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+  field-sizing: content;
+  transition:
+    color 120ms ease-in-out,
+    background-color 120ms ease-in-out,
+    border-color 120ms ease-in-out;
+  &::placeholder {
+    color: var(--text-muted);
+  }
+  &:focus-within {
+    outline-color: var(--border-focus);
+  }
+}

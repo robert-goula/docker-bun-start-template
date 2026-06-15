@@ -1,0 +1,173 @@
+type StatusType = 'Info' | 'Success' | 'Redirect' | 'ClientError' | 'ServerError';
+type StatusCodes = {
+  [key in StatusType]: Record<string, number>;
+};
+type StatusMessages = {
+  [key in StatusType]: Record<string, string>;
+};
+
+export const StatusCodes: StatusCodes = {
+  Info: {
+    Continue: 100,
+    SwitchingProtocols: 101,
+    Processing: 102, // Deprecated
+    EarlyHints: 103, // Experimental
+  },
+  Success: {
+    OK: 200,
+    Created: 201,
+    Accepted: 202,
+    NonAuthoritativeInfo: 203,
+    NoContent: 204,
+    ResetContent: 205,
+    PartialContent: 206,
+    MultiStatus: 207,
+    AlreadyReported: 208,
+    IMUsed: 229, // Deprecated
+  },
+  Redirect: {
+    MultipleChoices: 300,
+    MovedPermanently: 301,
+    Found: 302,
+    SeeOther: 303,
+    NotModified: 304,
+    UseProxy: 305, // Deprecated
+    SwitchProxy: 306, // Deprecated
+    Temporary: 307,
+    Permanent: 308,
+  },
+  ClientError: {
+    BadRequest: 400,
+    Unauthorized: 401,
+    PaymentRequired: 402,
+    Forbidden: 403,
+    NotFound: 404,
+    MethodNotAllowed: 405,
+    NotAcceptable: 406,
+    ProxyAuthRequired: 407,
+    RequestTimeout: 408,
+    Conflict: 409,
+    Gone: 410,
+    LengthRequired: 411,
+    PreconditionFailed: 412,
+    PayloadTooLarge: 413,
+    URITooLong: 414,
+    UnsupportedMediaType: 415,
+    RangeNotSatisfiable: 416,
+    ExpectationFailed: 417,
+    ImATeapot: 418,
+    InsufficientSpaceOnResource: 419,
+    MethodFailure: 420,
+    MisdirectedRequest: 421,
+    UnprocessableEntity: 422,
+    Locked: 423,
+    FailedDependency: 424,
+    TooEarly: 425,
+    UpgradeRequired: 426,
+    // Unassigned: 427,
+    PreconditionRequired: 428,
+    TooManyRequests: 429,
+    // Unassigned: 430,
+    RequestHeaderFieldsTooLarge: 431,
+    LoginTimeOut: 440,
+    RetryWith: 449,
+    UnavailableForLegalReasons: 451,
+  },
+  ServerError: {
+    Internal: 500,
+    NotImplemented: 501,
+    BadGateway: 502,
+    ServiceUnavailable: 503,
+    GatewayTimeout: 504,
+    HTTPVersionNotSupported: 505,
+    VariantAlsoNegotiates: 506,
+    InsufficientStorage: 507,
+    LoopDetected: 508,
+    BandwidthLimitExceeded: 509,
+    NotExtended: 510,
+    NetworkAuthRequired: 511,
+  },
+};
+
+export const StatusMessages: StatusMessages = {
+  Info: {
+    Continue: 'Continue',
+    SwitchingProtocols: 'Switching Protocols',
+    Processing: 'Processing', // Deprecated
+    EarlyHints: 'Early Hints', // Experimental
+  },
+  Success: {
+    OK: 'OK',
+    Created: 'Created',
+    Accepted: 'Accepted',
+    NonAuthoritativeInfo: 'Non-Authoritative Information',
+    NoContent: 'No Content',
+    ResetContent: 'Reset Content',
+    PartialContent: 'Partial Content',
+    MultiStatus: 'Multi-Status',
+    AlreadyReported: 'Already Reported',
+    IMUsed: 'IM Used', // Deprecated
+  },
+  Redirect: {
+    MultipleChoices: 'Multiple Choices',
+    MovedPermanently: 'Moved Permanently',
+    Found: 'Found',
+    SeeOther: 'See Other',
+    NotModified: 'Not Modified',
+    UseProxy: 'Use Proxy', // Deprecated
+    SwitchProxy: 'Switch Proxy', // Deprecated
+    Temporary: 'Temporary Redirect',
+    Permanent: 'Permanent Redirect',
+  },
+  ClientError: {
+    BadRequest: 'Bad Request',
+    Unauthorized: 'Unauthorized',
+    PaymentRequired: 'Payment Required',
+    Forbidden: 'Forbidden',
+    NotFound: 'Not Found',
+    MethodNotAllowed: 'Method Not Allowed',
+    NotAcceptable: 'Not Acceptable',
+    ProxyAuthRequired: 'Proxy Authentication Required',
+    RequestTimeout: 'Request Timeout',
+    Conflict: 'Conflict',
+    Gone: 'Gone',
+    LengthRequired: 'Length Required',
+    PreconditionFailed: 'Precondition Failed',
+    PayloadTooLarge: 'Payload Too Large',
+    URITooLong: 'URI Too Long',
+    UnsupportedMediaType: 'Unsupported Media Type',
+    RangeNotSatisfiable: 'Range Not Satisfiable',
+    ExpectationFailed: 'Expectation Failed',
+    ImATeapot: "I'm a teapot",
+    InsufficientSpaceOnResource: 'Insufficient Space on Resource',
+    MethodFailure: 'Method Failure',
+    MisdirectedRequest: 'Misdirected Request',
+    UnprocessableEntity: 'Unprocessable Entity',
+    Locked: 'Locked',
+    FailedDependency: 'Failed Dependency',
+    TooEarly: 'Too Early',
+    UpgradeRequired: 'Upgrade Required',
+    // Unassigned: 427,
+    PreconditionRequired: 'Precondition Required',
+    TooManyRequests: 'Too Many Requests',
+    // Unassigned: 430,
+    RequestHeaderFieldsTooLarge: 'Request Header Fields Too Large',
+    LoginTimeOut: 'Login Time-out',
+    RetryWith: 'Retry With',
+    UnavailableForLegalReasons: 'Unavailable For Legal Reasons',
+  },
+  ServerError: {
+    Internal: 'Internal Server Error',
+    NotImplemented: 'Not Implemented',
+    BadGateway: 'Bad Gateway',
+    ServiceUnavailable: 'Service Unavailable',
+    GatewayTimeout: 'Gateway Timeout',
+    HTTPVersionNotSupported: 'HTTP Version Not Supported',
+    VariantAlsoNegotiates: 'Variant Also Negotiates',
+    InsufficientStorage: 'Insufficient Storage',
+    LoopDetected: 'Loop Detected',
+    BandwidthLimitExceeded: 'Bandwidth Limit Exceeded',
+    NotExtended: 'Not Extended',
+    NetworkAuthRequired: 'Network Authentication Required',
+  },
+};

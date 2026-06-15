@@ -1,0 +1,51 @@
+@reference "@/styles.css";
+
+/* Edit-mode page options bar: full-width row above the zones for page-level
+   settings (currently the layout picker). */
+.options {
+  /* main is a 12-column grid; span every column so the bar is full width and
+     never shares a row with a zone column. */
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding-block: var(--spacing-md);
+  border-bottom: var(--borderWidth-sm) solid var(--border-default);
+}
+
+.optionsLabel {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.optionsSelect {
+  height: 2rem;
+  border-radius: var(--borderRadius-md);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  background: transparent;
+  color: var(--text-primary);
+  padding-inline: var(--spacing-md);
+  font-size: 0.8125rem;
+}
+
+.optionsEdit {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary);
+}
+
+.optionsEdit:hover {
+  color: var(--text-primary);
+}
+
+/* Read-only view: a zone is just a 12-column grid carrying its size class, so
+   its widgets keep the sizes chosen in the builder. No header/controls/chrome. */
+.viewZone {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: min-content;
+  gap: var(--spacing-lg);
+  align-content: start;
+}

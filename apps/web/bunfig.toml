@@ -1,0 +1,13 @@
+env = false
+logLevel = "debug"
+telemetry = false
+
+
+[install]
+ignoreScripts = true
+# optional deps must be installed: native bindings (e.g. @rolldown/binding-linux-x64-gnu
+# used by vite) ship as optionalDependencies — disabling them breaks the build/dev server
+optional = true
+logLevel = "warn"
+# only install packages that were released 7 days ago or more
+minimumReleaseAge = 604800
