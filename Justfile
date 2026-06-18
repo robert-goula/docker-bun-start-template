@@ -42,6 +42,24 @@ db-migrate:
   eval "$(varlock load --format shell)" && \
     docker compose exec web bun run db:migrate
 
+bump TYPE="patch|minor|major|beta":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  BUMP="{{TYPE}}";
+  if [ "$BUMP" = "patch|minor|major|beta|rc" ]; then
+    BUMP="patch";
+  fi;
+  if [ "$BUMP" != "patch" ] && [ "$BUMP" != "minor" ] && [ "$BUMP" != "major" ] && [ "$BUMP" != "beta" ] && [ "$BUMP" != "rc" ]; then
+    echo "Error: '$BUMP' is not valid. Choose patch, minor, major, beta, or rc.";
+    exit 1;
+  fi;
+  echo "Bumping version with type: ${BUMP}"
+  if [ "$BUMP" = "beta" ] || [ "$BUMP" = "rc" ]; then
+    varlock run -- docker compose exec web bun pm version prerelease --preid=${BUMP};
+  else
+    varlock run -- docker compose exec web bun pm version ${BUMP};
+  fi
+
 build:
     #!/usr/bin/env bash
     set -euo pipefail
