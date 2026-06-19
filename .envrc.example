@@ -1,0 +1,17 @@
+watch_file .env .env.*
+
+export APP_ENV=development
+export NODE_ENV=development
+export SERVER_NAME=docker.localhost
+export HOST_PORT=80
+export HOST_PORT_SSL=443
+export REDIS_PORT=6379
+export POSTGRES_PORT=5432
+export POSTGRES_USER=postgres
+export POSTGRES_DB=default
+# db,kv,s3,mq,mail
+export COMPOSE_PROFILES=db,kv
+
+# Public env vars (exposed to the client)
+export VITE_API_URL=https://docker.localhost/
+export VITE_HOST_URL=https://docker.localhost/
