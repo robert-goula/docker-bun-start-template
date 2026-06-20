@@ -300,7 +300,7 @@ Zone.Toggle = function ZoneToggle() {
       <span className={cx(s.zoneIndicator, !open && s.collapsed)}>
         <ArrowDropDownIcon aria-hidden="true" />
       </span>
-      <span id={toggleId}>Toggle Zone Content</span>
+      <span id={toggleId} className="sr-only">Toggle Zone Content</span>
     </button>
   );
 };
