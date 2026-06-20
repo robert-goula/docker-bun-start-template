@@ -19,7 +19,7 @@ import { type ZoneSize, zoneSizeOptions } from "@/components/Zone";
 import type { Json } from "@/types/Json";
 import registry, { editableWidgetKinds } from "@/components/widgetRegistry";
 
-export type WidgetKind = "markdown" | "debug";
+export type WidgetKind = "markdown" | "debug" | "dynamic";
 
 export interface WidgetContentProps {
   options: WidgetOptions;

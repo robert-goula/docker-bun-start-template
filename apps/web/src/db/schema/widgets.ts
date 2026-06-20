@@ -7,7 +7,7 @@ import { jsonb } from "../jsonb";
 import { pages } from "./pages";
 import { zones } from "./zones";
 
-export const widgetKinds = ["markdown", "debug"] as const;
+export const widgetKinds = ["markdown", "debug", "dynamic"] as const;
 export type WidgetKind = (typeof widgetKinds)[number];
 
 const WidgetIdSchema = z.uuidv7().brand<"WidgetId">();
@@ -46,6 +46,9 @@ export type Widgets = ReadonlyArray<Widget>;
 
 export const widgetContentSchemas = {
   markdown: z.string(),
+  // Dynamic widget instances store a { fieldName: value } map; the bound custom
+  // widget definition supplies the field set, order and per-field validation.
+  dynamic: z.record(z.string(), jsonSchema),
 } satisfies Partial<Record<WidgetKind, z.ZodType<Json>>>;
 
 export const defaultWidgetContentSchema = jsonSchema.nullable();

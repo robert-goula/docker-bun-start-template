@@ -1,3 +1,4 @@
+export { customWidgets } from "./customWidgets";
 export { layouts } from "./layouts";
 export { layoutZones } from "./layoutZones";
 export { pages } from "./pages";

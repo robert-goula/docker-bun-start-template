@@ -1,0 +1,64 @@
+@reference "@/styles.css";
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-default);
+  border-radius: var(--borderRadius-md);
+  background-color: var(--bg-raised);
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.rowTitle {
+  flex: 1;
+}
+
+.dragHandle {
+  display: inline-flex;
+  cursor: grab;
+  color: var(--text-muted);
+  touch-action: none;
+}
+
+.select {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+
+  &:focus-within {
+    outline-color: var(--border-focus);
+  }
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--fontSize-sm);
+}
+
+.empty {
+  color: var(--text-muted);
+  font-size: var(--fontSize-sm);
+  font-style: italic;
+  margin-block: var(--spacing-sm);
+}

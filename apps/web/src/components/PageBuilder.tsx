@@ -229,11 +229,12 @@ export default function PageBuilder({
     });
   }
 
-  function handleWidgetAdd(zoneId: string, kind: WidgetKind) {
+  function handleWidgetAdd(zoneId: string, kind: WidgetKind, definitionId?: string) {
     const widget: WidgetConfig = {
       id: crypto.randomUUID(),
       kind,
-      options: {},
+      // Dynamic widgets bind to a custom widget definition by id (stored in options).
+      options: definitionId ? { definitionId } : {},
       content: defaultContentForKind(kind),
     };
     commit({
@@ -340,7 +341,7 @@ export default function PageBuilder({
                 onWidgetContentChange={(widgetId, content) =>
                   handleWidgetContentChange(zone.id, widgetId, content)
                 }
-                onWidgetAdd={(kind) => handleWidgetAdd(zone.id, kind)}
+                onWidgetAdd={(kind, definitionId) => handleWidgetAdd(zone.id, kind, definitionId)}
               />
             ))}
           </SortableContext>
