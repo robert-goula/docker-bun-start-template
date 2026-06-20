@@ -12,28 +12,83 @@
 .row {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
   border: 1px solid var(--border-default);
   border-radius: var(--borderRadius-md);
   background-color: var(--bg-raised);
+  /* Clip the header bar to the rounded corners, matching a widget. */
+  overflow: hidden;
 }
 
+/* Mirror the widget header bar. */
 .rowHeader {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: 0.25rem;
+  padding-block: 0.125rem;
+  padding-inline: 0.25rem;
+  background-color: var(--neutral-200);
+  color: var(--fg-muted);
+  line-height: 1.5;
 }
 
+/* Header icons (drag handle, delete) follow the muted header color, like a widget. */
+.rowHeader svg {
+  width: 1rem;
+  height: auto;
+  fill: currentColor;
+}
+
+/* The clickable title — styled like the widget title, but left-aligned. */
 .rowTitle {
-  flex: 1;
+  flex-grow: 1;
+  text-align: left;
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rowBody {
+  padding: var(--spacing-md);
+}
+
+/* Mirror the widget/zone header controls: a flex group pinned to the inline end. */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
 }
 
 .dragHandle {
   display: inline-flex;
   cursor: grab;
-  color: var(--text-muted);
+  color: var(--fg-muted);
   touch-action: none;
+}
+
+/* Plain, flat icon buttons matching the widget header controls. `all: unset` lets
+   them inherit the muted header color for proper contrast (delete is NOT red). */
+.iconButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.collapseIcon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg);
+}
+
+.collapseIcon.collapsed {
+  transform: rotate(-90deg);
 }
 
 .select {

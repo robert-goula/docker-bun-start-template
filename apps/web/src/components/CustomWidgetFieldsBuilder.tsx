@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { Activity, useCallback, useState } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import {
   closestCenter,
@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { cx } from "class-variance-authority";
 import { DeleteIcon, DragIndicatorIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -146,6 +147,10 @@ function FieldRow({
   };
   const { field } = row;
   const idBase = row.id;
+  // Collapse is local view state only (never persisted) so large rows are easier to
+  // sort. Defaults to open; collapsing leaves the title visible as a drag handle.
+  const [open, setOpen] = useState(true);
+  const toggle = () => setOpen((prev) => !prev);
 
   return (
     <li ref={setNodeRef} style={style} className={s.row} {...attributes}>
@@ -153,162 +158,177 @@ function FieldRow({
         <span className={s.dragHandle} {...listeners}>
           <DragIndicatorIcon title="Drag to reorder field" />
         </span>
-        <strong className={s.rowTitle}>{field.label || field.name || "Untitled field"}</strong>
-        <Button
-          type="button"
-          intent="danger"
-          variant="ghost"
-          size="xs"
-          aria-label="Remove field"
-          onClick={onRemove}
-        >
-          <DeleteIcon />
-        </Button>
+        <button type="button" className={s.rowTitle} onClick={toggle}>
+          {field.label || field.name || "Untitled field"}
+        </button>
+        <menu className={s.controls}>
+          <button
+            type="button"
+            className={s.iconButton}
+            onClick={toggle}
+            aria-expanded={open}
+            aria-label={open ? "Collapse field" : "Expand field"}
+          >
+            <span className={cx(s.collapseIcon, !open && s.collapsed)}>▾</span>
+          </button>
+          <button
+            type="button"
+            className={s.iconButton}
+            aria-label="Remove field"
+            onClick={onRemove}
+          >
+            <DeleteIcon />
+          </button>
+        </menu>
       </div>
 
-      <FieldGroup>
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-label`}>Label</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-label`}
-              value={field.label}
-              onChange={(e) => onChange({ label: e.target.value })}
-              placeholder="Title"
-            />
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-name`}>Name</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-name`}
-              value={field.name}
-              onChange={(e) => onChange({ name: e.target.value })}
-              placeholder="title"
-            />
-          </FieldBody>
-        </Field>
+      <Activity mode={open ? "visible" : "hidden"}>
+        <div className={s.rowBody}>
+          <FieldGroup>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-label`}>Label</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-label`}
+                  value={field.label}
+                  onChange={(e) => onChange({ label: e.target.value })}
+                  placeholder="Title"
+                />
+              </FieldBody>
+            </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-name`}>Name</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-name`}
+                  value={field.name}
+                  onChange={(e) => onChange({ name: e.target.value })}
+                  placeholder="title"
+                />
+              </FieldBody>
+            </Field>
 
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-control`}>Control</FieldLabel>
-          <FieldBody>
-            <select
-              id={`${idBase}-control`}
-              className={s.select}
-              value={field.control}
-              onChange={(e) =>
-                onChange({ control: e.target.value as CustomWidgetField["control"] })
-              }
-            >
-              {fieldControls.map((control) => (
-                <option key={control} value={control}>
-                  {control}
-                </option>
-              ))}
-            </select>
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-required`}>Required</FieldLabel>
-          <FieldBody>
-            <label className={s.checkbox}>
-              <input
-                id={`${idBase}-required`}
-                type="checkbox"
-                checked={field.required ?? false}
-                onChange={(e) => onChange({ required: e.target.checked })}
-              />
-              Field is required
-            </label>
-          </FieldBody>
-        </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-control`}>Control</FieldLabel>
+              <FieldBody>
+                <select
+                  id={`${idBase}-control`}
+                  className={s.select}
+                  value={field.control}
+                  onChange={(e) =>
+                    onChange({ control: e.target.value as CustomWidgetField["control"] })
+                  }
+                >
+                  {fieldControls.map((control) => (
+                    <option key={control} value={control}>
+                      {control}
+                    </option>
+                  ))}
+                </select>
+              </FieldBody>
+            </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-required`}>Required</FieldLabel>
+              <FieldBody>
+                <label className={s.checkbox}>
+                  <input
+                    id={`${idBase}-required`}
+                    type="checkbox"
+                    checked={field.required ?? false}
+                    onChange={(e) => onChange({ required: e.target.checked })}
+                  />
+                  Field is required
+                </label>
+              </FieldBody>
+            </Field>
 
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-minlength`}>Min length</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-minlength`}
-              type="number"
-              min={0}
-              value={field.minlength ?? ""}
-              onChange={(e) => onChange({ minlength: numOrUndef(e.target.value) })}
-            />
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-maxlength`}>Max length</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-maxlength`}
-              type="number"
-              min={1}
-              value={field.maxlength ?? ""}
-              onChange={(e) => onChange({ maxlength: numOrUndef(e.target.value) })}
-            />
-          </FieldBody>
-        </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-minlength`}>Min length</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-minlength`}
+                  type="number"
+                  min={0}
+                  value={field.minlength ?? ""}
+                  onChange={(e) => onChange({ minlength: numOrUndef(e.target.value) })}
+                />
+              </FieldBody>
+            </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-maxlength`}>Max length</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-maxlength`}
+                  type="number"
+                  min={1}
+                  value={field.maxlength ?? ""}
+                  onChange={(e) => onChange({ maxlength: numOrUndef(e.target.value) })}
+                />
+              </FieldBody>
+            </Field>
 
-        {field.control === "input" ? (
-          <Field>
-            <FieldLabel htmlFor={`${idBase}-pattern`}>Pattern (regex)</FieldLabel>
-            <FieldBody>
-              <Input
-                id={`${idBase}-pattern`}
-                value={field.pattern ?? ""}
-                onChange={(e) => onChange({ pattern: e.target.value || undefined })}
-                placeholder="^[A-Za-z ]+$"
-              />
-            </FieldBody>
-          </Field>
-        ) : (
-          <Field className="½">
-            <FieldLabel htmlFor={`${idBase}-rows`}>Rows</FieldLabel>
-            <FieldBody>
-              <Input
-                id={`${idBase}-rows`}
-                type="number"
-                min={1}
-                value={field.rows ?? ""}
-                onChange={(e) => onChange({ rows: numOrUndef(e.target.value) })}
-              />
-            </FieldBody>
-          </Field>
-        )}
+            {field.control === "input" ? (
+              <Field>
+                <FieldLabel htmlFor={`${idBase}-pattern`}>Pattern (regex)</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id={`${idBase}-pattern`}
+                    value={field.pattern ?? ""}
+                    onChange={(e) => onChange({ pattern: e.target.value || undefined })}
+                    placeholder="^[A-Za-z ]+$"
+                  />
+                </FieldBody>
+              </Field>
+            ) : (
+              <Field className="½">
+                <FieldLabel htmlFor={`${idBase}-rows`}>Rows</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id={`${idBase}-rows`}
+                    type="number"
+                    min={1}
+                    value={field.rows ?? ""}
+                    onChange={(e) => onChange({ rows: numOrUndef(e.target.value) })}
+                  />
+                </FieldBody>
+              </Field>
+            )}
 
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-placeholder`}>Placeholder</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-placeholder`}
-              value={field.placeholder ?? ""}
-              onChange={(e) => onChange({ placeholder: e.target.value || undefined })}
-            />
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor={`${idBase}-default`}>Default value</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-default`}
-              value={field.defaultValue ?? ""}
-              onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
-            />
-          </FieldBody>
-        </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-placeholder`}>Placeholder</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-placeholder`}
+                  value={field.placeholder ?? ""}
+                  onChange={(e) => onChange({ placeholder: e.target.value || undefined })}
+                />
+              </FieldBody>
+            </Field>
+            <Field className="½">
+              <FieldLabel htmlFor={`${idBase}-default`}>Default value</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-default`}
+                  value={field.defaultValue ?? ""}
+                  onChange={(e) => onChange({ defaultValue: e.target.value || undefined })}
+                />
+              </FieldBody>
+            </Field>
 
-        <Field>
-          <FieldLabel htmlFor={`${idBase}-description`}>Description</FieldLabel>
-          <FieldBody>
-            <Input
-              id={`${idBase}-description`}
-              value={field.description ?? ""}
-              onChange={(e) => onChange({ description: e.target.value || undefined })}
-              placeholder="Helper text shown under the control"
-            />
-          </FieldBody>
-        </Field>
-      </FieldGroup>
+            <Field>
+              <FieldLabel htmlFor={`${idBase}-description`}>Description</FieldLabel>
+              <FieldBody>
+                <Input
+                  id={`${idBase}-description`}
+                  value={field.description ?? ""}
+                  onChange={(e) => onChange({ description: e.target.value || undefined })}
+                  placeholder="Helper text shown under the control"
+                />
+              </FieldBody>
+            </Field>
+          </FieldGroup>
+        </div>
+      </Activity>
     </li>
   );
 }
