@@ -18,31 +18,12 @@ import { type ZoneSize, zoneSizeOptions } from "@/components/Zone";
 import type { Json } from "@/types/Json";
 import registry, { editableWidgetKinds } from "@/components/widgetRegistry";
 
-export type WidgetKind =
-  // | "alerts"
-  // | "badges"
-  // | "buttons"
-  // | "cards"
-  // | "fields"
-  // | "headers"
-  "markdown" | "debug";
-// | "tabsHorizontal"
-// | "tabsVertical"
-// | "example";
+export type WidgetKind = "markdown" | "debug";
 
-/**
- * Contract for a widget kind's content component. Every kind renders its own
- * component (looked up in `widgetRegistry`); kinds that are editable receive
- * `onOptionsChange` to persist their `options` back through the page builder.
- * `options` is intentionally an open JSON record so each kind can define its
- * own shape (and grow into richer data) without changing this contract.
- */
 export interface WidgetContentProps {
   options: WidgetOptions;
   onOptionsChange?: (options: WidgetOptions) => void;
-  /** Whether the widget is in edit mode. Driven by the Edit control in the widget header. */
   editing?: boolean;
-  /** Asks the host to leave/enter edit mode (e.g. after Save or Cancel). */
   onEditingChange?: (editing: boolean) => void;
 }
 
@@ -62,6 +43,7 @@ export interface WidgetConfig {
   kind: WidgetKind;
   size?: ZoneSize;
   options: WidgetOptions;
+  content: Json;
 }
 
 const WidgetContext = createContext<WidgetContextProps | null>(null);
@@ -77,26 +59,28 @@ interface WidgetProps extends WidgetConfig {
   onSizeChange?: (size: ZoneSize) => void;
   onDelete?: () => void;
   onOptionsChange?: (options: WidgetConfig["options"]) => void;
+  onContentChange?: (content: WidgetConfig["content"]) => void;
 }
 
 export interface WidgetContentProps {
   kind: WidgetKind;
   options: WidgetConfig["options"];
+  /** Widget content, split out from `options`. Shape is per-kind (markdown: string). */
+  content?: WidgetConfig["content"];
   editing?: boolean;
   onOptionsChange?: (options: WidgetConfig["options"]) => void;
+  /** Editable kinds receive this to persist their `content` back through the page builder. */
+  onContentChange?: (content: WidgetConfig["content"]) => void;
   onEditingChange?: (editing: boolean) => void;
 }
 
-/**
- * Renders a widget kind's content component (from the registry) with Suspense.
- * Shared by the editing `Widget` chrome and the read-only page view, so both
- * render content the same way.
- */
 export function WidgetContent({
   kind,
   options,
+  content,
   editing,
   onOptionsChange,
+  onContentChange,
   onEditingChange,
 }: WidgetContentProps) {
   const ContentComponent = registry[kind];
@@ -105,7 +89,9 @@ export function WidgetContent({
       <ContentComponent
         kind={kind}
         options={options}
+        content={content}
         onOptionsChange={onOptionsChange}
+        onContentChange={onContentChange}
         editing={editing}
         onEditingChange={onEditingChange}
       />
@@ -118,9 +104,11 @@ const Widget = function Widget({
   kind,
   size = "full",
   options,
+  content,
   onSizeChange,
   onDelete,
   onOptionsChange,
+  onContentChange,
 }: WidgetProps) {
   const widgetId = useId();
   const [open, setOpen] = useState(true);
@@ -278,8 +266,10 @@ const Widget = function Widget({
           <WidgetContent
             kind={kind}
             options={options}
+            content={content}
             editing={editing}
             onOptionsChange={onOptionsChange}
+            onContentChange={onContentChange}
             onEditingChange={setEditing}
           />
         )}

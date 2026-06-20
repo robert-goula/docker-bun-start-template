@@ -15,6 +15,13 @@
       "when": 1781635775055,
       "tag": "0001_seed_default_layout_zones",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781979811734,
+      "tag": "0002_sweet_stellaris",
+      "breakpoints": true
     }
   ]
 }

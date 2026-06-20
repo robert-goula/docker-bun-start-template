@@ -9,13 +9,8 @@ import { users } from "@/db/schema/users";
 import { widgets } from "@/db/schema/widgets";
 import { type ZoneName, zones } from "@/db/schema/zones";
 import { Policy } from "./Policy";
-import type {
-  PageLayout,
-  WidgetConfig,
-  WidgetKind,
-  ZoneConfig,
-  ZoneSize,
-} from "@/routes/_authed/style-guide/types";
+import type { WidgetConfig, WidgetKind } from "@/components/Widget";
+import type { PageLayout, ZoneConfig, ZoneSize } from "@/components/Zone";
 
 // A page is identified by a slug + locale. Routes pass these in; the repo bootstraps
 // the page (linked to the default layout) on first access for any slug.
@@ -113,6 +108,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                       kind: w.kind as WidgetKind,
                       size: (w.size ?? undefined) as ZoneSize | undefined,
                       options: (w.options ?? {}) as WidgetConfig["options"],
+                      content: (w.content ?? null) as WidgetConfig["content"],
                     }),
                   ),
               };
@@ -151,6 +147,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                   kind: widget.kind,
                   size: widget.size ?? null,
                   options: widget.options,
+                  content: widget.content,
                   order: wi,
                 };
                 await tx

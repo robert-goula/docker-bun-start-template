@@ -9,9 +9,9 @@ export const ZONE_NAMES = ["hero", "sidebar", "main", "footer"] as const;
 export type ZoneName = (typeof ZONE_NAMES)[number];
 
 // Canonical sizing tokens, shared with widgets and layoutZone options to avoid drift.
-export const ZONE_SIZES = ["full", "½", "⅓", "⅔", "¼", "¾"] as const;
-export const DEFAULT_ZONE_SIZE = "full" satisfies (typeof ZONE_SIZES)[number];
-export type ZoneSize = (typeof ZONE_SIZES)[number];
+export const zoneSizes = ["full", "½", "⅓", "⅔", "¼", "¾"] as const;
+export const DEFAULT_ZONE_SIZE = "full" satisfies (typeof zoneSizes)[number];
+export type ZoneSize = (typeof zoneSizes)[number];
 
 const ZoneIdSchema = z.uuidv7().brand<"ZoneId">();
 export type ZoneId = z.infer<typeof ZoneIdSchema>;

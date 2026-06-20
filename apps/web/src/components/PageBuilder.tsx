@@ -21,6 +21,7 @@ import { WidgetContent, WidgetGhost } from "@/components/Widget";
 import { useEditMode } from "@/components/EditMode";
 import { layoutsRepo } from "@/repositories/layouts";
 import { editOnlyWidgetKinds } from "@/components/widgetRegistry";
+import { defaultContentForKind } from "@/db/schema/widgets";
 import type { WidgetConfig, WidgetKind } from "@/components/Widget";
 import type { ZoneConfig, ZoneSize } from "@/components/Zone";
 import styles from "./PageBuilder.module.css";
@@ -224,8 +225,27 @@ export default function PageBuilder({
     });
   }
 
+  function handleWidgetContentChange(
+    zoneId: string,
+    widgetId: string,
+    content: WidgetConfig["content"],
+  ) {
+    commit({
+      zones: layout.zones.map((z) =>
+        z.id === zoneId
+          ? { ...z, widgets: z.widgets.map((w) => (w.id === widgetId ? { ...w, content } : w)) }
+          : z,
+      ),
+    });
+  }
+
   function handleWidgetAdd(zoneId: string, kind: WidgetKind) {
-    const widget: WidgetConfig = { id: crypto.randomUUID(), kind, options: {} };
+    const widget: WidgetConfig = {
+      id: crypto.randomUUID(),
+      kind,
+      options: {},
+      content: defaultContentForKind(kind),
+    };
     commit({
       zones: layout.zones.map((z) =>
         z.id === zoneId ? { ...z, widgets: [...z.widgets, widget] } : z,
@@ -284,7 +304,11 @@ export default function PageBuilder({
             <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
               {visible.map((widget) => (
                 <article key={widget.id} className={widget.size ?? "full"}>
-                  <WidgetContent kind={widget.kind} options={widget.options} />
+                  <WidgetContent
+                    kind={widget.kind}
+                    options={widget.options}
+                    content={widget.content}
+                  />
                 </article>
               ))}
             </div>
@@ -325,6 +349,9 @@ export default function PageBuilder({
                 onWidgetDelete={(widgetId) => handleWidgetDelete(zone.id, widgetId)}
                 onWidgetOptionsChange={(widgetId, options) =>
                   handleWidgetOptionsChange(zone.id, widgetId, options)
+                }
+                onWidgetContentChange={(widgetId, content) =>
+                  handleWidgetContentChange(zone.id, widgetId, content)
                 }
                 onWidgetAdd={(kind) => handleWidgetAdd(zone.id, kind)}
               />

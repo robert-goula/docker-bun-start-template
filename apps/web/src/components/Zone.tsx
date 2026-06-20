@@ -31,6 +31,8 @@ export type ZoneSize = "full" | "½" | "⅓" | "⅔" | "¼" | "¾";
 export type ZoneLayout = {
   zones: ZoneConfig[];
 };
+/** A page's renderable layout: its ordered zones and their widget content. */
+export type PageLayout = ZoneLayout;
 export const zoneSizeOptions: { label: string; value: ZoneSize }[] = [
   { label: "Full", value: "full" },
   { label: "3/4", value: "¾" },
@@ -81,6 +83,7 @@ interface ZoneProps {
   onWidgetSizeChange?: (widgetId: string, size: ZoneSize) => void;
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
+  onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
   onWidgetAdd?: (kind: WidgetKind) => void;
 }
 
@@ -95,6 +98,7 @@ interface ZoneContentProps {
   onWidgetSizeChange?: (widgetId: string, size: ZoneSize) => void;
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
+  onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
   onWidgetAdd?: (kind: WidgetKind) => void;
 }
 
@@ -112,6 +116,7 @@ function Zone({
   onWidgetSizeChange,
   onWidgetDelete,
   onWidgetOptionsChange,
+  onWidgetContentChange,
   onWidgetAdd,
 }: ZoneProps) {
   const internalId = useId();
@@ -268,6 +273,7 @@ function Zone({
             onWidgetSizeChange={onWidgetSizeChange}
             onWidgetDelete={onWidgetDelete}
             onWidgetOptionsChange={onWidgetOptionsChange}
+            onWidgetContentChange={onWidgetContentChange}
             onWidgetAdd={onWidgetAdd}
           />
         )}
@@ -315,6 +321,7 @@ Zone.Content = function ZoneContent({
   onWidgetSizeChange,
   onWidgetDelete,
   onWidgetOptionsChange,
+  onWidgetContentChange,
   onWidgetAdd,
 }: ZoneContentProps) {
   const ctx = useContext(ZoneContext);
@@ -350,9 +357,11 @@ Zone.Content = function ZoneContent({
             kind={w.kind}
             size={w.size ?? "full"}
             options={w.options}
+            content={w.content}
             onSizeChange={(size) => onWidgetSizeChange?.(w.id, size)}
             onDelete={() => onWidgetDelete?.(w.id)}
             onOptionsChange={(options) => onWidgetOptionsChange?.(w.id, options)}
+            onContentChange={(content) => onWidgetContentChange?.(w.id, content)}
           />
         ))}
       </SortableContext>

@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { LOCALES, type Locale } from "@/db/schema/pages";
 import { markdownQueryOptions } from "@/server/fns/markdown";
 import { loadPageLayoutFn, savePageLayoutFn, setPageLayoutFn } from "@/server/fns/pages";
-import type { PageLayout } from "@/routes/_authed/style-guide/types";
+import type { PageLayout } from "@/components/Zone";
 
 /**
  * Splits a resolved route pathname into a page slug and optional locale. A leading
@@ -29,8 +29,8 @@ export async function loadPage(queryClient: QueryClient, pathname: string) {
   await Promise.all(
     layout.zones.flatMap((zone) =>
       zone.widgets
-        .filter((w) => w.kind === "markdown" && typeof w.options.content === "string")
-        .map((w) => queryClient.prefetchQuery(markdownQueryOptions(w.options.content as string))),
+        .filter((w) => w.kind === "markdown" && typeof w.content === "string")
+        .map((w) => queryClient.prefetchQuery(markdownQueryOptions(w.content as string))),
     ),
   );
   return layout;

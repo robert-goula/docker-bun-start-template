@@ -2,25 +2,16 @@ import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm";
 import { index, integer, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
+import { type Json, jsonSchema } from "@/types/Json";
 import { jsonb } from "../jsonb";
 import { pages } from "./pages";
-import { ZONE_SIZES, zones } from "./zones";
+import { zoneSizes, zones } from "./zones";
 
-// Known widget kinds. Stored as varchar (not pgEnum) so kinds can grow without a migration.
-export const WIDGET_KINDS = [
-  "alerts",
-  "badges",
-  "buttons",
-  "cards",
-  "fields",
-  "headers",
+export const widgetKinds = [
   "markdown",
   "debug",
-  "tabsHorizontal",
-  "tabsVertical",
-  "example",
 ] as const;
-export type WidgetKind = (typeof WIDGET_KINDS)[number];
+export type WidgetKind = (typeof widgetKinds)[number];
 
 const WidgetIdSchema = z.uuidv7().brand<"WidgetId">();
 export type WidgetId = z.infer<typeof WidgetIdSchema>;
@@ -40,6 +31,7 @@ export const widgets = pgTable(
     kind: varchar({ length: 40 }).notNull(),
     size: varchar({ length: 10 }),
     options: jsonb("options").notNull().default({}),
+    content: jsonb<Json>("content"),
     order: integer().notNull().default(0),
     created: timestamp({ precision: 3, withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid(),
@@ -56,6 +48,17 @@ export type CreateWidget = InferInsertModel<typeof widgets>;
 export type Widget = InferSelectModel<typeof widgets>;
 export type Widgets = ReadonlyArray<Widget>;
 
+export const widgetContentSchemas = {
+  markdown: z.string(),
+} satisfies Partial<Record<WidgetKind, z.ZodType<Json>>>;
+
+export const defaultWidgetContentSchema = jsonSchema.nullable();
+
+export const contentSchemaForKind = (kind: WidgetKind): z.ZodType<Json | null> =>
+  widgetContentSchemas[kind as keyof typeof widgetContentSchemas] ?? defaultWidgetContentSchema;
+
+export const defaultContentForKind = (kind: WidgetKind): Json => (kind === "markdown" ? "" : {});
+
 const insertWidgetBaseSchema = createInsertSchema(widgets).omit({
   id: true,
   created: true,
@@ -65,25 +68,28 @@ const insertWidgetBaseSchema = createInsertSchema(widgets).omit({
 });
 
 export const insertWidgetSchema = insertWidgetBaseSchema.extend({
-  kind: z.enum(WIDGET_KINDS),
-  size: z.enum(ZONE_SIZES).nullable().optional(),
+  kind: z.enum(widgetKinds),
+  size: z.enum(zoneSizes).nullable().optional(),
   options: z.record(z.string(), z.unknown()).default({}),
+  content: jsonSchema.nullable().optional(),
 });
 export type InsertWidgetInput = z.infer<typeof insertWidgetSchema>;
 
 export const selectWidgetSchema = createSelectSchema(widgets).extend({
-  kind: z.enum(WIDGET_KINDS),
-  size: z.enum(ZONE_SIZES).nullable(),
+  kind: z.enum(widgetKinds),
+  size: z.enum(zoneSizes).nullable(),
   options: z.record(z.string(), z.unknown()),
+  content: jsonSchema.nullable(),
   created: z.coerce.date(),
   updated: z.coerce.date().nullable(),
 });
 
 export const updateWidgetSchema = z
   .object({
-    kind: z.enum(WIDGET_KINDS),
-    size: z.enum(ZONE_SIZES).nullable(),
+    kind: z.enum(widgetKinds),
+    size: z.enum(zoneSizes).nullable(),
     options: z.record(z.string(), z.unknown()),
+    content: jsonSchema.nullable(),
     order: z.number().int(),
   })
   .partial();

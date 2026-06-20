@@ -4,7 +4,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 import { jsonb } from "../jsonb";
 import { layouts } from "./layouts";
-import { type ZoneName, ZONE_SIZES, zones } from "./zones";
+import { type ZoneName, zoneSizes, zones } from "./zones";
 
 const LayoutZoneIdSchema = z.uuidv7().brand<"LayoutZoneId">();
 export type LayoutZoneId = z.infer<typeof LayoutZoneIdSchema>;
@@ -13,7 +13,7 @@ export type LayoutZoneId = z.infer<typeof LayoutZoneIdSchema>;
 // to live on the per-page zone (title, size, order, defaultOpen).
 export const layoutZoneOptionsSchema = z.object({
   title: z.string().min(1).max(255),
-  size: z.enum(ZONE_SIZES),
+  size: z.enum(zoneSizes),
   order: z.number().int(),
   defaultOpen: z.boolean(),
 });

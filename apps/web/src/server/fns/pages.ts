@@ -2,26 +2,39 @@ import { createServerFn } from "@tanstack/react-start";
 import { Effect } from "effect";
 import * as z from "zod";
 import { LOCALES } from "@/db/schema/pages";
-import { WIDGET_KINDS } from "@/db/schema/widgets";
-import { ZONE_SIZES } from "@/db/schema/zones";
+import { contentSchemaForKind, widgetKinds } from "@/db/schema/widgets";
+import { zoneSizes } from "@/db/schema/zones";
 import { authMiddleware } from "@/server/fns/auth";
 import { runtime } from "@/server/runtime";
 import { CurrentUser } from "@/server/services/CurrentUser";
 import { PageRepo } from "@/server/services/PageRepo";
-import type { PageLayout } from "@/routes/_authed/style-guide/types";
+import { jsonSchema } from "@/types/Json";
+import type { PageLayout } from "@/components/Zone";
 
-const widgetSchema = z.object({
-  id: z.string(),
-  kind: z.enum(WIDGET_KINDS),
-  size: z.enum(ZONE_SIZES).optional(),
-  options: z.record(z.string(), z.unknown()),
-});
+const widgetSchema = z
+  .object({
+    id: z.string(),
+    kind: z.enum(widgetKinds),
+    size: z.enum(zoneSizes).optional(),
+    options: z.record(z.string(), z.unknown()),
+    content: jsonSchema.nullable().optional(),
+  })
+  // Content shape is per-kind (markdown: a string; others: an object/string), so
+  // validate it against the kind's schema and surface issues under `content`.
+  .superRefine((widget, ctx) => {
+    const result = contentSchemaForKind(widget.kind).safeParse(widget.content ?? null);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        ctx.addIssue({ ...issue, path: ["content", ...issue.path] });
+      }
+    }
+  });
 
 const zoneSchema = z.object({
   id: z.string(),
   name: z.string(),
   title: z.string(),
-  size: z.enum(ZONE_SIZES),
+  size: z.enum(zoneSizes),
   order: z.number().int(),
   defaultOpen: z.boolean(),
   widgets: z.array(widgetSchema),
