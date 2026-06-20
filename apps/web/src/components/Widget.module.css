@@ -75,6 +75,19 @@
 }
 
 /* Widget settings dialog */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-block-end: var(--spacing-lg);
+}
+
+.fieldLabel {
+  font-size: var(--fontSize-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
 .sizeOptions {
   border: none;
   padding: 0;

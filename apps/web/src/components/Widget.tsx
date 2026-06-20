@@ -14,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { type ZoneSize, zoneSizeOptions } from "@/components/Zone";
 import type { Json } from "@/types/Json";
 import registry, { editableWidgetKinds } from "@/components/widgetRegistry";
@@ -108,12 +109,14 @@ const Widget = function Widget({
 }: WidgetProps) {
   const widgetId = useId();
   const size = (options.size as ZoneSize | undefined) ?? "full";
+  const className = (options.className as string | undefined) ?? "";
   const [open, setOpen] = useState(true);
   const toggleOpen = () => setOpen((prev) => !prev);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [pendingSize, setPendingSize] = useState<ZoneSize>(size);
+  const [pendingClassName, setPendingClassName] = useState(className);
 
   const editable = editableWidgetKinds.has(kind);
 
@@ -136,12 +139,18 @@ const Widget = function Widget({
     : { transform: CSS.Transform.toString(transform), transition };
 
   function handleSettingsOpenChange(next: boolean) {
-    if (next) setPendingSize(size);
+    if (next) {
+      setPendingSize(size);
+      setPendingClassName(className);
+    }
     setSettingsOpen(next);
   }
 
   function handleApply() {
-    onOptionsChange?.({ ...options, size: pendingSize });
+    // `className` has no default — drop the key entirely when it's blank.
+    const trimmed = pendingClassName.trim();
+    const { className: _omit, ...rest } = options;
+    onOptionsChange?.({ ...rest, size: pendingSize, ...(trimmed ? { className: trimmed } : {}) });
     setSettingsOpen(false);
   }
 
@@ -207,6 +216,17 @@ const Widget = function Widget({
                 <DialogHeader>
                   <DialogTitle>Widget Settings</DialogTitle>
                 </DialogHeader>
+                <div className={s.field}>
+                  <label className={s.fieldLabel} htmlFor={`widget-class-${widgetId}`}>
+                    Class names
+                  </label>
+                  <Input
+                    id={`widget-class-${widgetId}`}
+                    value={pendingClassName}
+                    onChange={(e) => setPendingClassName(e.target.value)}
+                    placeholder="e.g. featured highlight"
+                  />
+                </div>
                 <fieldset className={s.sizeOptions}>
                   <legend className={s.sizeLabel}>Size</legend>
                   {zoneSizeOptions.map(({ label, value }) => (
