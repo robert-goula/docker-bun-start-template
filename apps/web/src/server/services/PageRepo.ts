@@ -106,7 +106,6 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                     (w): WidgetConfig => ({
                       id: w.id,
                       kind: w.kind as WidgetKind,
-                      size: (w.size ?? undefined) as ZoneSize | undefined,
                       options: (w.options ?? {}) as WidgetConfig["options"],
                       content: (w.content ?? null) as WidgetConfig["content"],
                     }),
@@ -145,7 +144,6 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                   pageId: page.id,
                   zoneId: zone.id,
                   kind: widget.kind,
-                  size: widget.size ?? null,
                   options: widget.options,
                   content: widget.content,
                   order: wi,

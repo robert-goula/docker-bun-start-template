@@ -35,13 +35,14 @@ export interface WidgetContextProps {
   toggleOpen: () => void;
 }
 
-// Widget options are persisted as jsonb, so they must be JSON-serializable.
 export type WidgetOptions = { [key: string]: Json };
+
+export const widgetClassNames = (options: WidgetOptions) =>
+  cx((options.size as string | undefined) ?? "full", options.className as string | undefined);
 
 export interface WidgetConfig {
   id: string;
   kind: WidgetKind;
-  size?: ZoneSize;
   options: WidgetOptions;
   content: Json;
 }
@@ -56,7 +57,6 @@ interface WidgetHeaderProps {
 }
 
 interface WidgetProps extends WidgetConfig {
-  onSizeChange?: (size: ZoneSize) => void;
   onDelete?: () => void;
   onOptionsChange?: (options: WidgetConfig["options"]) => void;
   onContentChange?: (content: WidgetConfig["content"]) => void;
@@ -65,11 +65,9 @@ interface WidgetProps extends WidgetConfig {
 export interface WidgetContentProps {
   kind: WidgetKind;
   options: WidgetConfig["options"];
-  /** Widget content, split out from `options`. Shape is per-kind (markdown: string). */
   content?: WidgetConfig["content"];
   editing?: boolean;
   onOptionsChange?: (options: WidgetConfig["options"]) => void;
-  /** Editable kinds receive this to persist their `content` back through the page builder. */
   onContentChange?: (content: WidgetConfig["content"]) => void;
   onEditingChange?: (editing: boolean) => void;
 }
@@ -102,15 +100,14 @@ export function WidgetContent({
 const Widget = function Widget({
   id,
   kind,
-  size = "full",
   options,
   content,
-  onSizeChange,
   onDelete,
   onOptionsChange,
   onContentChange,
 }: WidgetProps) {
   const widgetId = useId();
+  const size = (options.size as ZoneSize | undefined) ?? "full";
   const [open, setOpen] = useState(true);
   const toggleOpen = () => setOpen((prev) => !prev);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -144,7 +141,7 @@ const Widget = function Widget({
   }
 
   function handleApply() {
-    onSizeChange?.(pendingSize);
+    onOptionsChange?.({ ...options, size: pendingSize });
     setSettingsOpen(false);
   }
 
@@ -169,7 +166,7 @@ const Widget = function Widget({
         data-kind={kind}
         data-drop-target={isDropTarget || undefined}
         style={style}
-        className={cx(s.widget, size, options.className as string | undefined)}
+        className={cx(s.widget, widgetClassNames(options))}
         {...attributes}
       >
         <Widget.Header>

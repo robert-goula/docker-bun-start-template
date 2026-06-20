@@ -80,7 +80,6 @@ interface ZoneProps {
   // When provided (layout editor), the settings dialog edits the full zone
   // arrangement and applies it in a single change so nothing clobbers anything.
   onArrangementChange?: (next: { size: ZoneSize; title: string; defaultOpen: boolean }) => void;
-  onWidgetSizeChange?: (widgetId: string, size: ZoneSize) => void;
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
@@ -95,7 +94,6 @@ interface ZoneHeaderProps {
 }
 interface ZoneContentProps {
   widgets: WidgetConfig[];
-  onWidgetSizeChange?: (widgetId: string, size: ZoneSize) => void;
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
@@ -113,7 +111,6 @@ function Zone({
   widgets,
   onSizeChange,
   onArrangementChange,
-  onWidgetSizeChange,
   onWidgetDelete,
   onWidgetOptionsChange,
   onWidgetContentChange,
@@ -270,7 +267,6 @@ function Zone({
         {!contentless && (
           <Zone.Content
             widgets={widgets}
-            onWidgetSizeChange={onWidgetSizeChange}
             onWidgetDelete={onWidgetDelete}
             onWidgetOptionsChange={onWidgetOptionsChange}
             onWidgetContentChange={onWidgetContentChange}
@@ -318,7 +314,6 @@ Zone.Controls = function ZoneControls({ children }: ZoneControlProps) {
 
 Zone.Content = function ZoneContent({
   widgets,
-  onWidgetSizeChange,
   onWidgetDelete,
   onWidgetOptionsChange,
   onWidgetContentChange,
@@ -355,10 +350,8 @@ Zone.Content = function ZoneContent({
             key={w.id}
             id={w.id}
             kind={w.kind}
-            size={w.size ?? "full"}
             options={w.options}
             content={w.content}
-            onSizeChange={(size) => onWidgetSizeChange?.(w.id, size)}
             onDelete={() => onWidgetDelete?.(w.id)}
             onOptionsChange={(options) => onWidgetOptionsChange?.(w.id, options)}
             onContentChange={(content) => onWidgetContentChange?.(w.id, content)}

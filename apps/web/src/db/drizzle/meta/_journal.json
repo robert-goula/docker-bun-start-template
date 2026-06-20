@@ -22,6 +22,13 @@
       "when": 1781979811734,
       "tag": "0002_sweet_stellaris",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781984181859,
+      "tag": "0003_empty_klaw",
+      "breakpoints": true
     }
   ]
 }

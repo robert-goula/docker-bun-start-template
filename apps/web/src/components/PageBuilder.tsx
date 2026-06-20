@@ -17,7 +17,7 @@ import {
 import { arrayMove, rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { cx } from "class-variance-authority";
 import Zone, { ZoneGhost, type ZoneLayout } from "@/components/Zone";
-import { WidgetContent, WidgetGhost } from "@/components/Widget";
+import { WidgetContent, WidgetGhost, widgetClassNames } from "@/components/Widget";
 import { useEditMode } from "@/components/EditMode";
 import { layoutsRepo } from "@/repositories/layouts";
 import { editOnlyWidgetKinds } from "@/components/widgetRegistry";
@@ -193,16 +193,6 @@ export default function PageBuilder({
     commit({ zones: layout.zones.map((z) => (z.id === zoneId ? { ...z, size } : z)) });
   }
 
-  function handleWidgetSizeChange(zoneId: string, widgetId: string, size: ZoneSize) {
-    commit({
-      zones: layout.zones.map((z) =>
-        z.id === zoneId
-          ? { ...z, widgets: z.widgets.map((w) => (w.id === widgetId ? { ...w, size } : w)) }
-          : z,
-      ),
-    });
-  }
-
   function handleWidgetDelete(zoneId: string, widgetId: string) {
     commit({
       zones: layout.zones.map((z) =>
@@ -303,7 +293,7 @@ export default function PageBuilder({
           return (
             <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
               {visible.map((widget) => (
-                <article key={widget.id} className={widget.size ?? "full"}>
+                <article key={widget.id} className={widgetClassNames(widget.options)}>
                   <WidgetContent
                     kind={widget.kind}
                     options={widget.options}
@@ -343,9 +333,6 @@ export default function PageBuilder({
                 locked={zonesLocked}
                 widgets={zone.widgets}
                 onSizeChange={(size) => handleZoneSizeChange(zone.id, size)}
-                onWidgetSizeChange={(widgetId, size) =>
-                  handleWidgetSizeChange(zone.id, widgetId, size)
-                }
                 onWidgetDelete={(widgetId) => handleWidgetDelete(zone.id, widgetId)}
                 onWidgetOptionsChange={(widgetId, options) =>
                   handleWidgetOptionsChange(zone.id, widgetId, options)

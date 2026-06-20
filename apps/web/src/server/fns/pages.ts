@@ -15,7 +15,6 @@ const widgetSchema = z
   .object({
     id: z.string(),
     kind: z.enum(widgetKinds),
-    size: z.enum(zoneSizes).optional(),
     options: z.record(z.string(), z.unknown()),
     content: jsonSchema.nullable().optional(),
   })

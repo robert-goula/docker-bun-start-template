@@ -5,12 +5,9 @@ import * as z from "zod";
 import { type Json, jsonSchema } from "@/types/Json";
 import { jsonb } from "../jsonb";
 import { pages } from "./pages";
-import { zoneSizes, zones } from "./zones";
+import { zones } from "./zones";
 
-export const widgetKinds = [
-  "markdown",
-  "debug",
-] as const;
+export const widgetKinds = ["markdown", "debug"] as const;
 export type WidgetKind = (typeof widgetKinds)[number];
 
 const WidgetIdSchema = z.uuidv7().brand<"WidgetId">();
@@ -29,7 +26,6 @@ export const widgets = pgTable(
       .notNull()
       .references(() => zones.id, { onDelete: "cascade" }),
     kind: varchar({ length: 40 }).notNull(),
-    size: varchar({ length: 10 }),
     options: jsonb("options").notNull().default({}),
     content: jsonb<Json>("content"),
     order: integer().notNull().default(0),
@@ -69,7 +65,6 @@ const insertWidgetBaseSchema = createInsertSchema(widgets).omit({
 
 export const insertWidgetSchema = insertWidgetBaseSchema.extend({
   kind: z.enum(widgetKinds),
-  size: z.enum(zoneSizes).nullable().optional(),
   options: z.record(z.string(), z.unknown()).default({}),
   content: jsonSchema.nullable().optional(),
 });
@@ -77,7 +72,6 @@ export type InsertWidgetInput = z.infer<typeof insertWidgetSchema>;
 
 export const selectWidgetSchema = createSelectSchema(widgets).extend({
   kind: z.enum(widgetKinds),
-  size: z.enum(zoneSizes).nullable(),
   options: z.record(z.string(), z.unknown()),
   content: jsonSchema.nullable(),
   created: z.coerce.date(),
@@ -87,7 +81,6 @@ export const selectWidgetSchema = createSelectSchema(widgets).extend({
 export const updateWidgetSchema = z
   .object({
     kind: z.enum(widgetKinds),
-    size: z.enum(zoneSizes).nullable(),
     options: z.record(z.string(), z.unknown()),
     content: jsonSchema.nullable(),
     order: z.number().int(),
