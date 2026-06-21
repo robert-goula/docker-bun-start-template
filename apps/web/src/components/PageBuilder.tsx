@@ -17,7 +17,7 @@ import {
 import { arrayMove, rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { cx } from "class-variance-authority";
 import Zone, { ZoneGhost, type ZoneLayout } from "@/components/Zone";
-import { WidgetContent, WidgetGhost, widgetClassNames } from "@/components/Widget";
+import { WidgetGhost, WidgetView } from "@/components/Widget";
 import { useEditMode } from "@/components/EditMode";
 import { layoutsRepo } from "@/repositories/layouts";
 import { editOnlyWidgetKinds } from "@/components/widgetRegistry";
@@ -294,13 +294,7 @@ export default function PageBuilder({
           return (
             <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
               {visible.map((widget) => (
-                <article key={widget.id} className={widgetClassNames(widget.options)}>
-                  <WidgetContent
-                    kind={widget.kind}
-                    options={widget.options}
-                    content={widget.content}
-                  />
-                </article>
+                <WidgetView key={widget.id} widget={widget} />
               ))}
             </div>
           );
