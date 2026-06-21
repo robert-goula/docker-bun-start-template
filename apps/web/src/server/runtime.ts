@@ -21,4 +21,18 @@ const MainLive = Layer.mergeAll(
 
 export const runtime = ManagedRuntime.make(MainLive);
 
+// The ManagedRuntime holds the scopes of DatabaseLive and RedisLive open for its
+// whole lifetime; their finalizers (closing the Bun SQL pool and Redis client) only
+// run when the runtime is disposed. Wire that up so connections are actually released.
+if (import.meta.hot) {
+  // Dev: release the old runtime's DB pool + Redis client before HMR swaps in a new
+  // module, otherwise reloads accumulate connections against the pool's `max`.
+  import.meta.hot.dispose(() => void runtime.dispose());
+} else {
+  // Prod: drain connections on graceful shutdown so finalizers run before exit.
+  const shutdown = () => void runtime.dispose().then(() => process.exit(0));
+  process.once("SIGTERM", shutdown);
+  process.once("SIGINT", shutdown);
+}
+
 export type AppRuntime = typeof runtime;
