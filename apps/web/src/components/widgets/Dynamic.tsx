@@ -59,9 +59,12 @@ export default function Dynamic({
     return <p className={s.notice}>Loading…</p>;
   }
 
-  // No definition available (deleted, or unauthorized on a public page): fall back to
-  // rendering whatever data the instance holds so nothing silently disappears.
-  if (!definition) {
+  // No usable definition (deleted, or unauthorized on a public page — where the GET
+  // resolves with a non-widget error body rather than a real definition): fall back to
+  // rendering whatever data the instance holds so nothing silently disappears. Guarding
+  // on `fields` being an array keeps the renderers below from touching `.fields` on a
+  // truthy-but-malformed value.
+  if (!definition || !Array.isArray(definition.fields)) {
     return <DynamicFallback data={data} editable={!!onContentChange} />;
   }
 

@@ -54,6 +54,16 @@
   padding: var(--spacing-md);
 }
 
+/* A 12-column grid (matching the page grid) so the ½/¼/⅓ width utilities on the
+   Fields take effect inside a tab panel (FieldGroup is flex and ignores them). */
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--spacing-lg);
+  row-gap: var(--spacing-md);
+  align-items: start;
+}
+
 /* Mirror the widget/zone header controls: a flex group pinned to the inline end. */
 .controls {
   display: flex;
