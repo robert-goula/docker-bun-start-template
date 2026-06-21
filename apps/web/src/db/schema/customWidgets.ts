@@ -137,6 +137,25 @@ export const selectCustomWidgetSchema = createSelectSchema(customWidgets).extend
   updated: z.coerce.date().nullable(),
 });
 
+// Minimal, PUBLIC-safe projection of a definition, used to render placed instances on
+// public pages. Carries only what view rendering needs — the bespoke-component key
+// (`template`) and each field's name/label/control/type. Intentionally excludes authoring
+// metadata (createdBy/updatedBy/timestamps), slug, description, and per-field validation,
+// defaults and helper text, none of which view rendering uses.
+export const renderCustomWidgetSchema = z.object({
+  id: z.string(),
+  template: z.string().nullable(),
+  fields: z.array(
+    z.object({
+      name: z.string(),
+      label: z.string(),
+      control: z.enum(fieldControls),
+      type: z.enum(fieldTypes),
+    }),
+  ),
+});
+export type RenderCustomWidget = z.infer<typeof renderCustomWidgetSchema>;
+
 export const updateCustomWidgetSchema = z
   .object({
     name: z.string().min(1).max(80),

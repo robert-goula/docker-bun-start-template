@@ -35,6 +35,7 @@
 
 :root {
   color-scheme: light dark;
+  font-display: optional;
 
   --fontSize-xs: 0.695rem;
   --fontSize-sm: 0.875rem;
@@ -671,9 +672,13 @@ h1, h2, h3, h4, h5, h6 {
   font-family: "Inter Variable", "Inter Fallback", sans-serif;
   font-weight: var(--fontWeight-bold);
   color: light-dark(var(--neutral-100), var(--neutral-600));
+  text-wrap: balance;
+  text-box: trim-both cap alphabetic;
+  background-clip: text;
 }
 h1 {
   font-size: var(--fontSize-2xl);
+  letter-spacing: var(--fontSpacing-tight);
 }
 h2 {
   font-size: var(--fontSize-xl);

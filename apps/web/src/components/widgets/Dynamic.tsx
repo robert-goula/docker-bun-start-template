@@ -5,17 +5,24 @@ import { Field, FieldBody, FieldDescription, FieldGroup, FieldLabel } from "@/co
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
-import type { CustomWidgetField, CustomWidgetId } from "@/db/schema/customWidgets";
+import Headline from "./Headline";
+import type {
+  CustomWidgetField,
+  CustomWidgetId,
+  RenderCustomWidget,
+} from "@/db/schema/customWidgets";
 import type { SafeCustomWidget } from "@/server/fns/customWidgets";
 import type { WidgetContentProps } from "@/components/Widget";
 import type { Json } from "@/types/Json";
 import s from "./Dynamic.module.css";
 
-// Seam for bespoke view-mode renderers. A definition's `template` (e.g. "headline")
-// can map to a custom component here; otherwise the generic renderer is used. Empty
-// for now — the generic renderer covers every definition.
-type DynamicDisplayProps = { definition: SafeCustomWidget; values: Record<string, Json> };
-const displayRegistry: Record<string, ComponentType<DynamicDisplayProps>> = {};
+// Seam for bespoke view-mode renderers. A definition's `template` maps (case-insensitively
+// — keys here are lowercase) to a custom component; otherwise the generic renderer is used.
+// View-mode components receive only the public render projection (RenderCustomWidget).
+export type DynamicDisplayProps = { definition: RenderCustomWidget; values: Record<string, Json> };
+const displayRegistry: Record<string, ComponentType<DynamicDisplayProps>> = {
+  headline: Headline,
+};
 
 const asString = (value: Json | undefined): string =>
   value == null ? "" : typeof value === "string" ? value : String(value);
@@ -43,46 +50,86 @@ export default function Dynamic({
   const definitionId = options.definitionId as string | undefined;
   const data = toDataMap(content);
 
-  const query = useQuery({
-    ...customWidgetsRepo.byId((definitionId ?? "") as CustomWidgetId),
-    enabled: !!definitionId,
-  });
-  const definition = query.data;
-
   if (!definitionId) {
     return onContentChange ? (
       <p className={s.notice}>This dynamic widget isn’t linked to a definition.</p>
     ) : null;
   }
 
-  if (query.isLoading) {
-    return <p className={s.notice}>Loading…</p>;
-  }
+  // Edit mode is admin-only and needs the FULL definition (per-field validation, defaults,
+  // …), so it reads the auth-gated `byId`. View mode renders on public pages, so it reads
+  // only the public render projection — prefetched in the page loader, so it's present
+  // (dehydrated) during SSR and the bound component server-renders.
+  return editing ? (
+    <DynamicEditLoader
+      definitionId={definitionId as CustomWidgetId}
+      data={data}
+      onContentChange={onContentChange}
+      onEditingChange={onEditingChange}
+    />
+  ) : (
+    <DynamicViewLoader
+      definitionId={definitionId as CustomWidgetId}
+      data={data}
+      editable={!!onContentChange}
+    />
+  );
+}
 
-  // No usable definition (deleted, or unauthorized on a public page — where the GET
-  // resolves with a non-widget error body rather than a real definition): fall back to
-  // rendering whatever data the instance holds so nothing silently disappears. Guarding
-  // on `fields` being an array keeps the renderers below from touching `.fields` on a
-  // truthy-but-malformed value.
+// View path: reads the public render projection (SSR-prefetched) and renders the bound
+// custom component, or the generic renderer, or a fallback. `fields` is guarded as an array
+// so a missing/malformed definition degrades to the fallback instead of crashing the render.
+function DynamicViewLoader({
+  definitionId,
+  data,
+  editable,
+}: {
+  definitionId: CustomWidgetId;
+  data: Record<string, Json>;
+  editable: boolean;
+}) {
+  const { data: definition } = useQuery(customWidgetsRepo.forRender(definitionId));
+
   if (!definition || !Array.isArray(definition.fields)) {
-    return <DynamicFallback data={data} editable={!!onContentChange} />;
+    return <DynamicFallback data={data} editable={editable} />;
   }
 
-  if (editing) {
-    return (
-      <DynamicEditor
-        definition={definition}
-        data={data}
-        onContentChange={onContentChange}
-        onEditingChange={onEditingChange}
-      />
-    );
-  }
-
-  const Custom = definition.template ? displayRegistry[definition.template] : undefined;
+  const Custom = definition.template
+    ? displayRegistry[definition.template.toLowerCase()]
+    : undefined;
   if (Custom) return <Custom definition={definition} values={data} />;
 
-  return <DynamicView definition={definition} values={data} editable={!!onContentChange} />;
+  return <DynamicView definition={definition} values={data} editable={editable} />;
+}
+
+// Edit path (admin only): reads the full, auth-gated definition to build the per-field editor.
+function DynamicEditLoader({
+  definitionId,
+  data,
+  onContentChange,
+  onEditingChange,
+}: {
+  definitionId: CustomWidgetId;
+  data: Record<string, Json>;
+  onContentChange?: (content: Json) => void;
+  onEditingChange?: (editing: boolean) => void;
+}) {
+  const { data: definition, isLoading } = useQuery(customWidgetsRepo.byId(definitionId));
+
+  if (isLoading) {
+    return <p className={s.notice}>Loading…</p>;
+  }
+  if (!definition || !Array.isArray(definition.fields)) {
+    return <DynamicFallback data={data} editable />;
+  }
+  return (
+    <DynamicEditor
+      definition={definition}
+      data={data}
+      onContentChange={onContentChange}
+      onEditingChange={onEditingChange}
+    />
+  );
 }
 
 function DynamicEditor({
@@ -200,7 +247,7 @@ function DynamicView({
   values,
   editable,
 }: {
-  definition: SafeCustomWidget;
+  definition: RenderCustomWidget;
   values: Record<string, Json>;
   editable: boolean;
 }) {

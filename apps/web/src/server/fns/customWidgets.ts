@@ -4,6 +4,8 @@ import * as z from "zod";
 import {
   type CustomWidgetId,
   customWidgetFieldsSchema,
+  type RenderCustomWidget,
+  renderCustomWidgetSchema,
   selectCustomWidgetSchema,
 } from "@/db/schema/customWidgets";
 import { authMiddleware } from "@/server/fns/auth";
@@ -69,6 +71,27 @@ export const getCustomWidgetByIdFn = createServerFn({ method: "GET" })
           CustomWidgetNotFound: notFound,
           Forbidden: forbidden,
           DatabaseError: dbError,
+        }),
+      ),
+    ),
+  );
+
+// PUBLIC (no auth): render-only projection of a definition, used to server-render placed
+// instances on public pages. Returns only the safe render fields (see renderCustomWidgetSchema)
+// and never throws — a missing or unreadable definition resolves to `null` so a single bad
+// widget can't 500 a public page (and so SSR dehydration never carries an unserializable error).
+export const getCustomWidgetForRenderFn = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => CustomWidgetIdInput.parse(input))
+  .handler(({ data }): Promise<RenderCustomWidget | null> =>
+    runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* CustomWidgetRepo;
+        const row = yield* repo.findForRender(data.id as CustomWidgetId);
+        return renderCustomWidgetSchema.parse(row);
+      }).pipe(
+        Effect.catchTags({
+          CustomWidgetNotFound: () => Effect.succeed(null),
+          DatabaseError: () => Effect.succeed(null),
         }),
       ),
     ),

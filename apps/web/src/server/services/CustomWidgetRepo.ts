@@ -61,6 +61,20 @@ export class CustomWidgetRepo extends Effect.Service<CustomWidgetRepo>()("app/Cu
         return row;
       });
 
+    // Render-scoped read: NO policy check. Definitions are needed to render instances on
+    // public pages, so this is intentionally readable without auth. Callers must only ever
+    // expose the public render projection (renderCustomWidgetSchema) from this — never the
+    // full row — and must not use it for any management path.
+    const findForRender = (id: CustomWidgetId) =>
+      Effect.gen(function* () {
+        const row = yield* Effect.tryPromise({
+          try: () => db.query.customWidgets.findFirst({ where: eq(customWidgets.id, id) }),
+          catch: (cause) => new DatabaseError({ cause }),
+        });
+        if (!row) return yield* Effect.fail(new CustomWidgetNotFound({ id }));
+        return row;
+      });
+
     // Creates a definition starting with no fields; the admin adds fields on the edit page.
     const create = (input: CreateCustomWidgetInput) =>
       Effect.gen(function* () {
@@ -129,7 +143,7 @@ export class CustomWidgetRepo extends Effect.Service<CustomWidgetRepo>()("app/Cu
         return { id } as const;
       });
 
-    return { list, findById, create, update, remove } as const;
+    return { list, findById, findForRender, create, update, remove } as const;
   }),
   dependencies: [DatabaseLive],
 }) {}

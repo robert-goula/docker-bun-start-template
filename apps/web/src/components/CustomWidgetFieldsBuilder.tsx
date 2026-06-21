@@ -27,16 +27,21 @@ import { type CustomWidgetField, fieldControls } from "@/db/schema/customWidgets
 import s from "./CustomWidgetFieldsBuilder.module.css";
 
 // Each row carries a stable internal id so drag/keys survive while the editable
-// `name` is still being typed. The id is never persisted.
+// `name` is still being typed. The id is never persisted. `saved` is the last
+// persisted version of this row (null for rows added since the last save), used to
+// flag which rows are dirty.
 interface FieldRowState {
   id: string;
   field: CustomWidgetField;
+  saved: CustomWidgetField | null;
 }
 
 interface CustomWidgetFieldsBuilderProps {
   initialFields: ReadonlyArray<CustomWidgetField>;
-  // Called on every change with the current field list, for the caller to persist.
-  onChange: (fields: CustomWidgetField[]) => void;
+  // Persist the current field list. Resolves `true` on success (the builder then
+  // re-baselines and clears its dirty markers) or `false` on a validation/save
+  // failure (the draft and dirty markers are kept so the user can retry).
+  onSave: (fields: CustomWidgetField[]) => Promise<boolean>;
 }
 
 const numOrUndef = (value: string): number | undefined => {
@@ -44,6 +49,23 @@ const numOrUndef = (value: string): number | undefined => {
   const n = Number.parseInt(value, 10);
   return Number.isNaN(n) ? undefined : n;
 };
+
+// CustomWidgetField is flat (every value is a primitive), so a key-union shallow
+// compare is a complete equality check.
+function fieldsEqual(a: CustomWidgetField, b: CustomWidgetField): boolean {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const key of keys) {
+    if (a[key as keyof CustomWidgetField] !== b[key as keyof CustomWidgetField]) return false;
+  }
+  return true;
+}
+
+function listEqual(
+  a: ReadonlyArray<CustomWidgetField>,
+  b: ReadonlyArray<CustomWidgetField>,
+): boolean {
+  return a.length === b.length && a.every((field, i) => fieldsEqual(field, b[i]));
+}
 
 function makeField(index: number): CustomWidgetField {
   return {
@@ -62,12 +84,19 @@ function makeField(index: number): CustomWidgetField {
  */
 export default function CustomWidgetFieldsBuilder({
   initialFields,
-  onChange,
+  onSave,
 }: CustomWidgetFieldsBuilderProps) {
   const [rows, setRows] = useState<FieldRowState[]>(() =>
-    initialFields.map((field) => ({ id: crypto.randomUUID(), field })),
+    initialFields.map((field) => ({ id: crypto.randomUUID(), field, saved: field })),
   );
+  // The last-persisted field list, kept in order so reorders and removals also
+  // register as dirty. Reset after a successful save.
+  const [baseline, setBaseline] = useState<ReadonlyArray<CustomWidgetField>>(initialFields);
+  const [saving, setSaving] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor));
+
+  const draftFields = rows.map((r) => r.field);
+  const dirty = !listEqual(draftFields, baseline);
 
   const collisionDetection: CollisionDetection = useCallback((args) => {
     const candidates = args.droppableContainers.filter((c) => c.id !== args.active.id);
@@ -76,29 +105,46 @@ export default function CustomWidgetFieldsBuilder({
     return hits.length > 0 ? hits : closestCenter(scoped);
   }, []);
 
-  function commit(next: FieldRowState[]) {
-    setRows(next);
-    onChange(next.map((r) => r.field));
-  }
-
   function updateField(id: string, patch: Partial<CustomWidgetField>) {
-    commit(rows.map((r) => (r.id === id ? { ...r, field: { ...r.field, ...patch } } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, field: { ...r.field, ...patch } } : r)),
+    );
   }
 
   function addField() {
-    commit([...rows, { id: crypto.randomUUID(), field: makeField(rows.length + 1) }]);
+    setRows((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), field: makeField(prev.length + 1), saved: null },
+    ]);
   }
 
   function removeField(id: string) {
-    commit(rows.filter((r) => r.id !== id));
+    setRows((prev) => prev.filter((r) => r.id !== id));
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     if (!over || active.id === over.id) return;
-    const oldIndex = rows.findIndex((r) => r.id === active.id);
-    const newIndex = rows.findIndex((r) => r.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-    commit(arrayMove(rows, oldIndex, newIndex));
+    setRows((prev) => {
+      const oldIndex = prev.findIndex((r) => r.id === active.id);
+      const newIndex = prev.findIndex((r) => r.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  }
+
+  async function handleSave() {
+    const draft = rows.map((r) => r.field);
+    setSaving(true);
+    const ok = await onSave(draft);
+    setSaving(false);
+    if (!ok) return;
+    // The draft is now the persisted state: re-baseline so dirty markers clear.
+    setBaseline(draft);
+    setRows((prev) => prev.map((r) => ({ ...r, saved: r.field })));
+  }
+
+  function discard() {
+    setRows(baseline.map((field) => ({ id: crypto.randomUUID(), field, saved: field })));
   }
 
   return (
@@ -121,9 +167,28 @@ export default function CustomWidgetFieldsBuilder({
           </ol>
         </SortableContext>
         {rows.length === 0 && <p className={s.empty}>No fields yet. Add one to get started.</p>}
-        <Button type="button" intent="primary" variant="outline" size="sm" onClick={addField}>
-          Add field
-        </Button>
+        <div className={s.toolbar}>
+          <Button type="button" intent="primary" variant="outline" size="sm" onClick={addField}>
+            Add field
+          </Button>
+          {dirty && (
+            <div className={s.saveActions}>
+              <span className={s.dirtyHint}>Unsaved changes</span>
+              <Button type="button" variant="outline" size="sm" onClick={discard} disabled={saving}>
+                Discard
+              </Button>
+              <Button
+                type="button"
+                intent="primary"
+                size="sm"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Save changes"}
+              </Button>
+            </div>
+          )}
+        </div>
       </DndContext>
     </ClientOnly>
   );
@@ -148,6 +213,10 @@ function FieldRow({
   };
   const { field } = row;
   const idBase = row.id;
+  // Dirty markers: a row added since the last save is "New"; an existing row whose
+  // content diverged from its persisted snapshot is "Edited".
+  const isNew = row.saved === null;
+  const isEdited = row.saved !== null && !fieldsEqual(field, row.saved);
   // Collapse is local view state only (never persisted) so large rows are easier to
   // sort. Defaults to open; collapsing leaves the title visible as a drag handle.
   const [open, setOpen] = useState(true);
@@ -164,6 +233,7 @@ function FieldRow({
         <button type="button" className={s.rowTitle} onClick={toggle}>
           {field.label || field.name || "Untitled field"}
         </button>
+        {(isNew || isEdited) && <span className={s.dirtyBadge}>{isNew ? "New" : "Edited"}</span>}
         <menu className={s.controls}>
           <button
             type="button"

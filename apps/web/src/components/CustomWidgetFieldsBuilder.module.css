@@ -127,3 +127,36 @@
   font-style: italic;
   margin-block: var(--spacing-sm);
 }
+
+/* Footer bar: "Add field" on the inline start, save controls revealed on the end. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.saveActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.dirtyHint {
+  color: var(--text-warning);
+  font-size: var(--fontSize-sm);
+}
+
+/* Per-row "New"/"Edited" pill in the row header. */
+.dirtyBadge {
+  font-size: var(--fontSize-xs);
+  line-height: 1;
+  padding-block: 0.15rem;
+  padding-inline: 0.35rem;
+  border-radius: var(--borderRadius-sm);
+  background-color: var(--bg-warning);
+  color: var(--text-warning);
+  border: var(--borderWidth-sm) solid var(--border-warning);
+}

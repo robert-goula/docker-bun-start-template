@@ -29,8 +29,8 @@ function RouteComponent() {
   const qc = useQueryClient();
   const { data: widget } = useSuspenseQuery(customWidgetsRepo.byId(id));
 
-  // Seed local state once from the loader; fields own it thereafter and autosave
-  // (no refetch, so the in-progress field builder never resets mid-edit).
+  // Seed local state once from the loader; fields own it thereafter (no refetch, so
+  // the in-progress field builder never resets mid-edit).
   const [name, setName] = useState(widget.name);
   const [template, setTemplate] = useState(widget.template ?? "");
   const [description, setDescription] = useState(widget.description ?? "");
@@ -50,16 +50,27 @@ function RouteComponent() {
       });
   }
 
-  // The builder emits the full field list on every change; only persist once it
-  // passes the schema (unique/valid names, min<=max, valid regex) and surface why not.
-  function saveFields(fields: CustomWidgetField[]) {
+  // The builder hands over the full field list when the user clicks Save; only persist
+  // once it passes the schema (unique/valid names, min<=max, valid regex) and surface
+  // why not. Resolves true on success so the builder can clear its dirty markers.
+  async function saveFields(fields: CustomWidgetField[]): Promise<boolean> {
     const result = customWidgetFieldsSchema.safeParse(fields);
     if (!result.success) {
       setFieldsError(result.error.issues[0]?.message ?? "Some fields are invalid.");
-      return;
+      return false;
     }
     setFieldsError(null);
-    save({ fields: result.data });
+    try {
+      const updated = await updateCustomWidgetFn({ data: { id, patch: { fields: result.data } } });
+      qc.setQueryData(customWidgetsRepo.byId(id).queryKey, updated);
+      qc.invalidateQueries({ queryKey: customWidgetsKeys.list() });
+      return true;
+    } catch (err) {
+      toast.error("Couldn’t save changes", {
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+      return false;
+    }
   }
 
   return (
@@ -112,13 +123,13 @@ function RouteComponent() {
         <h2>Fields</h2>
         <p>
           Drag a field to reorder it; the order here is how the fields are shown when editing and
-          displaying an instance. Changes save automatically once every field is valid.
+          displaying an instance. Edits stay local until you click Save changes.
         </p>
         {fieldsError && <FieldError>{fieldsError}</FieldError>}
       </section>
 
       <section className="full">
-        <CustomWidgetFieldsBuilder initialFields={widget.fields} onChange={saveFields} />
+        <CustomWidgetFieldsBuilder initialFields={widget.fields} onSave={saveFields} />
       </section>
     </main>
   );
