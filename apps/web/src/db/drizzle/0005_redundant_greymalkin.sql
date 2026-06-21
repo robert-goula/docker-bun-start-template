@@ -1,0 +1,1 @@
+ALTER TABLE "custom_widget" ADD COLUMN "element" varchar(20);

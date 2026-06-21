@@ -22,8 +22,10 @@ import { Route as AuthedAdminZonesIndexRouteImport } from './routes/_authed/admi
 import { Route as AuthedAdminUsersIndexRouteImport } from './routes/_authed/admin/users/index'
 import { Route as AuthedAdminPagesIndexRouteImport } from './routes/_authed/admin/pages/index'
 import { Route as AuthedAdminLayoutsIndexRouteImport } from './routes/_authed/admin/layouts/index'
+import { Route as AuthedAdminCustomWidgetsIndexRouteImport } from './routes/_authed/admin/custom-widgets/index'
 import { Route as AuthedAdminUsersUserIdRouteImport } from './routes/_authed/admin/users/$userId'
 import { Route as AuthedAdminLayoutsLayoutIdRouteImport } from './routes/_authed/admin/layouts/$layoutId'
+import { Route as AuthedAdminCustomWidgetsWidgetIdRouteImport } from './routes/_authed/admin/custom-widgets/$widgetId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -90,6 +92,12 @@ const AuthedAdminLayoutsIndexRoute = AuthedAdminLayoutsIndexRouteImport.update({
   path: '/layouts/',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminCustomWidgetsIndexRoute =
+  AuthedAdminCustomWidgetsIndexRouteImport.update({
+    id: '/custom-widgets/',
+    path: '/custom-widgets/',
+    getParentRoute: () => AuthedAdminRouteRoute,
+  } as any)
 const AuthedAdminUsersUserIdRoute = AuthedAdminUsersUserIdRouteImport.update({
   id: '/users/$userId',
   path: '/users/$userId',
@@ -99,6 +107,12 @@ const AuthedAdminLayoutsLayoutIdRoute =
   AuthedAdminLayoutsLayoutIdRouteImport.update({
     id: '/layouts/$layoutId',
     path: '/layouts/$layoutId',
+    getParentRoute: () => AuthedAdminRouteRoute,
+  } as any)
+const AuthedAdminCustomWidgetsWidgetIdRoute =
+  AuthedAdminCustomWidgetsWidgetIdRouteImport.update({
+    id: '/custom-widgets/$widgetId',
+    path: '/custom-widgets/$widgetId',
     getParentRoute: () => AuthedAdminRouteRoute,
   } as any)
 
@@ -112,8 +126,10 @@ export interface FileRoutesByFullPath {
   '/api/users/$id': typeof ApiUsersIdRoute
   '/admin/': typeof AuthedAdminIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
+  '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
   '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
   '/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
   '/admin/pages/': typeof AuthedAdminPagesIndexRoute
   '/admin/users/': typeof AuthedAdminUsersIndexRoute
@@ -128,8 +144,10 @@ export interface FileRoutesByTo {
   '/api/users/$id': typeof ApiUsersIdRoute
   '/admin': typeof AuthedAdminIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
+  '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
   '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/admin/custom-widgets': typeof AuthedAdminCustomWidgetsIndexRoute
   '/admin/layouts': typeof AuthedAdminLayoutsIndexRoute
   '/admin/pages': typeof AuthedAdminPagesIndexRoute
   '/admin/users': typeof AuthedAdminUsersIndexRoute
@@ -146,8 +164,10 @@ export interface FileRoutesById {
   '/api/users/$id': typeof ApiUsersIdRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
+  '/_authed/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/_authed/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
   '/_authed/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/_authed/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
   '/_authed/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
   '/_authed/admin/pages/': typeof AuthedAdminPagesIndexRoute
   '/_authed/admin/users/': typeof AuthedAdminUsersIndexRoute
@@ -165,8 +185,10 @@ export interface FileRouteTypes {
     | '/api/users/$id'
     | '/admin/'
     | '/api/users/'
+    | '/admin/custom-widgets/$widgetId'
     | '/admin/layouts/$layoutId'
     | '/admin/users/$userId'
+    | '/admin/custom-widgets/'
     | '/admin/layouts/'
     | '/admin/pages/'
     | '/admin/users/'
@@ -181,8 +203,10 @@ export interface FileRouteTypes {
     | '/api/users/$id'
     | '/admin'
     | '/api/users'
+    | '/admin/custom-widgets/$widgetId'
     | '/admin/layouts/$layoutId'
     | '/admin/users/$userId'
+    | '/admin/custom-widgets'
     | '/admin/layouts'
     | '/admin/pages'
     | '/admin/users'
@@ -198,8 +222,10 @@ export interface FileRouteTypes {
     | '/api/users/$id'
     | '/_authed/admin/'
     | '/api/users/'
+    | '/_authed/admin/custom-widgets/$widgetId'
     | '/_authed/admin/layouts/$layoutId'
     | '/_authed/admin/users/$userId'
+    | '/_authed/admin/custom-widgets/'
     | '/_authed/admin/layouts/'
     | '/_authed/admin/pages/'
     | '/_authed/admin/users/'
@@ -310,6 +336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminLayoutsIndexRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/custom-widgets/': {
+      id: '/_authed/admin/custom-widgets/'
+      path: '/custom-widgets'
+      fullPath: '/admin/custom-widgets/'
+      preLoaderRoute: typeof AuthedAdminCustomWidgetsIndexRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/users/$userId': {
       id: '/_authed/admin/users/$userId'
       path: '/users/$userId'
@@ -324,13 +357,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminLayoutsLayoutIdRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/custom-widgets/$widgetId': {
+      id: '/_authed/admin/custom-widgets/$widgetId'
+      path: '/custom-widgets/$widgetId'
+      fullPath: '/admin/custom-widgets/$widgetId'
+      preLoaderRoute: typeof AuthedAdminCustomWidgetsWidgetIdRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
   }
 }
 
 interface AuthedAdminRouteRouteChildren {
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
+  AuthedAdminCustomWidgetsWidgetIdRoute: typeof AuthedAdminCustomWidgetsWidgetIdRoute
   AuthedAdminLayoutsLayoutIdRoute: typeof AuthedAdminLayoutsLayoutIdRoute
   AuthedAdminUsersUserIdRoute: typeof AuthedAdminUsersUserIdRoute
+  AuthedAdminCustomWidgetsIndexRoute: typeof AuthedAdminCustomWidgetsIndexRoute
   AuthedAdminLayoutsIndexRoute: typeof AuthedAdminLayoutsIndexRoute
   AuthedAdminPagesIndexRoute: typeof AuthedAdminPagesIndexRoute
   AuthedAdminUsersIndexRoute: typeof AuthedAdminUsersIndexRoute
@@ -339,8 +381,10 @@ interface AuthedAdminRouteRouteChildren {
 
 const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
+  AuthedAdminCustomWidgetsWidgetIdRoute: AuthedAdminCustomWidgetsWidgetIdRoute,
   AuthedAdminLayoutsLayoutIdRoute: AuthedAdminLayoutsLayoutIdRoute,
   AuthedAdminUsersUserIdRoute: AuthedAdminUsersUserIdRoute,
+  AuthedAdminCustomWidgetsIndexRoute: AuthedAdminCustomWidgetsIndexRoute,
   AuthedAdminLayoutsIndexRoute: AuthedAdminLayoutsIndexRoute,
   AuthedAdminPagesIndexRoute: AuthedAdminPagesIndexRoute,
   AuthedAdminUsersIndexRoute: AuthedAdminUsersIndexRoute,

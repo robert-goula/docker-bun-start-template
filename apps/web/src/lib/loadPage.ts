@@ -1,7 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
+import type { CustomWidgetId } from "@/db/schema/customWidgets";
 import { LOCALES, type Locale } from "@/db/schema/pages";
 import { markdownQueryOptions } from "@/server/fns/markdown";
 import { loadPageLayoutFn, savePageLayoutFn, setPageLayoutFn } from "@/server/fns/pages";
+import { customWidgetsRepo } from "@/repositories/customWidgets";
 import type { PageLayout } from "@/components/Zone";
 
 /**
@@ -19,18 +21,30 @@ function parsePathname(pathname: string): { slug: string; locale?: Locale } {
 }
 
 /**
- * Loads a page's layout for a resolved route pathname and warms the query cache
- * for its markdown widgets so they render server-side (dehydrated via the SSR
- * query integration). The page title lives in the DB (derived from the slug on
- * first creation) — callers only supply the pathname.
+ * Loads a page's layout for a resolved route pathname and warms the query cache for its
+ * widgets so they render server-side (dehydrated via the SSR query integration): markdown
+ * is pre-rendered to HTML, and each dynamic widget's public definition projection is
+ * prefetched so its bound custom component server-renders too. The page title lives in the
+ * DB (derived from the slug on first creation) — callers only supply the pathname.
  */
 export async function loadPage(queryClient: QueryClient, pathname: string) {
   const layout = await loadPageLayoutFn({ data: parsePathname(pathname) });
   await Promise.all(
     layout.zones.flatMap((zone) =>
-      zone.widgets
-        .filter((w) => w.kind === "markdown" && typeof w.content === "string")
-        .map((w) => queryClient.prefetchQuery(markdownQueryOptions(w.content as string))),
+      zone.widgets.flatMap((w) => {
+        if (w.kind === "markdown" && typeof w.content === "string") {
+          return [queryClient.prefetchQuery(markdownQueryOptions(w.content))];
+        }
+        if (w.kind === "dynamic") {
+          const definitionId = (w.options as { definitionId?: unknown } | undefined)?.definitionId;
+          if (typeof definitionId === "string") {
+            return [
+              queryClient.prefetchQuery(customWidgetsRepo.forRender(definitionId as CustomWidgetId)),
+            ];
+          }
+        }
+        return [];
+      }),
     ),
   );
   return layout;

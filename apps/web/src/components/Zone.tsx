@@ -24,8 +24,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
 import type { WidgetConfig, WidgetKind } from "@/components/Widget";
 import { widgetKindList } from "@/components/widgetRegistry";
+import { customWidgetsRepo } from "@/repositories/customWidgets";
 
 export type ZoneSize = "full" | "½" | "⅓" | "⅔" | "¼" | "¾";
 export type ZoneLayout = {
@@ -83,7 +85,7 @@ interface ZoneProps {
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
-  onWidgetAdd?: (kind: WidgetKind) => void;
+  onWidgetAdd?: (kind: WidgetKind, definitionId?: string) => void;
 }
 
 interface ZoneControlProps {
@@ -97,7 +99,7 @@ interface ZoneContentProps {
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
-  onWidgetAdd?: (kind: WidgetKind) => void;
+  onWidgetAdd?: (kind: WidgetKind, definitionId?: string) => void;
 }
 
 function Zone({
@@ -300,7 +302,9 @@ Zone.Toggle = function ZoneToggle() {
       <span className={cx(s.zoneIndicator, !open && s.collapsed)}>
         <ArrowDropDownIcon aria-hidden="true" />
       </span>
-      <span id={toggleId} className="sr-only">Toggle Zone Content</span>
+      <span id={toggleId} className="sr-only">
+        Toggle Zone Content
+      </span>
     </button>
   );
 };
@@ -328,10 +332,12 @@ Zone.Content = function ZoneContent({
   });
   const isEmpty = widgets.length === 0;
   const [pickerOpen, setPickerOpen] = useState(false);
+  // Reusable custom widget definitions; each is offered as a "dynamic" instance.
+  const { data: definitions = [] } = useQuery(customWidgetsRepo.list());
 
-  function handleAdd(kind: WidgetKind) {
+  function handleAdd(kind: WidgetKind, definitionId?: string) {
     setPickerOpen(false);
-    onWidgetAdd?.(kind);
+    onWidgetAdd?.(kind, definitionId);
   }
 
   return (
@@ -380,6 +386,16 @@ Zone.Content = function ZoneContent({
                 onClick={() => handleAdd(kind)}
               >
                 {kind}
+              </button>
+            ))}
+            {definitions.map((def) => (
+              <button
+                key={def.id}
+                type="button"
+                className={s.kindOption}
+                onClick={() => handleAdd("dynamic", def.id)}
+              >
+                {def.name}
               </button>
             ))}
           </div>

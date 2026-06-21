@@ -61,6 +61,37 @@ export const Policy = {
     return yield* Effect.fail(new Forbidden({ action: "layout:update" }));
   }),
 
+  // Custom widget definitions are global, admin-managed content — no per-row ownership.
+  canListCustomWidgets: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "customWidget:list" }));
+  }),
+
+  canReadCustomWidget: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "customWidget:read" }));
+  }),
+
+  canCreateCustomWidget: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "customWidget:create" }));
+  }),
+
+  canUpdateCustomWidget: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "customWidget:update" }));
+  }),
+
+  canDeleteCustomWidget: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "customWidget:delete" }));
+  }),
+
   // Pages are global, admin-managed content — listing is admin-only.
   canListPages: Effect.gen(function* () {
     const user = yield* CurrentUser;

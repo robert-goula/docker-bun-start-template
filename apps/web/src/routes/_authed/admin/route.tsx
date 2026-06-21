@@ -26,6 +26,9 @@ function AdminLayout() {
         <Link to="/admin/layouts" activeProps={{ className: "nav-link is-active" }}>
           Layouts
         </Link>
+        <Link to="/admin/custom-widgets" activeProps={{ className: "nav-link is-active" }}>
+          Custom widgets
+        </Link>
         <Link to="/admin/zones" activeProps={{ className: "nav-link is-active" }}>
           Zones
         </Link>

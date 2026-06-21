@@ -2,6 +2,7 @@ import { useDndContext } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Suspense, createContext, useContext, useId, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
 import s from "@/components/Widget.module.css";
 import { DeleteIcon, DragIndicatorIcon, EditIcon, SettingsIcon } from "@/components/icons";
@@ -16,10 +17,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { type ZoneSize, zoneSizeOptions } from "@/components/Zone";
+import { customWidgetsRepo } from "@/repositories/customWidgets";
+import {
+  DEFAULT_WIDGET_ELEMENT,
+  isWidgetElement,
+  type WidgetElement,
+  widgetElements,
+} from "@/db/schema/widgets";
 import type { Json } from "@/types/Json";
+import type { CustomWidgetId } from "@/db/schema/customWidgets";
 import registry, { editableWidgetKinds } from "@/components/widgetRegistry";
 
-export type WidgetKind = "markdown" | "debug";
+export type WidgetKind = "markdown" | "debug" | "dynamic";
 
 export interface WidgetContentProps {
   options: WidgetOptions;
@@ -98,6 +107,32 @@ export function WidgetContent({
   );
 }
 
+/**
+ * Read-only view wrapper for a single widget. The wrapper element is resolved by
+ * precedence: an explicit per-instance `options.as` → the custom widget definition's
+ * default `element` (dynamic widgets) → the global default `section`. For dynamic widgets
+ * the definition comes from the SSR-prefetched render projection, so this is a cache read
+ * (not a network call) and resolves during SSR.
+ */
+export function WidgetView({ widget }: { widget: WidgetConfig }) {
+  const definitionId =
+    widget.kind === "dynamic" ? (widget.options.definitionId as string | undefined) : undefined;
+  const { data: definition } = useQuery({
+    ...customWidgetsRepo.forRender((definitionId ?? "") as CustomWidgetId),
+    enabled: !!definitionId,
+  });
+
+  const explicit = isWidgetElement(widget.options.as) ? widget.options.as : undefined;
+  const definitionDefault = isWidgetElement(definition?.element) ? definition.element : undefined;
+  const Tag: WidgetElement = explicit ?? definitionDefault ?? DEFAULT_WIDGET_ELEMENT;
+
+  return (
+    <Tag className={widgetClassNames(widget.options)}>
+      <WidgetContent kind={widget.kind} options={widget.options} content={widget.content} />
+    </Tag>
+  );
+}
+
 const Widget = function Widget({
   id,
   kind,
@@ -117,6 +152,10 @@ const Widget = function Widget({
   const [editing, setEditing] = useState(false);
   const [pendingSize, setPendingSize] = useState<ZoneSize>(size);
   const [pendingClassName, setPendingClassName] = useState(className);
+  // "" means no explicit override — defer to the component/global default.
+  const [pendingAs, setPendingAs] = useState<WidgetElement | "">(
+    isWidgetElement(options.as) ? options.as : "",
+  );
 
   const editable = editableWidgetKinds.has(kind);
 
@@ -142,15 +181,21 @@ const Widget = function Widget({
     if (next) {
       setPendingSize(size);
       setPendingClassName(className);
+      setPendingAs(isWidgetElement(options.as) ? options.as : "");
     }
     setSettingsOpen(next);
   }
 
   function handleApply() {
-    // `className` has no default — drop the key entirely when it's blank.
+    // `className` and `as` have no default — drop the key entirely when blank/unset.
     const trimmed = pendingClassName.trim();
-    const { className: _omit, ...rest } = options;
-    onOptionsChange?.({ ...rest, size: pendingSize, ...(trimmed ? { className: trimmed } : {}) });
+    const { className: _omitClassName, as: _omitAs, ...rest } = options;
+    onOptionsChange?.({
+      ...rest,
+      size: pendingSize,
+      ...(trimmed ? { className: trimmed } : {}),
+      ...(pendingAs ? { as: pendingAs } : {}),
+    });
     setSettingsOpen(false);
   }
 
@@ -226,6 +271,24 @@ const Widget = function Widget({
                     onChange={(e) => setPendingClassName(e.target.value)}
                     placeholder="e.g. featured highlight"
                   />
+                </div>
+                <div className={s.field}>
+                  <label className={s.fieldLabel} htmlFor={`widget-tag-${widgetId}`}>
+                    Tag
+                  </label>
+                  <select
+                    id={`widget-tag-${widgetId}`}
+                    className={s.tagSelect}
+                    value={pendingAs}
+                    onChange={(e) => setPendingAs(e.target.value as WidgetElement | "")}
+                  >
+                    <option value="">Default</option>
+                    {widgetElements.map((el) => (
+                      <option key={el} value={el}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <fieldset className={s.sizeOptions}>
                   <legend className={s.sizeLabel}>Size</legend>

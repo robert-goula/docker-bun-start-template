@@ -1,4 +1,5 @@
 import { Layer, ManagedRuntime } from "effect";
+import { CustomWidgetRepo } from "./services/CustomWidgetRepo";
 import { LayoutRepo } from "./services/LayoutRepo";
 import { PageRepo } from "./services/PageRepo";
 import { SessionStore } from "./services/SessionStore";
@@ -14,6 +15,7 @@ const MainLive = Layer.mergeAll(
   SessionStore.Default,
   PageRepo.Default,
   LayoutRepo.Default,
+  CustomWidgetRepo.Default,
   ZoneRepo.Default,
 );
 

@@ -1,0 +1,21 @@
+@reference "@/styles.css";
+
+.view,
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+.notice {
+  color: var(--fg-muted);
+  font-size: var(--fontSize-sm);
+  font-style: italic;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
