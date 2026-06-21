@@ -8,6 +8,7 @@ import {
   renderCustomWidgetSchema,
   selectCustomWidgetSchema,
 } from "@/db/schema/customWidgets";
+import { widgetElements } from "@/db/schema/widgets";
 import { authMiddleware } from "@/server/fns/auth";
 import { runtime } from "@/server/runtime";
 import { CurrentUser } from "@/server/services/CurrentUser";
@@ -27,6 +28,7 @@ export const updateCustomWidgetAttributesSchema = z.object({
   name: z.string().min(1).max(80).optional(),
   slug: z.string().min(1).max(80).optional(),
   template: z.string().max(40).nullable().optional(),
+  element: z.enum(widgetElements).nullable().optional(),
   description: z.string().max(500).nullable().optional(),
   fields: customWidgetFieldsSchema.optional(),
 });

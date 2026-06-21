@@ -672,6 +672,8 @@ h1, h2, h3, h4, h5, h6 {
   font-family: "Inter Variable", "Inter Fallback", sans-serif;
   font-weight: var(--fontWeight-bold);
   color: light-dark(var(--neutral-100), var(--neutral-600));
+  line-height: 1.2;
+  margin-block-end: 1rem;
   text-wrap: balance;
   text-box: trim-both cap alphabetic;
   background-clip: text;

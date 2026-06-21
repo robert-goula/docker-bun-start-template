@@ -3,6 +3,7 @@ import { pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 import { jsonb } from "../jsonb";
+import { widgetElements } from "./widgets";
 
 const CustomWidgetIdSchema = z.uuidv7().brand<"CustomWidgetId">();
 export type CustomWidgetId = z.infer<typeof CustomWidgetIdSchema>;
@@ -97,6 +98,9 @@ export const customWidgets = pgTable(
     slug: varchar({ length: 80 }).notNull(),
     // Selects an optional bespoke view-mode component; falls back to the generic renderer.
     template: varchar({ length: 40 }),
+    // Default read-only wrapper element for instances of this definition (a `widgetElements`
+    // value). Null → the global default (section). A placement can override via `options.as`.
+    element: varchar({ length: 20 }),
     description: varchar({ length: 500 }),
     fields: jsonb<CustomWidgetField[]>("fields").notNull().default([]),
     created: timestamp({ precision: 3, withTimezone: true }).notNull().defaultNow(),
@@ -133,6 +137,7 @@ export type InsertCustomWidgetInput = z.infer<typeof insertCustomWidgetSchema>;
 
 export const selectCustomWidgetSchema = createSelectSchema(customWidgets).extend({
   fields: customWidgetFieldsSchema,
+  element: z.enum(widgetElements).nullable(),
   created: z.coerce.date(),
   updated: z.coerce.date().nullable(),
 });
@@ -145,6 +150,7 @@ export const selectCustomWidgetSchema = createSelectSchema(customWidgets).extend
 export const renderCustomWidgetSchema = z.object({
   id: z.string(),
   template: z.string().nullable(),
+  element: z.enum(widgetElements).nullable(),
   fields: z.array(
     z.object({
       name: z.string(),
@@ -161,6 +167,7 @@ export const updateCustomWidgetSchema = z
     name: z.string().min(1).max(80),
     slug: z.string().min(1).max(80),
     template: z.string().max(40).nullable(),
+    element: z.enum(widgetElements).nullable(),
     description: z.string().max(500).nullable(),
     fields: customWidgetFieldsSchema,
   })

@@ -10,11 +10,13 @@ import {
   type CustomWidgetId,
   customWidgetFieldsSchema,
 } from "@/db/schema/customWidgets";
+import { type WidgetElement, widgetElements } from "@/db/schema/widgets";
 import { customWidgetsKeys, customWidgetsRepo } from "@/repositories/customWidgets";
 import {
   type UpdateCustomWidgetAttributes,
   updateCustomWidgetFn,
 } from "@/server/fns/customWidgets";
+import s from "./$widgetId.module.css";
 
 export const Route = createFileRoute("/_authed/admin/custom-widgets/$widgetId")({
   loader: ({ context, params }) =>
@@ -33,6 +35,7 @@ function RouteComponent() {
   // the in-progress field builder never resets mid-edit).
   const [name, setName] = useState(widget.name);
   const [template, setTemplate] = useState(widget.template ?? "");
+  const [element, setElement] = useState<WidgetElement | "">(widget.element ?? "");
   const [description, setDescription] = useState(widget.description ?? "");
   const [fieldsError, setFieldsError] = useState<string | null>(null);
 
@@ -104,6 +107,28 @@ function RouteComponent() {
                 onBlur={() => save({ template: template.trim() || null })}
                 placeholder="Optional display component key (e.g. headline)"
               />
+            </FieldBody>
+          </Field>
+          <Field className="½">
+            <FieldLabel htmlFor="cw-element">Default tag</FieldLabel>
+            <FieldBody>
+              <select
+                id="cw-element"
+                className={s.select}
+                value={element}
+                onChange={(e) => {
+                  const next = (e.target.value || "") as WidgetElement | "";
+                  setElement(next);
+                  save({ element: next || null });
+                }}
+              >
+                <option value="">Default (section)</option>
+                {widgetElements.map((el) => (
+                  <option key={el} value={el}>
+                    {el}
+                  </option>
+                ))}
+              </select>
             </FieldBody>
           </Field>
           <Field>

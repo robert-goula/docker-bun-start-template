@@ -10,6 +10,25 @@ import { zones } from "./zones";
 export const widgetKinds = ["markdown", "debug", "dynamic"] as const;
 export type WidgetKind = (typeof widgetKinds)[number];
 
+// The semantic elements a widget's read-only wrapper may render as. `section` is the
+// global default; a custom widget definition can set its own default (`element`), and a
+// widget instance can override per-placement via `options.as`.
+export const widgetElements = [
+  "section",
+  "article",
+  "aside",
+  "div",
+  "hgroup",
+  "header",
+  "footer",
+  "nav",
+  "figure",
+] as const;
+export type WidgetElement = (typeof widgetElements)[number];
+export const DEFAULT_WIDGET_ELEMENT: WidgetElement = "section";
+export const isWidgetElement = (value: unknown): value is WidgetElement =>
+  typeof value === "string" && (widgetElements as readonly string[]).includes(value);
+
 const WidgetIdSchema = z.uuidv7().brand<"WidgetId">();
 export type WidgetId = z.infer<typeof WidgetIdSchema>;
 

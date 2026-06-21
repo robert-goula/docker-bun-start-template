@@ -18,6 +18,7 @@ export interface UpdateCustomWidgetInput {
   name?: string;
   slug?: string;
   template?: string | null;
+  element?: string | null;
   description?: string | null;
   fields?: ReadonlyArray<CustomWidgetField>;
 }
@@ -118,6 +119,7 @@ export class CustomWidgetRepo extends Effect.Service<CustomWidgetRepo>()("app/Cu
             if (patch.name !== undefined) set.name = patch.name;
             if (patch.slug !== undefined) set.slug = patch.slug;
             if (patch.template !== undefined) set.template = patch.template;
+            if (patch.element !== undefined) set.element = patch.element;
             if (patch.description !== undefined) set.description = patch.description;
             if (patch.fields !== undefined) set.fields = patch.fields;
             return db.update(customWidgets).set(set).where(eq(customWidgets.id, id));
