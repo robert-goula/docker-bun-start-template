@@ -3,12 +3,15 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { CustomWidgetId } from "@/db/schema/customWidgets";
 import type { Locale } from "@/db/schema/pages";
 import { buildHref, resolveLocale } from "@/lib/locale";
+import { headTagsForPage } from "@/lib/meta/registry";
+import type { PageMetaData } from "@/lib/meta/types";
 import { markdownQueryOptions } from "@/server/fns/markdown";
 import {
   loadPageLayoutFn,
   resolvePageMetaFn,
   savePageLayoutFn,
   setPageLayoutFn,
+  updatePageMetaFn,
 } from "@/server/fns/pages";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
 import type { PageLayout } from "@/components/Zone";
@@ -84,18 +87,22 @@ export async function loadCmsPage(queryClient: QueryClient, ref: PageRef) {
 }
 
 /**
- * Builds TanStack Start `head` content from resolved page metadata: title/description for
- * SEO, a canonical link, and one `hreflang` alternate per locale the slug exists in — all
+ * Builds TanStack Start `head` content from resolved page metadata. Tag emission is
+ * registry-driven: every metadata module contributes its tags (basic → title +
+ * description, Open Graph → og:*, …) via headTagsForPage. Canonical + per-locale hreflang
+ * alternates are added here since they need buildHref + the slug's sibling locales — all
  * URLs built through buildHref so the prefix rule lives in exactly one place.
  */
 export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
-  const title = meta?.meta.title ?? "Page";
-  const description = meta?.meta.description ?? null;
   const slug = meta?.canonicalSlug ?? ref.slug;
   const locales = meta?.availableLocales ?? [ref.locale];
+  const fromModules = meta
+    ? headTagsForPage(meta.modules, { ref, slug, locale: ref.locale })
+    : { meta: [{ title: "Page" }], links: [] as Record<string, string>[] };
   return {
-    meta: [{ title }, ...(description ? [{ name: "description", content: description }] : [])],
+    meta: fromModules.meta,
     links: [
+      ...fromModules.links,
       { rel: "canonical", href: buildHref(ref.locale, slug) },
       ...locales.map((l) => ({ rel: "alternate", hrefLang: l, href: buildHref(l, slug) })),
     ],
@@ -118,4 +125,16 @@ export function savePage(pathname: string, layout: PageLayout) {
  */
 export function setPageLayout(pathname: string, layoutId: string) {
   return setPageLayoutFn({ data: { ref: refFromPathname(pathname), layoutId } });
+}
+
+/**
+ * Persists a page's metadata for a resolved route pathname: the basic fields
+ * (title/description) and any extension modules (Open Graph, …). Mirrors `savePage`'s
+ * pathname → { slug, locale } resolution so edits target the locale being viewed.
+ */
+export function savePageMeta(
+  pathname: string,
+  patch: { title?: string; description?: string | null; modules?: PageMetaData },
+) {
+  return updatePageMetaFn({ data: { ref: refFromPathname(pathname), ...patch } });
 }

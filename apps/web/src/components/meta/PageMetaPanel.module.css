@@ -1,0 +1,44 @@
+/* Edit-mode metadata editor, shown in the page-options bar above the zones. */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  border-radius: var(--borderRadius-md);
+  background: var(--surface-subtle, transparent);
+}
+
+.heading {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Collapsible section per extension module (Open Graph, …). */
+.module {
+  border-top: var(--borderWidth-sm) solid var(--border-default);
+  padding-top: var(--spacing-sm);
+}
+
+.moduleSummary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.moduleSummary:hover {
+  color: var(--text-primary);
+}
+
+.moduleBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+}

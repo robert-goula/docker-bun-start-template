@@ -2,6 +2,8 @@ import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm";
 import { pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
+import type { PageMetaData } from "@/lib/meta/types";
+import { jsonb } from "../jsonb";
 import { layouts } from "./layouts";
 
 export const LOCALES = ["en-us", "es-us"] as const;
@@ -21,6 +23,10 @@ export const pages = pgTable(
     locale: varchar({ length: 10 }).notNull().default(DEFAULT_LOCALE),
     title: varchar({ length: 255 }).notNull(),
     description: varchar({ length: 500 }),
+    // Extensible SEO metadata, keyed by module id (Open Graph, Twitter, …). The basic
+    // module's fields live in title/description above; everything else lives here. See
+    // src/lib/meta. Uses the custom jsonb helper to avoid double-encoding (see ../jsonb).
+    meta: jsonb<PageMetaData>("meta").notNull().default({}),
     layoutId: uuid()
       .notNull()
       .references(() => layouts.id),
@@ -63,6 +69,9 @@ export const updatePageSchema = z
     locale: z.enum(LOCALES),
     title: z.string().min(1).max(255),
     description: z.string().max(500).nullable(),
+    // Non-basic metadata modules keyed by module id; validated per-module against the
+    // registry before persisting (see src/lib/meta/registry.sanitizeModules).
+    meta: z.record(z.string(), z.record(z.string(), z.unknown())),
   })
   .partial();
 export type UpdatePageInput = z.infer<typeof updatePageSchema>;

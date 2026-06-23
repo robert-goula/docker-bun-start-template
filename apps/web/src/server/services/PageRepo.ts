@@ -5,6 +5,8 @@ import { Database, DatabaseLive } from "@/db/layer";
 import { DEFAULT_LAYOUT_NAME, layouts } from "@/db/schema/layouts";
 import { type LayoutZoneOptions, layoutZones } from "@/db/schema/layoutZones";
 import { DEFAULT_LOCALE, type Locale, pages } from "@/db/schema/pages";
+import { sanitizeModules } from "@/lib/meta/registry";
+import type { PageMetaData } from "@/lib/meta/types";
 import { users } from "@/db/schema/users";
 import { widgets } from "@/db/schema/widgets";
 import { type ZoneName, zones } from "@/db/schema/zones";
@@ -35,10 +37,20 @@ export class DatabaseError extends Data.TaggedError("DatabaseError")<{
 
 // Light page metadata for the public route: SEO fields, the canonical slug, and every
 // locale this slug exists in (siblings, for the language switcher + hreflang alternates).
+// `modules` is the effective per-module metadata map: the `meta` jsonb column plus the
+// basic module (title/description) injected from the columns, so head rendering is uniform.
 export interface PageMeta {
   readonly meta: { readonly title: string; readonly description: string | null };
+  readonly modules: PageMetaData;
   readonly canonicalSlug: string;
   readonly availableLocales: ReadonlyArray<Locale>;
+}
+
+// Patch for updatePageMeta: the basic fields (→ columns) and any extension modules (→ jsonb).
+export interface UpdatePageMetaInput {
+  readonly title?: string;
+  readonly description?: string | null;
+  readonly modules?: PageMetaData;
 }
 
 export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
@@ -161,7 +173,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
           const locale = ref.locale ?? DEFAULT_LOCALE;
           const page = await db.query.pages.findFirst({
             where: and(eq(pages.slug, ref.slug), eq(pages.locale, locale)),
-            columns: { title: true, description: true, slug: true },
+            columns: { title: true, description: true, slug: true, meta: true },
           });
           if (!page) return null;
 
@@ -170,11 +182,38 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
             .from(pages)
             .where(eq(pages.slug, ref.slug));
 
+          // Inject the basic module (title/description columns) into the jsonb module map
+          // so every module — basic and extension alike — is rendered uniformly downstream.
+          const modules: PageMetaData = {
+            ...page.meta,
+            basic: { title: page.title, description: page.description },
+          };
+
           return {
             meta: { title: page.title, description: page.description },
+            modules,
             canonicalSlug: page.slug,
             availableLocales: siblings.map((s) => s.locale as Locale),
           };
+        },
+        catch: (cause) => new DatabaseError({ cause }),
+      });
+
+    // Updates a page's metadata for a (slug, locale): the basic fields write to the
+    // title/description columns; extension modules are sanitized against the registry and
+    // shallow-merged (per module) into the `meta` jsonb so unrelated modules are preserved.
+    const updatePageMeta = (ref: PageRef, patch: UpdatePageMetaInput) =>
+      Effect.tryPromise({
+        try: async () => {
+          const page = await ensurePage(ref);
+          const set: Partial<typeof pages.$inferInsert> = {};
+          if (patch.title !== undefined) set.title = patch.title;
+          if (patch.description !== undefined) set.description = patch.description;
+          if (patch.modules !== undefined) {
+            set.meta = { ...page.meta, ...sanitizeModules(patch.modules) };
+          }
+          if (Object.keys(set).length === 0) return;
+          await db.update(pages).set(set).where(eq(pages.id, page.id));
         },
         catch: (cause) => new DatabaseError({ cause }),
       });
@@ -264,6 +303,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
     return {
       getPageLayout,
       getPageMeta,
+      updatePageMeta,
       createPage,
       createTranslation,
       savePageLayout,

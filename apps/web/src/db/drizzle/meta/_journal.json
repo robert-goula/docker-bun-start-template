@@ -43,6 +43,13 @@
       "when": 1782014345413,
       "tag": "0005_redundant_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782252378533,
+      "tag": "0006_brave_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

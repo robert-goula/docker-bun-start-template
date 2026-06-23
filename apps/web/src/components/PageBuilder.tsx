@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ClientOnly, Link } from "@tanstack/react-router";
 import { SquarePen } from "lucide-react";
@@ -99,6 +99,9 @@ interface PageBuilderProps {
   // Called when the admin picks a different layout for the page; the caller persists
   // it and reloads the page so the new zone arrangement renders.
   onLayoutChange?: (layoutId: string) => void;
+  // Edit-only page-level controls (e.g. the metadata editor) rendered full-width above
+  // the zones, beside the layout picker. Only shown in edit mode.
+  toolbar?: ReactNode;
 }
 
 function PageLayoutOptions({
@@ -149,6 +152,7 @@ export default function PageBuilder({
   zonesLocked = false,
   layoutId,
   onLayoutChange,
+  toolbar,
 }: PageBuilderProps) {
   const { editMode } = useEditMode();
   const [layout, setLayout] = useState<ZoneLayout>(initialLayout);
@@ -309,6 +313,7 @@ export default function PageBuilder({
         {layoutId && onLayoutChange ? (
           <PageLayoutOptions layoutId={layoutId} onLayoutChange={onLayoutChange} />
         ) : null}
+        {toolbar ? <div style={{ gridColumn: "1 / -1" }}>{toolbar}</div> : null}
         <DndContext
           sensors={sensors}
           collisionDetection={collisionDetection}

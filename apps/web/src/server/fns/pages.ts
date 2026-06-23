@@ -154,6 +154,38 @@ export const createPageTranslationFn = createServerFn({ method: "POST" })
     );
   });
 
+// Admin authoring: update a page's metadata for a (slug, locale). `title`/`description`
+// are the basic module's fields; `modules` carries extension modules (Open Graph, …),
+// validated per-module against the registry server-side (PageRepo.updatePageMeta).
+const metaScalarSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+const metaValueSchema = z.union([metaScalarSchema, z.array(metaScalarSchema)]);
+const updatePageMetaInputSchema = z.object({
+  ref: pageRefSchema,
+  title: z.string().min(1).max(255).optional(),
+  description: z.string().max(500).nullable().optional(),
+  modules: z.record(z.string(), z.record(z.string(), metaValueSchema)).optional(),
+});
+
+export const updatePageMetaFn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => updatePageMetaInputSchema.parse(input))
+  .middleware([authMiddleware])
+  .handler(({ data, context }) => {
+    if (!context.user.roles.includes("admin")) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+    return runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* PageRepo;
+        yield* repo.updatePageMeta(data.ref, {
+          title: data.title,
+          description: data.description,
+          modules: data.modules,
+        });
+        return { ok: true } as const;
+      }).pipe(Effect.catchTags({ DatabaseError: dbError })),
+    );
+  });
+
 // Saving is content-only: a page ref (which page) plus the layout carrying the
 // widgets to persist. Zone arrangement is owned by the layout and ignored here.
 const savePageInputSchema = z.object({ ref: pageRefSchema, layout: pageLayoutSchema });
