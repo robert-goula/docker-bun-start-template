@@ -1,14 +1,14 @@
-import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
+import { useLocation, useRouter } from "@tanstack/react-router";
 import PageBuilder from "@/components/PageBuilder";
-import { loadPage, savePage, setPageLayout } from "@/lib/loadPage";
+import { savePage, setPageLayout } from "@/lib/loadPage";
+import type { PageLayout } from "@/components/Zone";
 
-export const Route = createFileRoute("/")({
-  loader: ({ context, location }) => loadPage(context.queryClient, location.pathname),
-  component: App,
-});
-
-function App() {
-  const page = Route.useLoaderData();
+/**
+ * Renders a CMS page's widgets and wires the authoring actions. Used by both the home
+ * index and the dynamic slug route — locale + slug come from the loader (router context),
+ * so this component just needs the resolved layout and the current pathname for saves.
+ */
+export default function CmsPage({ page }: { page: PageLayout & { layoutId: string } }) {
   const pathname = useLocation({ select: (l) => l.pathname });
   const router = useRouter();
   return (

@@ -1,10 +1,12 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useIntlayer } from "react-intlayer";
 import { Button } from "@/components/ui/button";
 import { logoutFn, meQueryOptions } from "@/server/fns/auth";
 import ThemeToggle from "./ThemeToggle";
 import FontSizeControls from "./FontSizeControls";
 import AccentControls from "./AccentControls";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { EditModeToggle } from "./EditMode";
 import { cx } from "class-variance-authority";
 import styles from "./Header.module.css";
@@ -13,6 +15,7 @@ export default function Header() {
   const router = useRouter();
   const qc = useQueryClient();
   const me = useSuspenseQuery(meQueryOptions());
+  const content = useIntlayer("header");
 
   const logout = useMutation({
     mutationFn: () => logoutFn(),
@@ -26,14 +29,18 @@ export default function Header() {
     <header>
       <section className="⅓">
         <h2>
-          <Link to="/">Home</Link>
+          <Link to="/{-$locale}">{content.home}</Link>
         </h2>
       </section>
 
       <section className="⅓">
         <nav className="full">
-          <Link to="/" className="nav-link" activeProps={{ className: "nav-link is-active" }}>
-            Home
+          <Link
+            to="/{-$locale}"
+            className="nav-link"
+            activeProps={{ className: "nav-link is-active" }}
+          >
+            {content.home}
           </Link>
           {me.data?.roles.includes("admin") && (
             <>
@@ -42,13 +49,14 @@ export default function Header() {
                 className="nav-link"
                 activeProps={{ className: "nav-link is-active" }}
               >
-                Admin
+                {content.admin}
               </Link>
             </>
           )}
         </nav>
       </section>
       <section className={cx(styles.rhs, "⅓")}>
+        <LanguageSwitcher />
         <FontSizeControls />
         <AccentControls />
         <ThemeToggle />
@@ -62,12 +70,12 @@ export default function Header() {
               disabled={logout.isPending}
               onClick={() => logout.mutate()}
             >
-              {logout.isPending ? "Signing out…" : "Sign out"}
+              {logout.isPending ? content.signingOut : content.signOut}
             </Button>
           </div>
         ) : (
           <Link to="/login" className="nav-link">
-            Sign in
+            {content.signIn}
           </Link>
         )}
       </section>

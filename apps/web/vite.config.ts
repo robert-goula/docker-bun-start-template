@@ -3,6 +3,7 @@ import { defineConfig, type Plugin } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { intlayer } from 'vite-intlayer'
 
 const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
@@ -71,7 +72,15 @@ export default defineConfig({
   plugins: [
     bunClientStub(),
     tailwindcss(),
-    tanstackStart(),
+    // intlayer transpiles `.content.*` declarations and generates `.intlayer/` types.
+    intlayer(),
+    // Exclude content declarations from file-based routing so they aren't treated as
+    // routes (the critical intlayer + TanStack Start gotcha).
+    tanstackStart({
+      router: {
+        routeFileIgnorePattern: '.content.(ts|tsx|js|mjs|cjs|jsx|json|jsonc|json5)$',
+      },
+    }),
     viteReact(),
   ],
 })

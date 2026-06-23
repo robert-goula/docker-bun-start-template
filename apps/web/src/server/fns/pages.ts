@@ -94,6 +94,66 @@ export const loadPageLayoutFn = createServerFn({ method: "GET" })
     ),
   );
 
+// Public, read-only page metadata for the dynamic CMS route: SEO title/description, the
+// canonical slug, and the locales this slug exists in. Returns null for an unknown slug
+// (the route turns that into notFound) — it never auto-creates.
+export const resolvePageMetaFn = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => pageRefSchema.parse(input))
+  .handler(({ data }) =>
+    runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* PageRepo;
+        return yield* repo.getPageMeta(data);
+      }).pipe(Effect.catchTags({ DatabaseError: dbError })),
+    ),
+  );
+
+// Admin authoring: create a new page (slug + locale) linked to the default layout.
+const createPageInputSchema = z.object({
+  slug: z.string().min(1).max(255),
+  locale: z.enum(LOCALES),
+  title: z.string().min(1).max(255).optional(),
+});
+
+export const createPageFn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => createPageInputSchema.parse(input))
+  .middleware([authMiddleware])
+  .handler(({ data, context }) => {
+    if (!context.user.roles.includes("admin")) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+    return runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* PageRepo;
+        yield* repo.createPage(data);
+        return { ok: true } as const;
+      }).pipe(Effect.catchTags({ DatabaseError: dbError })),
+    );
+  });
+
+// Admin authoring: clone an existing page into a missing locale (shared slug).
+const createTranslationInputSchema = z.object({
+  slug: z.string().min(1).max(255),
+  fromLocale: z.enum(LOCALES),
+  toLocale: z.enum(LOCALES),
+});
+
+export const createPageTranslationFn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => createTranslationInputSchema.parse(input))
+  .middleware([authMiddleware])
+  .handler(({ data, context }) => {
+    if (!context.user.roles.includes("admin")) {
+      throw new Response("Forbidden", { status: 403 });
+    }
+    return runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* PageRepo;
+        yield* repo.createTranslation(data.slug, data.fromLocale, data.toLocale);
+        return { ok: true } as const;
+      }).pipe(Effect.catchTags({ DatabaseError: dbError })),
+    );
+  });
+
 // Saving is content-only: a page ref (which page) plus the layout carrying the
 // widgets to persist. Zone arrangement is owned by the layout and ignored here.
 const savePageInputSchema = z.object({ ref: pageRefSchema, layout: pageLayoutSchema });

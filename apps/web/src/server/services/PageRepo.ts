@@ -33,6 +33,14 @@ export class DatabaseError extends Data.TaggedError("DatabaseError")<{
   readonly cause: unknown;
 }> {}
 
+// Light page metadata for the public route: SEO fields, the canonical slug, and every
+// locale this slug exists in (siblings, for the language switcher + hreflang alternates).
+export interface PageMeta {
+  readonly meta: { readonly title: string; readonly description: string | null };
+  readonly canonicalSlug: string;
+  readonly availableLocales: ReadonlyArray<Locale>;
+}
+
 export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
   effect: Effect.gen(function* () {
     const db = yield* Database;
@@ -67,6 +75,31 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
       if (!page) throw new Error(`page "${slug}" (${locale}) could not be created`);
       return page;
     };
+
+    // Explicit page creation for the admin authoring flow. Same upsert as ensurePage
+    // (linked to the default layout), surfaced as a first-class write.
+    const createPage = (ref: PageRef) =>
+      Effect.tryPromise({
+        try: () => ensurePage(ref),
+        catch: (cause) => new DatabaseError({ cause }),
+      });
+
+    // Adds a translation of an existing page: clones the source locale's title and layout
+    // into the target locale (shared slug). No-op if the target locale already exists.
+    const createTranslation = (slug: string, fromLocale: Locale, toLocale: Locale) =>
+      Effect.tryPromise({
+        try: async () => {
+          const source = await db.query.pages.findFirst({
+            where: and(eq(pages.slug, slug), eq(pages.locale, fromLocale)),
+          });
+          if (!source) throw new Error(`source page "${slug}" (${fromLocale}) not found`);
+          await db
+            .insert(pages)
+            .values({ slug, locale: toLocale, title: source.title, layoutId: source.layoutId })
+            .onConflictDoNothing({ target: [pages.slug, pages.locale] });
+        },
+        catch: (cause) => new DatabaseError({ cause }),
+      });
 
     // Loads a page's layout by (slug, locale): the zone arrangement comes from the
     // page's layout (layoutZone ⋈ zone), the widget content from the page itself.
@@ -112,6 +145,35 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                   ),
               };
             }),
+          };
+        },
+        catch: (cause) => new DatabaseError({ cause }),
+      });
+
+    // Light, read-only metadata resolution for the public page route — title/description
+    // for SEO plus the locales this slug exists in (for the language switcher + hreflang).
+    // Deliberately does NOT auto-create: an unknown slug returns null so the route can 404.
+    // The shared-slug model means siblings share the slug, so the slug is already canonical.
+    // NOTE: real CMS resolution (drafts, redirects, aliases) would slot in here.
+    const getPageMeta = (ref: PageRef) =>
+      Effect.tryPromise({
+        try: async (): Promise<PageMeta | null> => {
+          const locale = ref.locale ?? DEFAULT_LOCALE;
+          const page = await db.query.pages.findFirst({
+            where: and(eq(pages.slug, ref.slug), eq(pages.locale, locale)),
+            columns: { title: true, description: true, slug: true },
+          });
+          if (!page) return null;
+
+          const siblings = await db
+            .selectDistinct({ locale: pages.locale })
+            .from(pages)
+            .where(eq(pages.slug, ref.slug));
+
+          return {
+            meta: { title: page.title, description: page.description },
+            canonicalSlug: page.slug,
+            availableLocales: siblings.map((s) => s.locale as Locale),
           };
         },
         catch: (cause) => new DatabaseError({ cause }),
@@ -199,7 +261,15 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
       });
     });
 
-    return { getPageLayout, savePageLayout, setPageLayout, list } as const;
+    return {
+      getPageLayout,
+      getPageMeta,
+      createPage,
+      createTranslation,
+      savePageLayout,
+      setPageLayout,
+      list,
+    } as const;
   }),
   dependencies: [DatabaseLive],
 }) {}

@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as Char123LocaleChar125RouteRouteImport } from './routes/{-$locale}/route'
+import { Route as Char123LocaleChar125IndexRouteImport } from './routes/{-$locale}/index'
+import { Route as Char123LocaleChar125SplatRouteImport } from './routes/{-$locale}/$'
 import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api/openapi[.]json'
 import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
 import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
@@ -32,11 +34,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const Char123LocaleChar125RouteRoute =
+  Char123LocaleChar125RouteRouteImport.update({
+    id: '/{-$locale}',
+    path: '/{-$locale}',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char123LocaleChar125IndexRoute =
+  Char123LocaleChar125IndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
+const Char123LocaleChar125SplatRoute =
+  Char123LocaleChar125SplatRouteImport.update({
+    id: '/$',
+    path: '/$',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
 const ApiOpenapiDotjsonRoute = ApiOpenapiDotjsonRouteImport.update({
   id: '/api/openapi.json',
   path: '/api/openapi.json',
@@ -117,10 +132,12 @@ const AuthedAdminCustomWidgetsWidgetIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
   '/login': typeof LoginRoute
   '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
+  '/{-$locale}/$': typeof Char123LocaleChar125SplatRoute
+  '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
@@ -136,9 +153,10 @@ export interface FileRoutesByFullPath {
   '/admin/zones/': typeof AuthedAdminZonesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
+  '/{-$locale}/$': typeof Char123LocaleChar125SplatRoute
+  '/{-$locale}': typeof Char123LocaleChar125IndexRoute
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
@@ -155,10 +173,12 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
   '/login': typeof LoginRoute
   '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
+  '/{-$locale}/$': typeof Char123LocaleChar125SplatRoute
+  '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
@@ -176,10 +196,12 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
+    | '/{-$locale}'
     | '/login'
     | '/admin'
     | '/api/openapi.json'
+    | '/{-$locale}/$'
+    | '/{-$locale}/'
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/users/$id'
@@ -195,9 +217,10 @@ export interface FileRouteTypes {
     | '/admin/zones/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/login'
     | '/api/openapi.json'
+    | '/{-$locale}/$'
+    | '/{-$locale}'
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/users/$id'
@@ -213,10 +236,12 @@ export interface FileRouteTypes {
     | '/admin/zones'
   id:
     | '__root__'
-    | '/'
+    | '/{-$locale}'
     | '/login'
     | '/_authed/admin'
     | '/api/openapi.json'
+    | '/{-$locale}/$'
+    | '/{-$locale}/'
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/users/$id'
@@ -233,7 +258,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  Char123LocaleChar125RouteRoute: typeof Char123LocaleChar125RouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   AuthedAdminRouteRoute: typeof AuthedAdminRouteRouteWithChildren
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
@@ -252,12 +277,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/{-$locale}': {
+      id: '/{-$locale}'
+      path: '/{-$locale}'
+      fullPath: '/{-$locale}'
+      preLoaderRoute: typeof Char123LocaleChar125RouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/{-$locale}/': {
+      id: '/{-$locale}/'
+      path: '/'
+      fullPath: '/{-$locale}/'
+      preLoaderRoute: typeof Char123LocaleChar125IndexRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
+    '/{-$locale}/$': {
+      id: '/{-$locale}/$'
+      path: '/$'
+      fullPath: '/{-$locale}/$'
+      preLoaderRoute: typeof Char123LocaleChar125SplatRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
     '/api/openapi.json': {
       id: '/api/openapi.json'
@@ -367,6 +406,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface Char123LocaleChar125RouteRouteChildren {
+  Char123LocaleChar125SplatRoute: typeof Char123LocaleChar125SplatRoute
+  Char123LocaleChar125IndexRoute: typeof Char123LocaleChar125IndexRoute
+}
+
+const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChildren =
+  {
+    Char123LocaleChar125SplatRoute: Char123LocaleChar125SplatRoute,
+    Char123LocaleChar125IndexRoute: Char123LocaleChar125IndexRoute,
+  }
+
+const Char123LocaleChar125RouteRouteWithChildren =
+  Char123LocaleChar125RouteRoute._addFileChildren(
+    Char123LocaleChar125RouteRouteChildren,
+  )
+
 interface AuthedAdminRouteRouteChildren {
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
   AuthedAdminCustomWidgetsWidgetIdRoute: typeof AuthedAdminCustomWidgetsWidgetIdRoute
@@ -395,7 +450,7 @@ const AuthedAdminRouteRouteWithChildren =
   AuthedAdminRouteRoute._addFileChildren(AuthedAdminRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  Char123LocaleChar125RouteRoute: Char123LocaleChar125RouteRouteWithChildren,
   LoginRoute: LoginRoute,
   AuthedAdminRouteRoute: AuthedAdminRouteRouteWithChildren,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
