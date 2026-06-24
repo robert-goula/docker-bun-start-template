@@ -1,11 +1,14 @@
 import { useRef, useState } from "react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { type LayoutId } from "@/db/schema/layouts";
+import { LOCALES, type Locale } from "@/db/schema/pages";
 import LayoutBuilder, { type LayoutZoneState } from "@/components/LayoutBuilder";
+import PageBuilder from "@/components/PageBuilder";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { layoutsKeys, layoutsRepo } from "@/repositories/layouts";
+import { layoutWidgetsRepo, saveLayoutWidgets } from "@/repositories/layoutWidgets";
 import { type UpdateLayoutAttributes, updateLayoutFn } from "@/server/fns/layouts";
 
 export const Route = createFileRoute("/_authed/admin/layouts/$layoutId")({
@@ -108,6 +111,58 @@ function RouteComponent() {
       <section className="full">
         <LayoutBuilder initialZones={initialZones.current} onChange={saveZones} />
       </section>
+
+      <section className="full">
+        <h2>Default widgets</h2>
+        <p>
+          Widgets placed here appear on every page using this layout, without being added per page.
+          Pick a locale to give that language its own defaults (e.g. a localized nav menu), or “All
+          locales” for defaults shared across languages (e.g. a debug panel). Each widget’s settings
+          let you pin it to the top or bottom of its zone.
+        </p>
+        <DefaultWidgets layoutId={id} />
+      </section>
     </main>
+  );
+}
+
+// Per-scope editor for a layout's default widgets. A scope is a locale, or null for the
+// all-locales defaults. Switching scope remounts PageBuilder (keyed by scope) so it
+// re-seeds from that scope's widgets; saves autosave back to the same scope.
+function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
+  const [scope, setScope] = useState<Locale | null>(null);
+  const { data: layout } = useQuery(layoutWidgetsRepo.forScope(layoutId, scope));
+
+  return (
+    <>
+      <label htmlFor="layout-widget-scope">Locale</label>{" "}
+      <select
+        id="layout-widget-scope"
+        value={scope ?? ""}
+        onChange={(e) => setScope(e.target.value === "" ? null : (e.target.value as Locale))}
+      >
+        <option value="">All locales</option>
+        {LOCALES.map((l) => (
+          <option key={l} value={l}>
+            {l}
+          </option>
+        ))}
+      </select>
+      {layout ? (
+        <PageBuilder
+          key={scope ?? "all"}
+          initialLayout={layout}
+          ownSource="layout"
+          pinnable
+          zonesLocked
+          alwaysEdit
+          onSave={(next) => {
+            saveLayoutWidgets(layoutId, scope, next).catch(console.error);
+          }}
+        />
+      ) : (
+        <p>Loading…</p>
+      )}
+    </>
   );
 }

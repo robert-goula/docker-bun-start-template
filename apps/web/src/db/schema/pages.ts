@@ -35,6 +35,10 @@ export const pages = pgTable(
     // module's fields live in title/description above; everything else lives here. See
     // src/lib/meta. Uses the custom jsonb helper to avoid double-encoding (see ../jsonb).
     meta: jsonb<PageMetaData>("meta").notNull().default({}),
+    // Ids of this page's layout-default widgets (see schema/layoutWidgets) that the
+    // editor has suppressed for this page only. Layout defaults render on every page
+    // using the layout; listing one here hides it on this page without affecting others.
+    hiddenLayoutWidgets: jsonb<string[]>("hiddenLayoutWidgets").notNull().default([]),
     layoutId: uuid()
       .notNull()
       .references(() => layouts.id),

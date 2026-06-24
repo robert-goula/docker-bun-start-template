@@ -50,6 +50,8 @@ export async function loadPage(queryClient: QueryClient, ref: PageRef) {
   await Promise.all(
     layout.zones.flatMap((zone) =>
       zone.widgets.flatMap((w) => {
+        // Suppressed layout defaults aren't rendered on this page; don't warm them.
+        if (w.hidden) return [];
         if (w.kind === "markdown" && typeof w.content === "string") {
           return [queryClient.prefetchQuery(markdownQueryOptions(w.content))];
         }
@@ -127,10 +129,18 @@ export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
 /**
  * Persists a page's widget content for a resolved route pathname. Zone arrangement
  * is owned by the page's layout and is not written here. Mirrors `loadPage`'s
- * pathname → { slug, locale } resolution so saves target the same page.
+ * pathname → { slug, locale } resolution so saves target the same page. Layout-default
+ * widgets are owned by the layout (the server ignores them); the page only records which
+ * of them it suppresses, derived here from the layout widgets flagged `hidden`.
  */
 export function savePage(pathname: string, layout: PageLayout) {
-  return savePageLayoutFn({ data: { ref: refFromPathname(pathname), layout } });
+  const hiddenLayoutWidgets = layout.zones
+    .flatMap((z) => z.widgets)
+    .filter((w) => w.source === "layout" && w.hidden)
+    .map((w) => w.id);
+  return savePageLayoutFn({
+    data: { ref: refFromPathname(pathname), layout, hiddenLayoutWidgets },
+  });
 }
 
 /**

@@ -22,7 +22,7 @@ import { useEditMode } from "@/components/EditMode";
 import { layoutsRepo } from "@/repositories/layouts";
 import { editOnlyWidgetKinds } from "@/components/widgetRegistry";
 import { defaultContentForKind } from "@/db/schema/widgets";
-import type { WidgetConfig, WidgetKind } from "@/components/Widget";
+import type { WidgetConfig, WidgetKind, WidgetSource } from "@/components/Widget";
 import type { ZoneConfig, ZoneSize } from "@/components/Zone";
 import styles from "./PageBuilder.module.css";
 
@@ -102,6 +102,14 @@ interface PageBuilderProps {
   // Edit-only page-level controls (e.g. the metadata editor) rendered full-width above
   // the zones, beside the layout picker. Only shown in edit mode.
   toolbar?: ReactNode;
+  // Which widgets this builder owns. On a page (default "page") layout-default widgets are
+  // foreign and read-only; in the layout-default editor pass "layout" so they're editable.
+  ownSource?: WidgetSource;
+  // Exposes a pin (top/bottom) control on each widget — used by the layout-default editor.
+  pinnable?: boolean;
+  // Renders the editor regardless of the global edit-mode toggle. Used by admin screens
+  // (e.g. the layout-default editor) that are always in an authoring context.
+  alwaysEdit?: boolean;
 }
 
 function PageLayoutOptions({
@@ -153,8 +161,12 @@ export default function PageBuilder({
   layoutId,
   onLayoutChange,
   toolbar,
+  ownSource = "page",
+  pinnable = false,
+  alwaysEdit = false,
 }: PageBuilderProps) {
   const { editMode } = useEditMode();
+  const inEditMode = editMode || alwaysEdit;
   const [layout, setLayout] = useState<ZoneLayout>(initialLayout);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [activeDragType, setActiveDragType] = useState<"zone" | "widget" | null>(null);
@@ -233,6 +245,21 @@ export default function PageBuilder({
     });
   }
 
+  // Toggles whether a foreign (layout-default) widget is suppressed on this page.
+  // The suppressed flag lives on the widget config; savePage derives the id list from it.
+  function handleWidgetHiddenChange(zoneId: string, widgetId: string) {
+    commit({
+      zones: layout.zones.map((z) =>
+        z.id === zoneId
+          ? {
+              ...z,
+              widgets: z.widgets.map((w) => (w.id === widgetId ? { ...w, hidden: !w.hidden } : w)),
+            }
+          : z,
+      ),
+    });
+  }
+
   function handleWidgetAdd(zoneId: string, kind: WidgetKind, definitionId?: string) {
     const widget: WidgetConfig = {
       id: crypto.randomUUID(),
@@ -289,11 +316,12 @@ export default function PageBuilder({
 
   const zoneIds = layout.zones.map((z) => z.id);
 
-  if (!editMode) {
+  if (!inEditMode) {
     return (
       <main>
         {layout.zones.map((zone) => {
-          const visible = zone.widgets.filter((w) => !editOnlyWidgetKinds.has(w.kind));
+          // Skip edit-only kinds (e.g. debug) and any layout default this page suppressed.
+          const visible = zone.widgets.filter((w) => !editOnlyWidgetKinds.has(w.kind) && !w.hidden);
           if (visible.length === 0) return null;
           return (
             <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
@@ -332,6 +360,8 @@ export default function PageBuilder({
                 defaultOpen={zone.defaultOpen}
                 locked={zonesLocked}
                 widgets={zone.widgets}
+                ownSource={ownSource}
+                pinnable={pinnable}
                 onSizeChange={(size) => handleZoneSizeChange(zone.id, size)}
                 onWidgetDelete={(widgetId) => handleWidgetDelete(zone.id, widgetId)}
                 onWidgetOptionsChange={(widgetId, options) =>
@@ -341,6 +371,7 @@ export default function PageBuilder({
                   handleWidgetContentChange(zone.id, widgetId, content)
                 }
                 onWidgetAdd={(kind, definitionId) => handleWidgetAdd(zone.id, kind, definitionId)}
+                onWidgetHiddenChange={(widgetId) => handleWidgetHiddenChange(zone.id, widgetId)}
               />
             ))}
           </SortableContext>

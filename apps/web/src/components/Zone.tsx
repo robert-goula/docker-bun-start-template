@@ -14,7 +14,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cx } from "class-variance-authority";
-import Widget from "@/components/Widget";
+import Widget, { LayoutWidgetCard } from "@/components/Widget";
 import {
   Dialog,
   DialogClose,
@@ -25,7 +25,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
-import type { WidgetConfig, WidgetKind } from "@/components/Widget";
+import type { WidgetConfig, WidgetKind, WidgetSource } from "@/components/Widget";
 import { widgetKindList } from "@/components/widgetRegistry";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
 
@@ -78,6 +78,11 @@ interface ZoneProps {
   // area, add-widget button and collapse toggle are omitted, leaving a sized block.
   contentless?: boolean;
   widgets: WidgetConfig[];
+  // Which widgets this builder owns (editable). Widgets whose `source` differs are
+  // foreign (e.g. layout defaults shown read-only on a page). Defaults to "page".
+  ownSource?: WidgetSource;
+  // Layout-default editor: own widgets expose a pin (top/bottom) control.
+  pinnable?: boolean;
   onSizeChange?: (size: ZoneSize) => void;
   // When provided (layout editor), the settings dialog edits the full zone
   // arrangement and applies it in a single change so nothing clobbers anything.
@@ -86,6 +91,8 @@ interface ZoneProps {
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
   onWidgetAdd?: (kind: WidgetKind, definitionId?: string) => void;
+  // Toggles whether a foreign (layout) widget is suppressed on this page.
+  onWidgetHiddenChange?: (widgetId: string) => void;
 }
 
 interface ZoneControlProps {
@@ -96,11 +103,22 @@ interface ZoneHeaderProps {
 }
 interface ZoneContentProps {
   widgets: WidgetConfig[];
+  ownSource?: WidgetSource;
+  pinnable?: boolean;
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
   onWidgetAdd?: (kind: WidgetKind, definitionId?: string) => void;
+  onWidgetHiddenChange?: (widgetId: string) => void;
 }
+
+// A widget is foreign to this builder when it carries a different `source` (e.g. a
+// layout default shown read-only on a page). Foreign widgets render via LayoutWidgetCard,
+// pinned around the builder's own sortable widgets.
+const isForeign = (widget: WidgetConfig, ownSource: WidgetSource) =>
+  widget.source !== undefined && widget.source !== ownSource;
+
+const pinOf = (widget: WidgetConfig) => (widget.options.pin === "bottom" ? "bottom" : "top");
 
 function Zone({
   id,
@@ -111,12 +129,15 @@ function Zone({
   contentless = false,
   title,
   widgets,
+  ownSource = "page",
+  pinnable = false,
   onSizeChange,
   onArrangementChange,
   onWidgetDelete,
   onWidgetOptionsChange,
   onWidgetContentChange,
   onWidgetAdd,
+  onWidgetHiddenChange,
 }: ZoneProps) {
   const internalId = useId();
   const [open, setOpen] = useState(defaultOpen);
@@ -269,10 +290,13 @@ function Zone({
         {!contentless && (
           <Zone.Content
             widgets={widgets}
+            ownSource={ownSource}
+            pinnable={pinnable}
             onWidgetDelete={onWidgetDelete}
             onWidgetOptionsChange={onWidgetOptionsChange}
             onWidgetContentChange={onWidgetContentChange}
             onWidgetAdd={onWidgetAdd}
+            onWidgetHiddenChange={onWidgetHiddenChange}
           />
         )}
       </section>
@@ -318,10 +342,13 @@ Zone.Controls = function ZoneControls({ children }: ZoneControlProps) {
 
 Zone.Content = function ZoneContent({
   widgets,
+  ownSource = "page",
+  pinnable = false,
   onWidgetDelete,
   onWidgetOptionsChange,
   onWidgetContentChange,
   onWidgetAdd,
+  onWidgetHiddenChange,
 }: ZoneContentProps) {
   const ctx = useContext(ZoneContext);
   if (!ctx) throw new Error("Zone.Content must be used within a Zone");
@@ -340,6 +367,21 @@ Zone.Content = function ZoneContent({
     onWidgetAdd?.(kind, definitionId);
   }
 
+  // Foreign widgets (layout defaults on a page) are read-only and pinned around this
+  // builder's own, sortable widgets. Only own widgets take part in drag/drop and saving.
+  const foreign = widgets.filter((w) => isForeign(w, ownSource));
+  const own = widgets.filter((w) => !isForeign(w, ownSource));
+  const pinnedTop = foreign.filter((w) => pinOf(w) !== "bottom");
+  const pinnedBottom = foreign.filter((w) => pinOf(w) === "bottom");
+
+  const renderForeign = (w: WidgetConfig) => (
+    <LayoutWidgetCard
+      key={w.id}
+      widget={w}
+      onToggleHidden={onWidgetHiddenChange ? () => onWidgetHiddenChange(w.id) : undefined}
+    />
+  );
+
   return (
     <section
       aria-labelledby={toggleId}
@@ -350,20 +392,23 @@ Zone.Content = function ZoneContent({
       data-over={isOver || undefined}
       data-empty={isEmpty || undefined}
     >
-      <SortableContext items={widgets.map((w) => w.id)} strategy={verticalListSortingStrategy}>
-        {widgets.map((w) => (
+      {pinnedTop.map(renderForeign)}
+      <SortableContext items={own.map((w) => w.id)} strategy={verticalListSortingStrategy}>
+        {own.map((w) => (
           <Widget
             key={w.id}
             id={w.id}
             kind={w.kind}
             options={w.options}
             content={w.content}
+            pinnable={pinnable}
             onDelete={() => onWidgetDelete?.(w.id)}
             onOptionsChange={(options) => onWidgetOptionsChange?.(w.id, options)}
             onContentChange={(content) => onWidgetContentChange?.(w.id, content)}
           />
         ))}
       </SortableContext>
+      {pinnedBottom.map(renderForeign)}
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogTrigger
           render={

@@ -12,12 +12,15 @@ import { PageRepo } from "@/server/services/PageRepo";
 import { jsonSchema } from "@/types/Json";
 import type { PageLayout } from "@/components/Zone";
 
-const widgetSchema = z
+export const widgetSchema = z
   .object({
     id: z.string(),
     kind: z.enum(widgetKinds),
     options: z.record(z.string(), z.unknown()),
     content: jsonSchema.nullable().optional(),
+    // Origin tag from the builder: layout-default widgets ("layout") are merged in on
+    // load but owned by the layout, so the page save ignores them. Defaults to a page widget.
+    source: z.enum(["page", "layout"]).optional(),
   })
   // Content shape is per-kind (markdown: a string; others: an object/string), so
   // validate it against the kind's schema and surface issues under `content`.
@@ -40,7 +43,7 @@ const zoneSchema = z.object({
   widgets: z.array(widgetSchema),
 });
 
-const pageLayoutSchema = z.object({ zones: z.array(zoneSchema) });
+export const pageLayoutSchema = z.object({ zones: z.array(zoneSchema) });
 
 // Identifies which page to load: a route slug plus an optional locale (defaults
 // server-side to DEFAULT_LOCALE). The title is derived from the slug on first
@@ -224,7 +227,13 @@ export const updatePageMetaFn = createServerFn({ method: "POST" })
 
 // Saving is content-only: a page ref (which page) plus the layout carrying the
 // widgets to persist. Zone arrangement is owned by the layout and ignored here.
-const savePageInputSchema = z.object({ ref: pageRefSchema, layout: pageLayoutSchema });
+// `hiddenLayoutWidgets` records which of the layout's default widgets this page
+// suppresses; omitted leaves the stored value untouched.
+const savePageInputSchema = z.object({
+  ref: pageRefSchema,
+  layout: pageLayoutSchema,
+  hiddenLayoutWidgets: z.array(z.string()).optional(),
+});
 
 export const savePageLayoutFn = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => savePageInputSchema.parse(input))
@@ -232,7 +241,7 @@ export const savePageLayoutFn = createServerFn({ method: "POST" })
     runtime.runPromise(
       Effect.gen(function* () {
         const repo = yield* PageRepo;
-        yield* repo.savePageLayout(data.ref, data.layout as PageLayout);
+        yield* repo.savePageLayout(data.ref, data.layout as PageLayout, data.hiddenLayoutWidgets);
         return { ok: true } as const;
       }).pipe(Effect.catchTags({ DatabaseError: dbError })),
     ),

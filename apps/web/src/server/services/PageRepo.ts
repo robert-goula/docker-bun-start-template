@@ -1,8 +1,9 @@
-import { and, asc, desc, eq, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, notInArray, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { Data, Effect } from "effect";
 import { Database, DatabaseLive } from "@/db/layer";
 import { DEFAULT_LAYOUT_NAME, layouts } from "@/db/schema/layouts";
+import { DEFAULT_WIDGET_PIN, type LayoutWidget, layoutWidgets } from "@/db/schema/layoutWidgets";
 import { type LayoutZoneOptions, layoutZones } from "@/db/schema/layoutZones";
 import { DEFAULT_LOCALE, type Locale, pages } from "@/db/schema/pages";
 import { sanitizeModules } from "@/lib/meta/registry";
@@ -14,6 +15,22 @@ import { MenuCache } from "./MenuCache";
 import { Policy } from "./Policy";
 import type { WidgetConfig, WidgetKind } from "@/components/Widget";
 import type { PageLayout, ZoneConfig, ZoneSize } from "@/components/Zone";
+
+// Projects a layout-default widget row into a renderable WidgetConfig, tagged so the
+// page editor renders it read-only (owned by the layout, not the page). `hidden` marks
+// defaults this page suppresses — kept in the payload so the editor can restore them,
+// but skipped in view mode.
+const layoutWidgetToConfig = (w: LayoutWidget, hidden: boolean): WidgetConfig => ({
+  id: w.id,
+  kind: w.kind as WidgetKind,
+  options: (w.options ?? {}) as WidgetConfig["options"],
+  content: (w.content ?? null) as WidgetConfig["content"],
+  source: "layout",
+  hidden,
+});
+
+const pinOf = (w: LayoutWidget): string =>
+  ((w.options as { pin?: unknown })?.pin as string | undefined) ?? DEFAULT_WIDGET_PIN;
 
 // A page is identified by a slug + locale. Routes pass these in; the repo bootstraps
 // the page (linked to the default layout) on first access for any slug.
@@ -161,10 +178,25 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
             orderBy: asc(widgets.order),
           });
 
+          // The layout's default widgets for this locale (plus the all-locales defaults,
+          // locale IS NULL). Pinned to the top or bottom of their zone, around the page's
+          // own widgets. Suppressed ones stay in the payload tagged `hidden` so the editor
+          // can restore them; view-mode rendering skips them.
+          const hidden = new Set(page.hiddenLayoutWidgets ?? []);
+          const layoutWidgetRows = await db.query.layoutWidgets.findMany({
+            where: and(
+              eq(layoutWidgets.layoutId, page.layoutId),
+              or(eq(layoutWidgets.locale, page.locale), isNull(layoutWidgets.locale)),
+            ),
+            orderBy: asc(layoutWidgets.order),
+          });
+          const toLayoutConfig = (w: LayoutWidget) => layoutWidgetToConfig(w, hidden.has(w.id));
+
           return {
             layoutId: page.layoutId,
             zones: zoneRows.map((zr): ZoneConfig => {
               const opt = (zr.options ?? {}) as LayoutZoneOptions;
+              const layoutForZone = layoutWidgetRows.filter((w) => w.zoneId === zr.zoneId);
               return {
                 id: zr.zoneId,
                 name: zr.name as ZoneName,
@@ -172,16 +204,21 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                 size: opt.size as ZoneSize,
                 order: opt.order,
                 defaultOpen: opt.defaultOpen,
-                widgets: widgetRows
-                  .filter((w) => w.zoneId === zr.zoneId)
-                  .map(
-                    (w): WidgetConfig => ({
-                      id: w.id,
-                      kind: w.kind as WidgetKind,
-                      options: (w.options ?? {}) as WidgetConfig["options"],
-                      content: (w.content ?? null) as WidgetConfig["content"],
-                    }),
-                  ),
+                widgets: [
+                  ...layoutForZone.filter((w) => pinOf(w) !== "bottom").map(toLayoutConfig),
+                  ...widgetRows
+                    .filter((w) => w.zoneId === zr.zoneId)
+                    .map(
+                      (w): WidgetConfig => ({
+                        id: w.id,
+                        kind: w.kind as WidgetKind,
+                        options: (w.options ?? {}) as WidgetConfig["options"],
+                        content: (w.content ?? null) as WidgetConfig["content"],
+                        source: "page",
+                      }),
+                    ),
+                  ...layoutForZone.filter((w) => pinOf(w) === "bottom").map(toLayoutConfig),
+                ],
               };
             }),
           };
@@ -280,12 +317,24 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
     // Persists a page's widget content only. Zone arrangement is owned by the layout
     // and never written here. Widgets are reconciled scoped to the page; the parent
     // zone id (a catalog zone) and array index are the source of truth for placement.
-    const savePageLayout = (ref: PageRef, layout: PageLayout) =>
+    // Layout-default widgets (source "layout") are merged in on load but owned by the
+    // layout, so they're skipped here. `hiddenLayoutWidgets` records which layout
+    // defaults this page suppresses (when omitted the existing value is left untouched).
+    const savePageLayout = (
+      ref: PageRef,
+      layout: PageLayout,
+      hiddenLayoutWidgets?: ReadonlyArray<string>,
+    ) =>
       Effect.tryPromise({
         try: () =>
           db.transaction(async (tx) => {
             const page = await ensurePage(ref);
-            const presentWidgetIds = layout.zones.flatMap((z) => z.widgets.map((w) => w.id));
+            // Only the page's own widgets are persisted; layout defaults pass through.
+            const pageWidgets = layout.zones.map((z) => ({
+              id: z.id,
+              widgets: z.widgets.filter((w) => w.source !== "layout"),
+            }));
+            const presentWidgetIds = pageWidgets.flatMap((z) => z.widgets.map((w) => w.id));
 
             // Reconcile deletions: drop any of this page's widgets no longer present.
             await tx
@@ -296,7 +345,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                   : eq(widgets.pageId, page.id),
               );
 
-            for (const zone of layout.zones) {
+            for (const zone of pageWidgets) {
               for (const [wi, widget] of zone.widgets.entries()) {
                 // Upsert so widgets added in the builder (with a client-generated
                 // id) are inserted, while existing ones are updated in place.
@@ -313,6 +362,13 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
                   .values({ id: widget.id, ...values })
                   .onConflictDoUpdate({ target: widgets.id, set: values });
               }
+            }
+
+            if (hiddenLayoutWidgets !== undefined) {
+              await tx
+                .update(pages)
+                .set({ hiddenLayoutWidgets: [...hiddenLayoutWidgets] })
+                .where(eq(pages.id, page.id));
             }
           }),
         catch: (cause) => new DatabaseError({ cause }),
