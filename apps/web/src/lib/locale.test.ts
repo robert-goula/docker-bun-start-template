@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildHref, isLocale, resolveLocale } from "./locale";
+import { buildHref, isLocale, isSlugReachable, normalizeSlug, resolveLocale } from "./locale";
 
 describe("isLocale", () => {
   it("accepts enabled locale codes", () => {
@@ -64,5 +64,38 @@ describe("buildHref", () => {
         expect(resolved.path).toBe(path);
       }
     }
+  });
+});
+
+describe("normalizeSlug", () => {
+  it("enforces a single leading slash, no trailing slash, lowercase", () => {
+    expect(normalizeSlug("About")).toBe("/about");
+    expect(normalizeSlug("/about/")).toBe("/about");
+    expect(normalizeSlug("  blog/Post  ")).toBe("/blog/post");
+    expect(normalizeSlug("//a//b//")).toBe("/a/b");
+  });
+
+  it("treats empty input as home", () => {
+    expect(normalizeSlug("")).toBe("/");
+    expect(normalizeSlug("   ")).toBe("/");
+    expect(normalizeSlug("/")).toBe("/");
+  });
+
+  it("produces slugs that round-trip through buildHref + resolveLocale", () => {
+    const slug = normalizeSlug("Acerca-De");
+    expect(resolveLocale(buildHref("es-us", slug)).path).toBe(slug);
+  });
+});
+
+describe("isSlugReachable", () => {
+  it("rejects slugs whose first segment is a locale code", () => {
+    expect(isSlugReachable(normalizeSlug("es-us"))).toBe(false);
+    expect(isSlugReachable(normalizeSlug("es-us/about"))).toBe(false);
+  });
+
+  it("accepts ordinary slugs and home", () => {
+    expect(isSlugReachable("/about")).toBe(true);
+    expect(isSlugReachable("/blog/post")).toBe(true);
+    expect(isSlugReachable("/")).toBe(true);
   });
 });

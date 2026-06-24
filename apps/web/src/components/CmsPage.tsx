@@ -2,19 +2,23 @@ import { useLocation, useRouter } from "@tanstack/react-router";
 import PageBuilder from "@/components/PageBuilder";
 import PageMetaPanel from "@/components/meta/PageMetaPanel";
 import { savePage, savePageMeta, setPageLayout } from "@/lib/loadPage";
+import { buildHref, normalizeSlug } from "@/lib/locale";
 import type { PageLayout } from "@/components/Zone";
+import type { PageRef } from "@/lib/loadPage";
 import type { PageMeta } from "@/server/services/PageRepo";
 
 /**
  * Renders a CMS page's widgets and wires the authoring actions. Used by both the home
  * index and the dynamic slug route — locale + slug come from the loader (router context),
- * so this component just needs the resolved layout, metadata, and the current pathname for
- * saves. The metadata editor surfaces in edit mode via PageBuilder's toolbar slot.
+ * so this component just needs the resolved ref, layout, metadata, and the current pathname
+ * for saves. The metadata editor surfaces in edit mode via PageBuilder's toolbar slot.
  */
 export default function CmsPage({
+  ref,
   page,
   meta,
 }: {
+  ref: PageRef;
   page: PageLayout & { layoutId: string };
   meta: PageMeta | null;
 }) {
@@ -30,8 +34,20 @@ export default function CmsPage({
         <PageMetaPanel
           meta={meta}
           onSave={(patch) => {
+            // Renaming the slug changes the page's URL: navigate to it after the write so
+            // the address bar + edit session stay valid (a full nav keeps SSR head correct).
+            const renamedHref =
+              patch.slug !== undefined && normalizeSlug(patch.slug) !== (meta?.canonicalSlug ?? "")
+                ? buildHref(ref.locale, normalizeSlug(patch.slug))
+                : null;
             savePageMeta(pathname, patch)
-              .then(() => router.invalidate())
+              .then(() => {
+                if (renamedHref && renamedHref !== pathname) {
+                  globalThis.location.assign(renamedHref);
+                } else {
+                  router.invalidate();
+                }
+              })
               .catch(console.error);
           }}
         />

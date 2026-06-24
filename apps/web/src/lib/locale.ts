@@ -55,6 +55,32 @@ export function buildHref(locale: Locale, slug: string): string {
 }
 
 /**
+ * Normalizes a user-entered slug to the CMS storage convention: a single leading slash,
+ * no trailing slash, collapsed internal slashes, lowercased; empty input is home ("/").
+ * The locale prefix is never part of a stored slug (locale is a separate column), so a
+ * leading locale segment is invalid input — see `isSlugReachable`.
+ */
+export function normalizeSlug(input: string): string {
+  const clean = input
+    .trim()
+    .toLowerCase()
+    .replace(/\/{2,}/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/\/+$/, "");
+  return clean === "" ? "/" : `/${clean}`;
+}
+
+/**
+ * A normalized slug is reachable only if its first segment isn't an enabled locale code:
+ * such a slug would be parsed as a locale prefix (see `isLocale`) and never resolve to a
+ * page. Enforced when renaming a slug so the CMS can't author an unreachable URL.
+ */
+export function isSlugReachable(slug: string): boolean {
+  const [first] = slug.split("/").filter(Boolean);
+  return first === undefined || !isLocale(first);
+}
+
+/**
  * Maps our lowercase app locale to intlayer's canonical casing (en-us -> en-US)
  * for intlayer helpers like getHTMLTextDir / getLocaleName. Kept here as a pure
  * string transform so this module stays free of the intlayer runtime.

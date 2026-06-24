@@ -4,6 +4,7 @@ import * as z from "zod";
 import { LOCALES } from "@/db/schema/pages";
 import { contentSchemaForKind, widgetKinds } from "@/db/schema/widgets";
 import { zoneSizes } from "@/db/schema/zones";
+import { isSlugReachable, normalizeSlug } from "@/lib/locale";
 import { authMiddleware } from "@/server/fns/auth";
 import { runtime } from "@/server/runtime";
 import { CurrentUser } from "@/server/services/CurrentUser";
@@ -52,6 +53,15 @@ export type PageRefInput = z.infer<typeof pageRefSchema>;
 
 const forbidden = () => Effect.fail(new Response("Forbidden", { status: 403 }));
 const dbError = () => Effect.fail(new Response("Internal Server Error", { status: 500 }));
+const conflict = (e: { message: string }) => Effect.fail(new Response(e.message, { status: 409 }));
+
+// A user-entered slug, normalized to the storage convention and rejected if it would be
+// unreachable (first segment is a locale code). Used when renaming a locale's slug.
+const slugSchema = z
+  .string()
+  .max(255)
+  .transform(normalizeSlug)
+  .refine(isSlugReachable, { message: "slug may not start with a locale code" });
 
 // One row in the admin pages listing: the page plus its layout name and the
 // usernames of its creator/last editor (null when unknown).
@@ -161,6 +171,7 @@ const metaScalarSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]
 const metaValueSchema = z.union([metaScalarSchema, z.array(metaScalarSchema)]);
 const updatePageMetaInputSchema = z.object({
   ref: pageRefSchema,
+  slug: slugSchema.optional(),
   title: z.string().min(1).max(255).optional(),
   description: z.string().max(500).nullable().optional(),
   modules: z.record(z.string(), z.record(z.string(), metaValueSchema)).optional(),
@@ -177,12 +188,13 @@ export const updatePageMetaFn = createServerFn({ method: "POST" })
       Effect.gen(function* () {
         const repo = yield* PageRepo;
         yield* repo.updatePageMeta(data.ref, {
+          slug: data.slug,
           title: data.title,
           description: data.description,
           modules: data.modules,
         });
         return { ok: true } as const;
-      }).pipe(Effect.catchTags({ DatabaseError: dbError })),
+      }).pipe(Effect.catchTags({ DatabaseError: dbError, ConflictError: conflict })),
     );
   });
 

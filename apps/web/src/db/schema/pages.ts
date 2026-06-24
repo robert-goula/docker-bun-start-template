@@ -1,5 +1,5 @@
 import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm";
-import { pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
+import { index, pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 import type { PageMetaData } from "@/lib/meta/types";
@@ -21,6 +21,14 @@ export const pages = pgTable(
       .default(sql`uuidv7()`),
     slug: varchar({ length: 255 }).notNull(),
     locale: varchar({ length: 10 }).notNull().default(DEFAULT_LOCALE),
+    // Stable key shared by every locale translation of the same page. The slug is now
+    // per-locale (a page may live at /about in en-us and /acerca-de in es-us), so the slug
+    // can no longer link translations — groupId does. Siblings, the language switcher, and
+    // hreflang alternates all resolve by groupId. New pages get their own group (default);
+    // createTranslation copies the source page's groupId.
+    groupId: uuid("group_id")
+      .notNull()
+      .default(sql`uuidv7()`),
     title: varchar({ length: 255 }).notNull(),
     description: varchar({ length: 500 }),
     // Extensible SEO metadata, keyed by module id (Open Graph, Twitter, …). The basic
@@ -37,6 +45,7 @@ export const pages = pgTable(
   },
   (t) => ({
     page_slug_locale_idx: unique("page_slug_locale_idx").on(t.slug, t.locale),
+    page_group_id_idx: index("page_group_id_idx").on(t.groupId),
   }),
 );
 

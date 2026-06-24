@@ -95,7 +95,9 @@ export async function loadCmsPage(queryClient: QueryClient, ref: PageRef) {
  */
 export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
   const slug = meta?.canonicalSlug ?? ref.slug;
-  const locales = meta?.availableLocales ?? [ref.locale];
+  // Slugs are per-locale, so each alternate uses its own translation's slug (not this
+  // page's). Falls back to the current page when metadata is unavailable.
+  const translations = meta?.translations ?? [{ locale: ref.locale, slug }];
   const fromModules = meta
     ? headTagsForPage(meta.modules, { ref, slug, locale: ref.locale })
     : { meta: [{ title: "Page" }], links: [] as Record<string, string>[] };
@@ -104,7 +106,11 @@ export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
     links: [
       ...fromModules.links,
       { rel: "canonical", href: buildHref(ref.locale, slug) },
-      ...locales.map((l) => ({ rel: "alternate", hrefLang: l, href: buildHref(l, slug) })),
+      ...translations.map((t) => ({
+        rel: "alternate",
+        hrefLang: t.locale,
+        href: buildHref(t.locale, t.slug),
+      })),
     ],
   };
 }
@@ -134,7 +140,7 @@ export function setPageLayout(pathname: string, layoutId: string) {
  */
 export function savePageMeta(
   pathname: string,
-  patch: { title?: string; description?: string | null; modules?: PageMetaData },
+  patch: { slug?: string; title?: string; description?: string | null; modules?: PageMetaData },
 ) {
   return updatePageMetaFn({ data: { ref: refFromPathname(pathname), ...patch } });
 }

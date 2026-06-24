@@ -35,19 +35,36 @@ export class DatabaseError extends Data.TaggedError("DatabaseError")<{
   readonly cause: unknown;
 }> {}
 
-// Light page metadata for the public route: SEO fields, the canonical slug, and every
-// locale this slug exists in (siblings, for the language switcher + hreflang alternates).
-// `modules` is the effective per-module metadata map: the `meta` jsonb column plus the
-// basic module (title/description) injected from the columns, so head rendering is uniform.
+// A write that would violate the (slug, locale) uniqueness — e.g. renaming a locale's slug
+// to one already taken in that locale. Surfaced separately so the fn can answer 409, not 500.
+export class ConflictError extends Data.TaggedError("ConflictError")<{
+  readonly message: string;
+}> {}
+
+// One locale translation of a page: its locale and that locale's own slug. Slugs are
+// per-locale now (linked by groupId, not a shared slug), so each sibling carries its slug
+// for building locale-correct URLs in the language switcher + hreflang alternates.
+export interface PageTranslation {
+  readonly locale: Locale;
+  readonly slug: string;
+}
+
+// Light page metadata for the public route: SEO fields, this page's (canonical) slug, and
+// every locale translation in the same group (siblings, for the language switcher + hreflang
+// alternates). `modules` is the effective per-module metadata map: the `meta` jsonb column
+// plus the basic module (title/description) injected from the columns, so head rendering is
+// uniform.
 export interface PageMeta {
   readonly meta: { readonly title: string; readonly description: string | null };
   readonly modules: PageMetaData;
   readonly canonicalSlug: string;
-  readonly availableLocales: ReadonlyArray<Locale>;
+  readonly translations: ReadonlyArray<PageTranslation>;
 }
 
-// Patch for updatePageMeta: the basic fields (→ columns) and any extension modules (→ jsonb).
+// Patch for updatePageMeta: the slug (→ column, per-locale), the basic fields (→ columns)
+// and any extension modules (→ jsonb). Slug is normalized/validated by the caller (the fn).
 export interface UpdatePageMetaInput {
+  readonly slug?: string;
   readonly title?: string;
   readonly description?: string | null;
   readonly modules?: PageMetaData;
@@ -105,9 +122,17 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
             where: and(eq(pages.slug, slug), eq(pages.locale, fromLocale)),
           });
           if (!source) throw new Error(`source page "${slug}" (${fromLocale}) not found`);
+          // Seed the translation with the source slug; the admin can localize it afterward.
+          // groupId is copied so the new locale is linked to its siblings from the start.
           await db
             .insert(pages)
-            .values({ slug, locale: toLocale, title: source.title, layoutId: source.layoutId })
+            .values({
+              slug,
+              locale: toLocale,
+              groupId: source.groupId,
+              title: source.title,
+              layoutId: source.layoutId,
+            })
             .onConflictDoNothing({ target: [pages.slug, pages.locale] });
         },
         catch: (cause) => new DatabaseError({ cause }),
@@ -173,14 +198,16 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
           const locale = ref.locale ?? DEFAULT_LOCALE;
           const page = await db.query.pages.findFirst({
             where: and(eq(pages.slug, ref.slug), eq(pages.locale, locale)),
-            columns: { title: true, description: true, slug: true, meta: true },
+            columns: { title: true, description: true, slug: true, meta: true, groupId: true },
           });
           if (!page) return null;
 
+          // Sibling translations share the groupId (slugs are per-locale now); each carries
+          // its own slug so callers can build locale-correct URLs.
           const siblings = await db
-            .selectDistinct({ locale: pages.locale })
+            .select({ locale: pages.locale, slug: pages.slug })
             .from(pages)
-            .where(eq(pages.slug, ref.slug));
+            .where(eq(pages.groupId, page.groupId));
 
           // Inject the basic module (title/description columns) into the jsonb module map
           // so every module — basic and extension alike — is rendered uniformly downstream.
@@ -193,29 +220,53 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
             meta: { title: page.title, description: page.description },
             modules,
             canonicalSlug: page.slug,
-            availableLocales: siblings.map((s) => s.locale as Locale),
+            translations: siblings.map((s) => ({ locale: s.locale as Locale, slug: s.slug })),
           };
         },
         catch: (cause) => new DatabaseError({ cause }),
       });
 
-    // Updates a page's metadata for a (slug, locale): the basic fields write to the
-    // title/description columns; extension modules are sanitized against the registry and
-    // shallow-merged (per module) into the `meta` jsonb so unrelated modules are preserved.
+    // Updates a page's metadata for a (slug, locale): the slug + basic fields write to their
+    // columns; extension modules are sanitized against the registry and shallow-merged (per
+    // module) into the `meta` jsonb so unrelated modules are preserved. Renaming the slug is
+    // guarded against colliding with another page in the same locale (→ ConflictError).
     const updatePageMeta = (ref: PageRef, patch: UpdatePageMetaInput) =>
-      Effect.tryPromise({
-        try: async () => {
-          const page = await ensurePage(ref);
-          const set: Partial<typeof pages.$inferInsert> = {};
-          if (patch.title !== undefined) set.title = patch.title;
-          if (patch.description !== undefined) set.description = patch.description;
-          if (patch.modules !== undefined) {
-            set.meta = { ...page.meta, ...sanitizeModules(patch.modules) };
+      Effect.gen(function* () {
+        const page = yield* Effect.tryPromise({
+          try: () => ensurePage(ref),
+          catch: (cause) => new DatabaseError({ cause }),
+        });
+
+        const renaming = patch.slug !== undefined && patch.slug !== page.slug;
+        if (renaming) {
+          const clash = yield* Effect.tryPromise({
+            try: () =>
+              db.query.pages.findFirst({
+                where: and(eq(pages.slug, patch.slug as string), eq(pages.locale, page.locale)),
+                columns: { id: true },
+              }),
+            catch: (cause) => new DatabaseError({ cause }),
+          });
+          if (clash && clash.id !== page.id) {
+            return yield* new ConflictError({
+              message: `slug "${patch.slug}" is already used in ${page.locale}`,
+            });
           }
-          if (Object.keys(set).length === 0) return;
-          await db.update(pages).set(set).where(eq(pages.id, page.id));
-        },
-        catch: (cause) => new DatabaseError({ cause }),
+        }
+
+        const set: Partial<typeof pages.$inferInsert> = {};
+        if (renaming) set.slug = patch.slug;
+        if (patch.title !== undefined) set.title = patch.title;
+        if (patch.description !== undefined) set.description = patch.description;
+        if (patch.modules !== undefined) {
+          set.meta = { ...page.meta, ...sanitizeModules(patch.modules) };
+        }
+        if (Object.keys(set).length === 0) return;
+
+        yield* Effect.tryPromise({
+          try: () => db.update(pages).set(set).where(eq(pages.id, page.id)),
+          catch: (cause) => new DatabaseError({ cause }),
+        });
       });
 
     // Persists a page's widget content only. Zone arrangement is owned by the layout

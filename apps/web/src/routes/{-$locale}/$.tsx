@@ -16,6 +16,6 @@ export const Route = createFileRoute("/{-$locale}/$")({
 });
 
 function RouteComponent() {
-  const { layout, meta } = Route.useLoaderData();
-  return <CmsPage page={layout} meta={meta} />;
+  const { layout, meta, ref } = Route.useLoaderData();
+  return <CmsPage ref={ref} page={layout} meta={meta} />;
 }

@@ -15,9 +15,10 @@ type CmsLoaderData = { meta?: PageMeta | null; ref?: PageRef };
 
 /**
  * Switches locale while preserving the current page. On a CMS page it offers only the
- * locales the content actually exists in (the loader's availableLocales, keyed by the
- * shared slug); elsewhere it falls back to all enabled locales under the current path.
- * Uses a full navigation so the new locale is resolved server-side (SSR-correct).
+ * locales the content actually exists in (the loader's translations, each with that
+ * locale's own slug — slugs are per-locale); elsewhere it falls back to all enabled locales
+ * under the current path. Uses a full navigation so the new locale is resolved server-side
+ * (SSR-correct).
  */
 export default function LanguageSwitcher() {
   const content = useIntlayer("languageSwitcher");
@@ -35,15 +36,16 @@ export default function LanguageSwitcher() {
       : { locale: resolved.locale, slug: resolved.path };
 
   const current = cms?.ref?.locale ?? fallback.locale;
-  const slug = cms?.ref?.slug ?? fallback.slug;
-  const locales =
-    cms?.meta?.availableLocales && cms.meta.availableLocales.length > 0
-      ? cms.meta.availableLocales
-      : LOCALES;
+  // Each entry pairs a locale with the slug to link to in that locale. On a CMS page that's
+  // the loader's per-locale translations; otherwise every enabled locale shares the path.
+  const targets =
+    cms?.meta?.translations && cms.meta.translations.length > 0
+      ? cms.meta.translations
+      : LOCALES.map((locale) => ({ locale, slug: cms?.ref?.slug ?? fallback.slug }));
 
   return (
     <nav aria-label={content.label.value}>
-      {locales.map((locale) => (
+      {targets.map(({ locale, slug }) => (
         <a
           key={locale}
           href={buildHref(locale, slug)}
