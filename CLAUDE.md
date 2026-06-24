@@ -13,6 +13,7 @@
   - Tailwind is allowed for utility classes, but avoid it for styling of components.
   - Basic ui component building blocks are located in `apps/web/src/components/ui/`.
 - **Database**: Drizzle + PostgreSQL
+  - **Column naming**: Name Drizzle table fields in `camelCase` and do NOT pass an explicit column name string (e.g. `groupId: uuid()`, not `groupId: uuid("group_id")`). The Postgres column is kept `camelCase` to match it (e.g. `layoutId`, `createdBy`, `groupId`). Name explicit indexes/constraints with the same `camelCase` columns (e.g. `page_groupId_idx`).
 - **Testing**: Vitest, React Testing Library, Cypress
 - **Linting**: Oxlint
 - **Formatting**: Oxfmt

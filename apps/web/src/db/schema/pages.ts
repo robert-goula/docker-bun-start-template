@@ -26,7 +26,7 @@ export const pages = pgTable(
     // can no longer link translations — groupId does. Siblings, the language switcher, and
     // hreflang alternates all resolve by groupId. New pages get their own group (default);
     // createTranslation copies the source page's groupId.
-    groupId: uuid("group_id")
+    groupId: uuid()
       .notNull()
       .default(sql`uuidv7()`),
     title: varchar({ length: 255 }).notNull(),
@@ -45,7 +45,7 @@ export const pages = pgTable(
   },
   (t) => ({
     page_slug_locale_idx: unique("page_slug_locale_idx").on(t.slug, t.locale),
-    page_group_id_idx: index("page_group_id_idx").on(t.groupId),
+    page_group_id_idx: index("page_groupId_idx").on(t.groupId),
   }),
 );
 

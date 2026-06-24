@@ -5,6 +5,7 @@ import { type MenuId, type MenuItem, type MenuRender, menus } from "@/db/schema/
 import { DEFAULT_LOCALE, type Locale, pages } from "@/db/schema/pages";
 import { indexPagesByGroup, resolveMenuItems } from "@/lib/menu";
 import { CurrentUser } from "./CurrentUser";
+import { MenuCache } from "./MenuCache";
 import { Policy } from "./Policy";
 
 // Inputs accepted by the repo. `update` carries only the fields that changed.
@@ -47,6 +48,7 @@ const collectGroupIds = (items: ReadonlyArray<MenuItem>, out: Set<string> = new 
 export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
   effect: Effect.gen(function* () {
     const db = yield* Database;
+    const cache = yield* MenuCache;
 
     const list = Effect.gen(function* () {
       yield* Policy.canListMenus;
@@ -77,6 +79,10 @@ export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
     // dropped so one stale reference can't break the menu.
     const findForRender = (id: MenuId, locale: Locale) =>
       Effect.gen(function* () {
+        // Read-through cache: a hit skips both DB queries (menu row + page-group join).
+        const cached = yield* cache.get(id, locale);
+        if (cached) return cached;
+
         const row = yield* Effect.tryPromise({
           try: () => db.query.menus.findFirst({ where: eq(menus.id, id) }),
           catch: (cause) => new DatabaseError({ cause }),
@@ -110,12 +116,15 @@ export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
         // default-locale fallback when both rows are present.
         const byGroup = indexPagesByGroup(pageRows, locale);
 
-        return {
+        const resolved = {
           id: row.id,
           name: row.name,
           slug: row.slug,
           items: resolveMenuItems(row.items, locale, (groupId) => byGroup.get(groupId)),
         } satisfies MenuRender;
+
+        yield* cache.set(id, locale, resolved);
+        return resolved;
       });
 
     // Creates a menu starting empty; the admin builds the tree on the edit page.
@@ -167,6 +176,8 @@ export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
           catch: (cause) => new DatabaseError({ cause }),
         });
 
+        // The menu changed — drop its cached renders (all locales).
+        yield* cache.invalidate;
         return yield* findById(id);
       });
 
@@ -182,10 +193,12 @@ export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
           try: () => db.delete(menus).where(eq(menus.id, id)),
           catch: (cause) => new DatabaseError({ cause }),
         });
+        // Stop serving the deleted menu's cached renders.
+        yield* cache.invalidate;
         return { id } as const;
       });
 
     return { list, findById, findForRender, create, update, remove } as const;
   }),
-  dependencies: [DatabaseLive],
+  dependencies: [DatabaseLive, MenuCache.Default],
 }) {}

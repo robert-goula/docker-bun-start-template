@@ -306,8 +306,8 @@
           "notNull": true,
           "default": "'en-us'"
         },
-        "group_id": {
-          "name": "group_id",
+        "groupId": {
+          "name": "groupId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true,
@@ -365,11 +365,11 @@
         }
       },
       "indexes": {
-        "page_group_id_idx": {
-          "name": "page_group_id_idx",
+        "page_groupId_idx": {
+          "name": "page_groupId_idx",
           "columns": [
             {
-              "expression": "group_id",
+              "expression": "groupId",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

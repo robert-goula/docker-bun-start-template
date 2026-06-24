@@ -10,6 +10,7 @@ import type { PageMetaData } from "@/lib/meta/types";
 import { users } from "@/db/schema/users";
 import { widgets } from "@/db/schema/widgets";
 import { type ZoneName, zones } from "@/db/schema/zones";
+import { MenuCache } from "./MenuCache";
 import { Policy } from "./Policy";
 import type { WidgetConfig, WidgetKind } from "@/components/Widget";
 import type { PageLayout, ZoneConfig, ZoneSize } from "@/components/Zone";
@@ -73,6 +74,7 @@ export interface UpdatePageMetaInput {
 export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
   effect: Effect.gen(function* () {
     const db = yield* Database;
+    const menuCache = yield* MenuCache;
 
     // The default layout id every new page is linked to. Resolved once and cached.
     let defaultLayoutId: string | undefined;
@@ -267,6 +269,12 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
           try: () => db.update(pages).set(set).where(eq(pages.id, page.id)),
           catch: (cause) => new DatabaseError({ cause }),
         });
+
+        // Menus bake in each referenced page's slug + title, so a change to either makes any
+        // menu that links this page (via its group) stale. Drop the menu render cache.
+        if (set.slug !== undefined || set.title !== undefined) {
+          yield* menuCache.invalidate;
+        }
       });
 
     // Persists a page's widget content only. Zone arrangement is owned by the layout
@@ -380,5 +388,5 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
       listPageGroups,
     } as const;
   }),
-  dependencies: [DatabaseLive],
+  dependencies: [DatabaseLive, MenuCache.Default],
 }) {}
