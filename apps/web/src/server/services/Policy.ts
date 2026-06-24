@@ -105,4 +105,35 @@ export const Policy = {
     if (hasRole(user.roles, "admin")) return;
     return yield* Effect.fail(new Forbidden({ action: "zone:list" }));
   }),
+
+  // Menus are global, admin-managed content — no per-row ownership.
+  canListMenus: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "menu:list" }));
+  }),
+
+  canReadMenu: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "menu:read" }));
+  }),
+
+  canCreateMenu: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "menu:create" }));
+  }),
+
+  canUpdateMenu: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "menu:update" }));
+  }),
+
+  canDeleteMenu: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "menu:delete" }));
+  }),
 };

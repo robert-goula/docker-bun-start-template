@@ -28,7 +28,7 @@ import type { Json } from "@/types/Json";
 import type { CustomWidgetId } from "@/db/schema/customWidgets";
 import registry, { editableWidgetKinds } from "@/components/widgetRegistry";
 
-export type WidgetKind = "markdown" | "debug" | "dynamic";
+export type WidgetKind = "markdown" | "debug" | "dynamic" | "menu";
 
 export interface WidgetContentProps {
   options: WidgetOptions;

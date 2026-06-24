@@ -23,9 +23,11 @@ import { Route as ApiAuthSessionsRouteImport } from './routes/api/auth/sessions'
 import { Route as AuthedAdminZonesIndexRouteImport } from './routes/_authed/admin/zones/index'
 import { Route as AuthedAdminUsersIndexRouteImport } from './routes/_authed/admin/users/index'
 import { Route as AuthedAdminPagesIndexRouteImport } from './routes/_authed/admin/pages/index'
+import { Route as AuthedAdminMenusIndexRouteImport } from './routes/_authed/admin/menus/index'
 import { Route as AuthedAdminLayoutsIndexRouteImport } from './routes/_authed/admin/layouts/index'
 import { Route as AuthedAdminCustomWidgetsIndexRouteImport } from './routes/_authed/admin/custom-widgets/index'
 import { Route as AuthedAdminUsersUserIdRouteImport } from './routes/_authed/admin/users/$userId'
+import { Route as AuthedAdminMenusMenuIdRouteImport } from './routes/_authed/admin/menus/$menuId'
 import { Route as AuthedAdminLayoutsLayoutIdRouteImport } from './routes/_authed/admin/layouts/$layoutId'
 import { Route as AuthedAdminCustomWidgetsWidgetIdRouteImport } from './routes/_authed/admin/custom-widgets/$widgetId'
 
@@ -102,6 +104,11 @@ const AuthedAdminPagesIndexRoute = AuthedAdminPagesIndexRouteImport.update({
   path: '/pages/',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
+const AuthedAdminMenusIndexRoute = AuthedAdminMenusIndexRouteImport.update({
+  id: '/menus/',
+  path: '/menus/',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
 const AuthedAdminLayoutsIndexRoute = AuthedAdminLayoutsIndexRouteImport.update({
   id: '/layouts/',
   path: '/layouts/',
@@ -116,6 +123,11 @@ const AuthedAdminCustomWidgetsIndexRoute =
 const AuthedAdminUsersUserIdRoute = AuthedAdminUsersUserIdRouteImport.update({
   id: '/users/$userId',
   path: '/users/$userId',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
+const AuthedAdminMenusMenuIdRoute = AuthedAdminMenusMenuIdRouteImport.update({
+  id: '/menus/$menuId',
+  path: '/menus/$menuId',
   getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
 const AuthedAdminLayoutsLayoutIdRoute =
@@ -145,9 +157,11 @@ export interface FileRoutesByFullPath {
   '/api/users/': typeof ApiUsersIndexRoute
   '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
+  '/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
   '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
   '/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
   '/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
+  '/admin/menus/': typeof AuthedAdminMenusIndexRoute
   '/admin/pages/': typeof AuthedAdminPagesIndexRoute
   '/admin/users/': typeof AuthedAdminUsersIndexRoute
   '/admin/zones/': typeof AuthedAdminZonesIndexRoute
@@ -164,9 +178,11 @@ export interface FileRoutesByTo {
   '/api/users': typeof ApiUsersIndexRoute
   '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
+  '/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
   '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
   '/admin/custom-widgets': typeof AuthedAdminCustomWidgetsIndexRoute
   '/admin/layouts': typeof AuthedAdminLayoutsIndexRoute
+  '/admin/menus': typeof AuthedAdminMenusIndexRoute
   '/admin/pages': typeof AuthedAdminPagesIndexRoute
   '/admin/users': typeof AuthedAdminUsersIndexRoute
   '/admin/zones': typeof AuthedAdminZonesIndexRoute
@@ -186,9 +202,11 @@ export interface FileRoutesById {
   '/api/users/': typeof ApiUsersIndexRoute
   '/_authed/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/_authed/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
+  '/_authed/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
   '/_authed/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
   '/_authed/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
   '/_authed/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
+  '/_authed/admin/menus/': typeof AuthedAdminMenusIndexRoute
   '/_authed/admin/pages/': typeof AuthedAdminPagesIndexRoute
   '/_authed/admin/users/': typeof AuthedAdminUsersIndexRoute
   '/_authed/admin/zones/': typeof AuthedAdminZonesIndexRoute
@@ -209,9 +227,11 @@ export interface FileRouteTypes {
     | '/api/users/'
     | '/admin/custom-widgets/$widgetId'
     | '/admin/layouts/$layoutId'
+    | '/admin/menus/$menuId'
     | '/admin/users/$userId'
     | '/admin/custom-widgets/'
     | '/admin/layouts/'
+    | '/admin/menus/'
     | '/admin/pages/'
     | '/admin/users/'
     | '/admin/zones/'
@@ -228,9 +248,11 @@ export interface FileRouteTypes {
     | '/api/users'
     | '/admin/custom-widgets/$widgetId'
     | '/admin/layouts/$layoutId'
+    | '/admin/menus/$menuId'
     | '/admin/users/$userId'
     | '/admin/custom-widgets'
     | '/admin/layouts'
+    | '/admin/menus'
     | '/admin/pages'
     | '/admin/users'
     | '/admin/zones'
@@ -249,9 +271,11 @@ export interface FileRouteTypes {
     | '/api/users/'
     | '/_authed/admin/custom-widgets/$widgetId'
     | '/_authed/admin/layouts/$layoutId'
+    | '/_authed/admin/menus/$menuId'
     | '/_authed/admin/users/$userId'
     | '/_authed/admin/custom-widgets/'
     | '/_authed/admin/layouts/'
+    | '/_authed/admin/menus/'
     | '/_authed/admin/pages/'
     | '/_authed/admin/users/'
     | '/_authed/admin/zones/'
@@ -368,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminPagesIndexRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/menus/': {
+      id: '/_authed/admin/menus/'
+      path: '/menus'
+      fullPath: '/admin/menus/'
+      preLoaderRoute: typeof AuthedAdminMenusIndexRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/layouts/': {
       id: '/_authed/admin/layouts/'
       path: '/layouts'
@@ -387,6 +418,13 @@ declare module '@tanstack/react-router' {
       path: '/users/$userId'
       fullPath: '/admin/users/$userId'
       preLoaderRoute: typeof AuthedAdminUsersUserIdRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
+    '/_authed/admin/menus/$menuId': {
+      id: '/_authed/admin/menus/$menuId'
+      path: '/menus/$menuId'
+      fullPath: '/admin/menus/$menuId'
+      preLoaderRoute: typeof AuthedAdminMenusMenuIdRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
     '/_authed/admin/layouts/$layoutId': {
@@ -426,9 +464,11 @@ interface AuthedAdminRouteRouteChildren {
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
   AuthedAdminCustomWidgetsWidgetIdRoute: typeof AuthedAdminCustomWidgetsWidgetIdRoute
   AuthedAdminLayoutsLayoutIdRoute: typeof AuthedAdminLayoutsLayoutIdRoute
+  AuthedAdminMenusMenuIdRoute: typeof AuthedAdminMenusMenuIdRoute
   AuthedAdminUsersUserIdRoute: typeof AuthedAdminUsersUserIdRoute
   AuthedAdminCustomWidgetsIndexRoute: typeof AuthedAdminCustomWidgetsIndexRoute
   AuthedAdminLayoutsIndexRoute: typeof AuthedAdminLayoutsIndexRoute
+  AuthedAdminMenusIndexRoute: typeof AuthedAdminMenusIndexRoute
   AuthedAdminPagesIndexRoute: typeof AuthedAdminPagesIndexRoute
   AuthedAdminUsersIndexRoute: typeof AuthedAdminUsersIndexRoute
   AuthedAdminZonesIndexRoute: typeof AuthedAdminZonesIndexRoute
@@ -438,9 +478,11 @@ const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
   AuthedAdminCustomWidgetsWidgetIdRoute: AuthedAdminCustomWidgetsWidgetIdRoute,
   AuthedAdminLayoutsLayoutIdRoute: AuthedAdminLayoutsLayoutIdRoute,
+  AuthedAdminMenusMenuIdRoute: AuthedAdminMenusMenuIdRoute,
   AuthedAdminUsersUserIdRoute: AuthedAdminUsersUserIdRoute,
   AuthedAdminCustomWidgetsIndexRoute: AuthedAdminCustomWidgetsIndexRoute,
   AuthedAdminLayoutsIndexRoute: AuthedAdminLayoutsIndexRoute,
+  AuthedAdminMenusIndexRoute: AuthedAdminMenusIndexRoute,
   AuthedAdminPagesIndexRoute: AuthedAdminPagesIndexRoute,
   AuthedAdminUsersIndexRoute: AuthedAdminUsersIndexRoute,
   AuthedAdminZonesIndexRoute: AuthedAdminZonesIndexRoute,

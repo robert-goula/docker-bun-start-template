@@ -57,6 +57,13 @@
       "when": 1782255681242,
       "tag": "0007_early_bloodscream",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782267916973,
+      "tag": "0008_low_war_machine",
+      "breakpoints": true
     }
   ]
 }

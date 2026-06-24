@@ -1,6 +1,7 @@
 import { notFound } from "@tanstack/react-router";
 import type { QueryClient } from "@tanstack/react-query";
 import type { CustomWidgetId } from "@/db/schema/customWidgets";
+import type { MenuId } from "@/db/schema/menus";
 import type { Locale } from "@/db/schema/pages";
 import { buildHref, resolveLocale } from "@/lib/locale";
 import { headTagsForPage } from "@/lib/meta/registry";
@@ -14,6 +15,7 @@ import {
   updatePageMetaFn,
 } from "@/server/fns/pages";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
+import { menusRepo } from "@/repositories/menus";
 import type { PageLayout } from "@/components/Zone";
 import type { PageMeta } from "@/server/services/PageRepo";
 
@@ -59,6 +61,13 @@ export async function loadPage(queryClient: QueryClient, ref: PageRef) {
                 customWidgetsRepo.forRender(definitionId as CustomWidgetId),
               ),
             ];
+          }
+        }
+        if (w.kind === "menu") {
+          const menuId = (w.options as { menuId?: unknown } | undefined)?.menuId;
+          if (typeof menuId === "string") {
+            // Baked for this page's locale, matching the widget's forRender(menuId, locale).
+            return [queryClient.prefetchQuery(menusRepo.forRender(menuId as MenuId, ref.locale))];
           }
         }
         return [];

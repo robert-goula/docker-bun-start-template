@@ -22,6 +22,7 @@
 @font-face {
   font-family: "Figtree Fallback";
   src: local("Arial");
+  src: local("Liberation Sans");
   size-adjust: 100.72%;
   ascent-override: 94.32%;
   descent-override: 24.82%;
@@ -668,19 +669,18 @@ a {
   }
 }
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Figtree Variable", "Figtree Fallback", sans-serif;
-  font-family: "Inter Variable", "Inter Fallback", sans-serif;
+  font-family: var(--font-heading) sans-serif;
   font-weight: var(--fontWeight-bold);
   color: light-dark(var(--neutral-100), var(--neutral-600));
   line-height: 1.2;
-  margin-block-end: 1rem;
+  margin-block-end: 0.25rem;
   text-wrap: balance;
   text-box: trim-both cap alphabetic;
   background-clip: text;
 }
 h1 {
   font-size: var(--fontSize-2xl);
-  letter-spacing: var(--fontSpacing-tight);
+  /*letter-spacing: var(--fontSpacing-tight);*/
 }
 h2 {
   font-size: var(--fontSize-xl);
@@ -697,11 +697,28 @@ h5 {
 h6 {
   font-size: var(--fontSize-xs);
 }
+hgroup {
+  margin-block-end: var(--spacing-md);
+  .kicker {
+    margin-inline-end: var(--spacing-md);
+    text-transform: uppercase;
+    font-size: var(--fontSize-xs);
+  }
+  .subhead {
+    font-size: var(--fontSize-sm);
+  }
+  h1 {
+    margin-block-end: 0;
+    line-height: 1;
+  }
+}
 
 blockquote {
   margin-block: var(--spacing-lg);
   border-inline-start: var(--borderWidth-lg) solid var(--accent-muted);
   padding-inline-start: var(--spacing-lg);
+  border-radius: var(--borderRadius-md);
+  corner-shape: squircle;
 }
 input {
   &[type="checkbox"] {

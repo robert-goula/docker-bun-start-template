@@ -351,6 +351,23 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
       });
     });
 
+    // Canonical page list for pickers (e.g. the menu builder): one row per translation
+    // group, identified by its default-locale page — the group's `groupId` plus that
+    // page's slug/title. A group with no default-locale row is omitted (it has no
+    // canonical identity to pick). Admin-gated like `list`.
+    const listPageGroups = Effect.gen(function* () {
+      yield* Policy.canListPages;
+      return yield* Effect.tryPromise({
+        try: () =>
+          db
+            .select({ groupId: pages.groupId, slug: pages.slug, title: pages.title })
+            .from(pages)
+            .where(eq(pages.locale, DEFAULT_LOCALE))
+            .orderBy(asc(pages.title)),
+        catch: (cause) => new DatabaseError({ cause }),
+      });
+    });
+
     return {
       getPageLayout,
       getPageMeta,
@@ -360,6 +377,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
       savePageLayout,
       setPageLayout,
       list,
+      listPageGroups,
     } as const;
   }),
   dependencies: [DatabaseLive],

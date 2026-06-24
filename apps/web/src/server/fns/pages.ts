@@ -93,6 +93,30 @@ export const listPagesFn = createServerFn({ method: "GET" })
     ),
   );
 
+// One canonical (default-locale) page, identified for pickers: its translation-group key
+// plus the default-locale slug/title. Used by the menu builder's page picker.
+const selectPageGroupSchema = z.object({
+  groupId: z.uuid(),
+  slug: z.string(),
+  title: z.string(),
+});
+export type SafePageGroup = z.infer<typeof selectPageGroupSchema>;
+
+export const listPageGroupsFn = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(({ context }) =>
+    runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* PageRepo;
+        const rows = yield* repo.listPageGroups;
+        return rows.map((row) => selectPageGroupSchema.parse(row));
+      }).pipe(
+        Effect.provideService(CurrentUser, context.user),
+        Effect.catchTags({ Forbidden: forbidden, DatabaseError: dbError }),
+      ),
+    ),
+  );
+
 export const loadPageLayoutFn = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => pageRefSchema.parse(input))
   .handler(({ data }) =>
