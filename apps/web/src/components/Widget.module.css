@@ -164,6 +164,49 @@
   }
 }
 
+/* Layout-default widget shown read-only inside the page editor. It's owned by the
+   layout (not the page), so it has no drag/edit/delete chrome — just a "Layout" badge
+   and a control to hide it on this page. */
+.layoutCard {
+  margin-block-start: var(--spacing-sm);
+  border: var(--borderWidth-sm) dashed var(--border-default);
+  border-radius: var(--borderRadius-sm);
+}
+
+.layoutCard[data-hidden="true"] {
+  opacity: 0.55;
+}
+
+.badge {
+  font-size: var(--fontSize-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-inline: var(--spacing-sm);
+  border-radius: var(--borderRadius-sm);
+  background-color: var(--primary-base);
+  color: var(--primary-text);
+}
+
+.hideToggle {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+
+  svg {
+    width: 1rem;
+    height: auto;
+    fill: currentColor;
+  }
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
 /* Ghost rendered in DragOverlay */
 .ghost {
   background: var(--bg-overlay);

@@ -54,11 +54,11 @@
   padding: var(--spacing-md);
 }
 
-/* A 12-column grid (matching the page grid) so the ½/¼/⅓ width utilities on the
+/* A 60-column grid (matching the page grid) so the ½/¼/⅓ width utilities on the
    Fields take effect inside a tab panel (FieldGroup is flex and ignores them). */
 .fieldGrid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(60, 1fr);
   column-gap: var(--spacing-lg);
   row-gap: var(--spacing-md);
   align-items: start;

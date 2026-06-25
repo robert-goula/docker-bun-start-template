@@ -1,0 +1,155 @@
+@reference "@/styles.css";
+
+.nav {
+  display: block;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Horizontal orientation lays the top level out in a row. Nested lists stay vertical.
+   The first rule covers a wrapper element (nav/div) holding the list; the second covers
+   element "none", where the <ul> itself is the nav root and carries data-orientation. */
+.nav[data-orientation="horizontal"] > .list,
+.list.nav[data-orientation="horizontal"] {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Nested lists indent under their parent (always-expanded and vertical accordion). */
+.item .list {
+  margin-inline-start: var(--spacing-md);
+  padding-inline-start: var(--spacing-md);
+  margin-block-start: var(--spacing-xs);
+  border-inline-start: 2px solid var(--border-subtle);
+}
+
+/* An item that owns a dropdown panel anchors it. */
+.item:has(> .nodeRow),
+.item:has(> .disclosure) {
+  position: relative;
+}
+
+/* Dropdown panels: floating menus in a horizontal nav. Top-level drops below its trigger;
+   deeper panels fly out to the side. In a vertical nav they keep the inline indented look. */
+.nav[data-orientation="horizontal"] .list[data-panel] {
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
+  z-index: 10;
+  min-width: max-content;
+  margin: var(--spacing-xs) 0 0;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--borderRadius-sm);
+  background-color: var(--bg-raised, var(--bg-sunken));
+}
+
+.nav[data-orientation="horizontal"] .list[data-panel] .list[data-panel] {
+  top: 0;
+  inset-inline-start: 100%;
+  margin: 0 0 0 var(--spacing-xs);
+}
+
+.link {
+  color: var(--text-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Non-link grouping parent. */
+.heading {
+  display: block;
+  font-weight: 600;
+  font-size: var(--fontSize-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+/* Dropdown trigger row: a link plus its caret toggle. */
+.nodeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Caret toggle for link items, and the heading-as-button disclosure. */
+.toggle,
+.disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.disclosure {
+  font-weight: 600;
+  font-size: var(--fontSize-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+/* CSS caret; rotates when its node is open. */
+.caret {
+  width: 0;
+  height: 0;
+  border-inline: 0.3em solid transparent;
+  border-block-start: 0.35em solid currentColor;
+  transition: transform 0.15s ease;
+}
+
+.item[data-open] .caret {
+  transform: rotate(180deg);
+}
+
+.notice {
+  color: var(--text-secondary);
+  font-size: var(--fontSize-sm);
+  font-style: italic;
+}
+
+.picker {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+}
+
+.pickerLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+}
+
+.select {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+
+  &:focus-within {
+    outline-color: var(--border-focus);
+  }
+}

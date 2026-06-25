@@ -1,4 +1,6 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRouteWithContext, redirect } from "@tanstack/react-router";
+import { IntlayerProvider } from "react-intlayer";
+import { getHTMLTextDir } from "intlayer";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
@@ -13,6 +15,7 @@ import { meQueryOptions } from "@/server/fns/auth";
 import { themeQueryOptions } from "@/server/fns/theme";
 import { sizeQueryOptions } from "@/server/fns/size";
 import { accentQueryOptions } from "@/server/fns/accent";
+import { intlayerLocale, resolveLocale } from "@/lib/locale";
 
 import appCss from "../styles.css?url";
 
@@ -21,14 +24,19 @@ interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
+    // Resolve locale from the pathname before render — request-scoped, no module
+    // global. A redundant default-locale prefix is canonicalized away here.
+    const i18n = resolveLocale(location.pathname);
+    if (i18n.redirect !== undefined) throw redirect({ href: i18n.redirect });
+
     const [theme, size, accent] = await Promise.all([
       context.queryClient.ensureQueryData(themeQueryOptions()),
       context.queryClient.ensureQueryData(sizeQueryOptions()),
       context.queryClient.ensureQueryData(accentQueryOptions()),
       context.queryClient.prefetchQuery(meQueryOptions()),
     ]);
-    return { theme, size, accent };
+    return { theme, size, accent, i18n: { locale: i18n.locale, path: i18n.path } };
   },
   head: () => ({
     meta: [
@@ -54,10 +62,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const { theme, size, accent } = Route.useRouteContext();
+  const { theme, size, accent, i18n } = Route.useRouteContext();
   return (
     <html
-      lang="en"
+      lang={i18n.locale}
+      dir={getHTMLTextDir(intlayerLocale(i18n.locale))}
       // className={theme.resolved}
       data-theme={theme.mode === "system" ? undefined : theme.mode}
       data-size={size}
@@ -69,12 +78,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <EditModeProvider>
-          <Header />
-          <PasswordRehashedBanner />
-          {children}
-          <Footer />
-        </EditModeProvider>
+        <IntlayerProvider locale={i18n.locale}>
+          <EditModeProvider>
+            <Header />
+            <PasswordRehashedBanner />
+            {children}
+            <Footer />
+          </EditModeProvider>
+        </IntlayerProvider>
         <Toaster theme={theme.resolved} closeButton position="top-right" />
         <TanStackDevtools
           config={{

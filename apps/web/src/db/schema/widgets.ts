@@ -7,7 +7,7 @@ import { jsonb } from "../jsonb";
 import { pages } from "./pages";
 import { zones } from "./zones";
 
-export const widgetKinds = ["markdown", "debug", "dynamic"] as const;
+export const widgetKinds = ["markdown", "debug", "dynamic", "menu"] as const;
 export type WidgetKind = (typeof widgetKinds)[number];
 
 // The semantic elements a widget's read-only wrapper may render as. `section` is the

@@ -5,7 +5,14 @@ import { Suspense, createContext, useContext, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
 import s from "@/components/Widget.module.css";
-import { DeleteIcon, DragIndicatorIcon, EditIcon, SettingsIcon } from "@/components/icons";
+import {
+  DeleteIcon,
+  DragIndicatorIcon,
+  EditIcon,
+  SettingsIcon,
+  VisibilityIcon,
+  VisibilityOffIcon,
+} from "@/components/icons";
 import {
   Dialog,
   DialogClose,
@@ -24,11 +31,12 @@ import {
   type WidgetElement,
   widgetElements,
 } from "@/db/schema/widgets";
+import { type WidgetPin, widgetPins } from "@/db/schema/layoutWidgets";
 import type { Json } from "@/types/Json";
 import type { CustomWidgetId } from "@/db/schema/customWidgets";
 import registry, { editableWidgetKinds } from "@/components/widgetRegistry";
 
-export type WidgetKind = "markdown" | "debug" | "dynamic";
+export type WidgetKind = "markdown" | "debug" | "dynamic" | "menu";
 
 export interface WidgetContentProps {
   options: WidgetOptions;
@@ -50,11 +58,21 @@ export type WidgetOptions = { [key: string]: Json };
 export const widgetClassNames = (options: WidgetOptions) =>
   cx((options.size as string | undefined) ?? "full", options.className as string | undefined);
 
+// Where a widget instance comes from: the page itself (the default) or a layout-level
+// default (schema/layoutWidgets). Layout widgets render read-only on a page — they're
+// owned by the layout, not the page — so the source drives the edit-mode chrome.
+export type WidgetSource = "page" | "layout";
+
 export interface WidgetConfig {
   id: string;
   kind: WidgetKind;
   options: WidgetOptions;
   content: Json;
+  // Absent ⇒ "page". Layout defaults are tagged "layout" by PageRepo.getPageLayout.
+  source?: WidgetSource;
+  // For layout defaults shown in the page editor: whether this page has suppressed it.
+  // Hidden defaults are skipped in view mode and shown with a restore control in edit mode.
+  hidden?: boolean;
 }
 
 const WidgetContext = createContext<WidgetContextProps | null>(null);
@@ -70,6 +88,12 @@ interface WidgetProps extends WidgetConfig {
   onDelete?: () => void;
   onOptionsChange?: (options: WidgetConfig["options"]) => void;
   onContentChange?: (content: WidgetConfig["content"]) => void;
+  // Layout-default editor only: exposes a "Pin" control (top/bottom of zone) in the
+  // settings dialog, stored on options.pin. Pages don't pin their own widgets.
+  pinnable?: boolean;
+  // Layout-default editor only: a short scope label (e.g. "en-us" or "All locales")
+  // shown as a badge in the header so it's clear which locale this default belongs to.
+  localeBadge?: string;
 }
 
 export interface WidgetContentProps {
@@ -133,6 +157,48 @@ export function WidgetView({ widget }: { widget: WidgetConfig }) {
   );
 }
 
+/**
+ * Read-only presentation of a layout-default widget inside the page editor. The widget
+ * is owned by the layout, not the page, so it carries no drag/edit/delete chrome — only
+ * a "Layout" badge marking its origin and a control to hide/restore it on this page.
+ * The content renders through the same read-only path as the public view.
+ */
+export function LayoutWidgetCard({
+  widget,
+  onToggleHidden,
+}: {
+  widget: WidgetConfig;
+  onToggleHidden?: () => void;
+}) {
+  const hidden = widget.hidden ?? false;
+  return (
+    <section
+      data-slot="layout-widget"
+      data-kind={widget.kind}
+      data-hidden={hidden}
+      className={cx(s.layoutCard, widgetClassNames(widget.options))}
+    >
+      <header className={s.header}>
+        <span className={s.badge}>Layout</span>
+        <span className={s.title}>{widget.kind}</span>
+        {onToggleHidden && (
+          <button
+            type="button"
+            className={s.hideToggle}
+            onClick={onToggleHidden}
+            aria-pressed={hidden}
+            aria-label={hidden ? "Restore on this page" : "Hide on this page"}
+            title={hidden ? "Restore on this page" : "Hide on this page"}
+          >
+            {hidden ? <VisibilityOffIcon /> : <VisibilityIcon />}
+          </button>
+        )}
+      </header>
+      <WidgetView widget={widget} />
+    </section>
+  );
+}
+
 const Widget = function Widget({
   id,
   kind,
@@ -141,10 +207,13 @@ const Widget = function Widget({
   onDelete,
   onOptionsChange,
   onContentChange,
+  pinnable = false,
+  localeBadge,
 }: WidgetProps) {
   const widgetId = useId();
   const size = (options.size as ZoneSize | undefined) ?? "full";
   const className = (options.className as string | undefined) ?? "";
+  const pin: WidgetPin = options.pin === "bottom" ? "bottom" : "top";
   const [open, setOpen] = useState(true);
   const toggleOpen = () => setOpen((prev) => !prev);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -152,6 +221,7 @@ const Widget = function Widget({
   const [editing, setEditing] = useState(false);
   const [pendingSize, setPendingSize] = useState<ZoneSize>(size);
   const [pendingClassName, setPendingClassName] = useState(className);
+  const [pendingPin, setPendingPin] = useState<WidgetPin>(pin);
   // "" means no explicit override — defer to the component/global default.
   const [pendingAs, setPendingAs] = useState<WidgetElement | "">(
     isWidgetElement(options.as) ? options.as : "",
@@ -181,6 +251,7 @@ const Widget = function Widget({
     if (next) {
       setPendingSize(size);
       setPendingClassName(className);
+      setPendingPin(pin);
       setPendingAs(isWidgetElement(options.as) ? options.as : "");
     }
     setSettingsOpen(next);
@@ -189,12 +260,14 @@ const Widget = function Widget({
   function handleApply() {
     // `className` and `as` have no default — drop the key entirely when blank/unset.
     const trimmed = pendingClassName.trim();
-    const { className: _omitClassName, as: _omitAs, ...rest } = options;
+    const { className: _omitClassName, as: _omitAs, pin: _omitPin, ...rest } = options;
     onOptionsChange?.({
       ...rest,
       size: pendingSize,
       ...(trimmed ? { className: trimmed } : {}),
       ...(pendingAs ? { as: pendingAs } : {}),
+      // Only layout defaults carry a pin; drop the key for ordinary page widgets.
+      ...(pinnable ? { pin: pendingPin } : {}),
     });
     setSettingsOpen(false);
   }
@@ -230,6 +303,11 @@ const Widget = function Widget({
           <button className={s.title} onClick={toggleOpen} type="button">
             {kind}
           </button>
+          {localeBadge && (
+            <span className={s.badge} title={`Default for ${localeBadge}`}>
+              {localeBadge}
+            </span>
+          )}
           <Widget.Controls>
             <button
               type="button"
@@ -305,6 +383,25 @@ const Widget = function Widget({
                     </label>
                   ))}
                 </fieldset>
+                {pinnable && (
+                  <fieldset className={s.sizeOptions}>
+                    <legend className={s.sizeLabel}>Pin in zone</legend>
+                    {widgetPins.map((value) => (
+                      <label key={value} className={s.sizeOption}>
+                        <input
+                          type="radio"
+                          name={`widget-pin-${widgetId}`}
+                          value={value}
+                          checked={pendingPin === value}
+                          onChange={() => setPendingPin(value)}
+                        />
+                        {value === "top"
+                          ? "Top (above page widgets)"
+                          : "Bottom (below page widgets)"}
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
                 <DialogFooter>
                   <DialogClose render={<button type="button" className={s.btnCancel} />}>
                     Cancel

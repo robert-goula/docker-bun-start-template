@@ -8,6 +8,7 @@ const asString = (value: Json | undefined): string =>
 export default function Headline({ values }: DynamicDisplayProps) {
   const kicker = asString(values.kicker).trim();
   const headline = asString(values.headline).trim();
+  const subhead = asString(values.subhead).trim();
 
   if (kicker === "" && headline === "") return null;
 
@@ -15,6 +16,7 @@ export default function Headline({ values }: DynamicDisplayProps) {
     <>
       {kicker !== "" && <p className="kicker">{kicker}</p>}
       {headline !== "" && <HeadlineText as="h1">{headline}</HeadlineText>}
+      {subhead !== undefined && <p className="subhead">{subhead}</p>}
     </>
   );
 }

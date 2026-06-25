@@ -1,0 +1,132 @@
+@reference "@/styles.css";
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  border: 1px solid var(--border-default);
+  border-radius: var(--borderRadius-md);
+  background-color: var(--bg-surface);
+}
+
+.rowHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+}
+
+/* Type selector + per-type field selects. */
+.select {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+
+  &:focus-within {
+    outline-color: var(--border-focus);
+  }
+}
+
+/* The type-specific fields fill the available space between the type select and controls. */
+.rowFields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+  flex-grow: 1;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--borderRadius-sm);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--text-primary);
+    background-color: var(--bg-sunken);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 1rem;
+    height: auto;
+    fill: currentColor;
+  }
+}
+
+/* Nested children, indented and rule-marked so hierarchy is legible. */
+.children {
+  margin-inline-start: var(--spacing-lg);
+  padding-inline-start: var(--spacing-md);
+  padding-block-end: var(--spacing-sm);
+  border-inline-start: 2px solid var(--border-subtle);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-block-start: var(--spacing-md);
+}
+
+.addRoot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.saveActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.dirtyHint {
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+}
+
+.empty {
+  color: var(--text-secondary);
+  font-size: var(--fontSize-sm);
+}

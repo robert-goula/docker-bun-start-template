@@ -3,11 +3,15 @@ import { Effect } from "effect";
 import * as z from "zod";
 import { type LayoutId, selectLayoutSchema } from "@/db/schema/layouts";
 import { layoutZoneOptionsSchema } from "@/db/schema/layoutZones";
+import { LOCALES } from "@/db/schema/pages";
 import { ZONE_NAMES } from "@/db/schema/zones";
 import { authMiddleware } from "@/server/fns/auth";
+import { pageLayoutSchema } from "@/server/fns/pages";
 import { runtime } from "@/server/runtime";
 import { CurrentUser } from "@/server/services/CurrentUser";
 import { LayoutRepo } from "@/server/services/LayoutRepo";
+import { LayoutWidgetRepo } from "@/server/services/LayoutWidgetRepo";
+import type { PageLayout } from "@/components/Zone";
 
 const layoutZoneDetailSchema = z.object({
   zoneId: z.uuid(),
@@ -110,6 +114,56 @@ export const updateLayoutFn = createServerFn({ method: "POST" })
           Forbidden: forbidden,
           DatabaseError: dbError,
         }),
+      ),
+    ),
+  );
+
+// Identifies a layout-default widget scope: the layout plus a target locale, or null
+// for the all-locales defaults (rendered on every locale).
+const LayoutWidgetScopeInput = z.object({
+  layoutId: z.uuid(),
+  locale: z.enum(LOCALES).nullable(),
+});
+
+// Loads the layout's zone arrangement filled with its default widgets for one scope,
+// shaped as a PageLayout so the admin editor reuses the same PageBuilder as pages.
+export const loadLayoutWidgetsFn = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => LayoutWidgetScopeInput.parse(input))
+  .middleware([authMiddleware])
+  .handler(({ data, context }) =>
+    runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* LayoutWidgetRepo;
+        return yield* repo.getForScope({
+          layoutId: data.layoutId as LayoutId,
+          locale: data.locale,
+        });
+      }).pipe(
+        Effect.provideService(CurrentUser, context.user),
+        Effect.catchTags({ Forbidden: forbidden, DatabaseError: dbError }),
+      ),
+    ),
+  );
+
+const SaveLayoutWidgetsArgs = LayoutWidgetScopeInput.extend({ layout: pageLayoutSchema });
+
+// Persists the layout's default widgets for one scope. Admin-gated like the other
+// layout writes; zone arrangement is owned by the layout and never written here.
+export const saveLayoutWidgetsFn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => SaveLayoutWidgetsArgs.parse(input))
+  .middleware([authMiddleware])
+  .handler(({ data, context }) =>
+    runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* LayoutWidgetRepo;
+        yield* repo.saveForScope(
+          { layoutId: data.layoutId as LayoutId, locale: data.locale },
+          data.layout as PageLayout,
+        );
+        return { ok: true } as const;
+      }).pipe(
+        Effect.provideService(CurrentUser, context.user),
+        Effect.catchTags({ Forbidden: forbidden, DatabaseError: dbError }),
       ),
     ),
   );
