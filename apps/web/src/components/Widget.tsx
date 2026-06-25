@@ -84,6 +84,9 @@ interface WidgetProps extends WidgetConfig {
   // Layout-default editor only: exposes a "Pin" control (top/bottom of zone) in the
   // settings dialog, stored on options.pin. Pages don't pin their own widgets.
   pinnable?: boolean;
+  // Layout-default editor only: a short scope label (e.g. "en-us" or "All locales")
+  // shown as a badge in the header so it's clear which locale this default belongs to.
+  localeBadge?: string;
 }
 
 export interface WidgetContentProps {
@@ -196,6 +199,7 @@ const Widget = function Widget({
   onOptionsChange,
   onContentChange,
   pinnable = false,
+  localeBadge,
 }: WidgetProps) {
   const widgetId = useId();
   const size = (options.size as ZoneSize | undefined) ?? "full";
@@ -290,6 +294,11 @@ const Widget = function Widget({
           <button className={s.title} onClick={toggleOpen} type="button">
             {kind}
           </button>
+          {localeBadge && (
+            <span className={s.badge} title={`Default for ${localeBadge}`}>
+              {localeBadge}
+            </span>
+          )}
           <Widget.Controls>
             <button
               type="button"

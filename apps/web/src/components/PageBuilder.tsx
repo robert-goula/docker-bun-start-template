@@ -110,6 +110,9 @@ interface PageBuilderProps {
   // Renders the editor regardless of the global edit-mode toggle. Used by admin screens
   // (e.g. the layout-default editor) that are always in an authoring context.
   alwaysEdit?: boolean;
+  // Layout-default editor: a scope label badged on each widget (e.g. "en-us" or
+  // "All locales") so it's clear which locale's defaults are being edited.
+  localeBadge?: string;
 }
 
 function PageLayoutOptions({
@@ -164,6 +167,7 @@ export default function PageBuilder({
   ownSource = "page",
   pinnable = false,
   alwaysEdit = false,
+  localeBadge,
 }: PageBuilderProps) {
   const { editMode } = useEditMode();
   const inEditMode = editMode || alwaysEdit;
@@ -362,6 +366,7 @@ export default function PageBuilder({
                 widgets={zone.widgets}
                 ownSource={ownSource}
                 pinnable={pinnable}
+                localeBadge={localeBadge}
                 onSizeChange={(size) => handleZoneSizeChange(zone.id, size)}
                 onWidgetDelete={(widgetId) => handleWidgetDelete(zone.id, widgetId)}
                 onWidgetOptionsChange={(widgetId, options) =>

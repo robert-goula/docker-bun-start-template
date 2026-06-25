@@ -1,0 +1,33 @@
+/* Locale scope control for the layout-default editor. Made deliberately prominent —
+   a bare inline <select> next to the description reads as body text and is easy to
+   miss, which hides the per-locale capability. */
+.scopeBar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-block: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  border-radius: var(--borderRadius-md);
+  background-color: var(--neutral-100);
+}
+
+.scopeLabel {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.scopeSelect {
+  font-size: var(--fontSize-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: var(--borderWidth-sm) solid var(--border-default);
+  border-radius: var(--borderRadius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.scopeHint {
+  margin-inline-start: auto;
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+}

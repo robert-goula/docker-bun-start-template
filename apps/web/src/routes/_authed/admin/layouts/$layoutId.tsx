@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { layoutsKeys, layoutsRepo } from "@/repositories/layouts";
 import { layoutWidgetsRepo, saveLayoutWidgets } from "@/repositories/layoutWidgets";
 import { type UpdateLayoutAttributes, updateLayoutFn } from "@/server/fns/layouts";
+import styles from "./$layoutId.module.css";
 
 export const Route = createFileRoute("/_authed/admin/layouts/$layoutId")({
   loader: ({ context, params }) =>
@@ -133,21 +134,33 @@ function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
   const [scope, setScope] = useState<Locale | null>(null);
   const { data: layout } = useQuery(layoutWidgetsRepo.forScope(layoutId, scope));
 
+  const scopeLabel = scope ?? "All locales";
+
   return (
     <>
-      <label htmlFor="layout-widget-scope">Locale</label>{" "}
-      <select
-        id="layout-widget-scope"
-        value={scope ?? ""}
-        onChange={(e) => setScope(e.target.value === "" ? null : (e.target.value as Locale))}
-      >
-        <option value="">All locales</option>
-        {LOCALES.map((l) => (
-          <option key={l} value={l}>
-            {l}
-          </option>
-        ))}
-      </select>
+      <div className={styles.scopeBar}>
+        <label htmlFor="layout-widget-scope" className={styles.scopeLabel}>
+          Editing defaults for
+        </label>
+        <select
+          id="layout-widget-scope"
+          className={styles.scopeSelect}
+          value={scope ?? ""}
+          onChange={(e) => setScope(e.target.value === "" ? null : (e.target.value as Locale))}
+        >
+          <option value="">All locales</option>
+          {LOCALES.map((l) => (
+            <option key={l} value={l}>
+              {l}
+            </option>
+          ))}
+        </select>
+        <span className={styles.scopeHint}>
+          {scope
+            ? `Shown only on ${scope} pages`
+            : "Shown on every locale unless overridden per-locale"}
+        </span>
+      </div>
       {layout ? (
         <PageBuilder
           key={scope ?? "all"}
@@ -156,6 +169,7 @@ function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
           pinnable
           zonesLocked
           alwaysEdit
+          localeBadge={scopeLabel}
           onSave={(next) => {
             saveLayoutWidgets(layoutId, scope, next).catch(console.error);
           }}

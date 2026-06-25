@@ -32,6 +32,14 @@ const layoutWidgetToConfig = (w: LayoutWidget, hidden: boolean): WidgetConfig =>
 const pinOf = (w: LayoutWidget): string =>
   ((w.options as { pin?: unknown })?.pin as string | undefined) ?? DEFAULT_WIDGET_PIN;
 
+// When a page merges All-locales defaults with its locale's own, the All-locales rows
+// (locale IS NULL) take precedence within each pin group, then the locale-specific ones;
+// each scope keeps its own `order`. Applied per zone+pin so Top and Bottom both sort
+// All-then-locale.
+const scopeRank = (w: LayoutWidget): number => (w.locale === null ? 0 : 1);
+const byScopeThenOrder = (a: LayoutWidget, b: LayoutWidget): number =>
+  scopeRank(a) - scopeRank(b) || a.order - b.order;
+
 // A page is identified by a slug + locale. Routes pass these in; the repo bootstraps
 // the page (linked to the default layout) on first access for any slug.
 export interface PageRef {
@@ -196,7 +204,9 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
             layoutId: page.layoutId,
             zones: zoneRows.map((zr): ZoneConfig => {
               const opt = (zr.options ?? {}) as LayoutZoneOptions;
-              const layoutForZone = layoutWidgetRows.filter((w) => w.zoneId === zr.zoneId);
+              const layoutForZone = layoutWidgetRows
+                .filter((w) => w.zoneId === zr.zoneId)
+                .sort(byScopeThenOrder);
               return {
                 id: zr.zoneId,
                 name: zr.name as ZoneName,

@@ -83,6 +83,8 @@ interface ZoneProps {
   ownSource?: WidgetSource;
   // Layout-default editor: own widgets expose a pin (top/bottom) control.
   pinnable?: boolean;
+  // Layout-default editor: a scope label badged on each own widget (e.g. "en-us").
+  localeBadge?: string;
   onSizeChange?: (size: ZoneSize) => void;
   // When provided (layout editor), the settings dialog edits the full zone
   // arrangement and applies it in a single change so nothing clobbers anything.
@@ -105,6 +107,7 @@ interface ZoneContentProps {
   widgets: WidgetConfig[];
   ownSource?: WidgetSource;
   pinnable?: boolean;
+  localeBadge?: string;
   onWidgetDelete?: (widgetId: string) => void;
   onWidgetOptionsChange?: (widgetId: string, options: WidgetConfig["options"]) => void;
   onWidgetContentChange?: (widgetId: string, content: WidgetConfig["content"]) => void;
@@ -131,6 +134,7 @@ function Zone({
   widgets,
   ownSource = "page",
   pinnable = false,
+  localeBadge,
   onSizeChange,
   onArrangementChange,
   onWidgetDelete,
@@ -292,6 +296,7 @@ function Zone({
             widgets={widgets}
             ownSource={ownSource}
             pinnable={pinnable}
+            localeBadge={localeBadge}
             onWidgetDelete={onWidgetDelete}
             onWidgetOptionsChange={onWidgetOptionsChange}
             onWidgetContentChange={onWidgetContentChange}
@@ -344,6 +349,7 @@ Zone.Content = function ZoneContent({
   widgets,
   ownSource = "page",
   pinnable = false,
+  localeBadge,
   onWidgetDelete,
   onWidgetOptionsChange,
   onWidgetContentChange,
@@ -402,6 +408,7 @@ Zone.Content = function ZoneContent({
             options={w.options}
             content={w.content}
             pinnable={pinnable}
+            localeBadge={localeBadge}
             onDelete={() => onWidgetDelete?.(w.id)}
             onOptionsChange={(options) => onWidgetOptionsChange?.(w.id, options)}
             onContentChange={(content) => onWidgetContentChange?.(w.id, content)}
