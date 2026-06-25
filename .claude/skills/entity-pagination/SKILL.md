@@ -121,6 +121,28 @@ Re-export `List<Entity>PagedMeta`. `list(params)` → `queryOptions` whose `quer
 - Inbound links are just `<Link to="/admin/<entity>">` — **no** `search` prop. The schema
   defaults fill in `sort`/`page`, so don't force a `DEFAULT_<ENTITY>_SEARCH` object.
 
+### 5a. Base58 ids in the browser URL
+
+The entity's id route (`$<entity>Id`) shows the id as **base58** (~22 chars) in the address
+bar, not the raw uuid. Convert only at the route boundary — storage, server fns, repos,
+query keys, and the REST API all keep the full uuid v7.
+
+- On the detail route, add `params: idParam("<entity>Id")` from `@/lib/shortId`. `parse`
+  decodes base58 → uuid (and 404s on garbage), `stringify` encodes back. Params stay typed
+  as `string` (so links don't need branded casts); keep the usual `params.<entity>Id as
+  <Entity>Id` cast in the loader and `Route.useParams()`.
+- `<Link>` / `navigate({ params })` need **no** change: they pass the uuid and the router
+  stringifies it to base58 in the rendered href.
+- On the list page, add `data-id={row.original.id}` to the data-row `<TableRow>` so the raw
+  uuid stays reachable from the DOM without re-decoding.
+- The REST route below and its JSON:API `id`/`self` links stay **full uuid** (backend
+  boundary). `short-uuid` is the only dep; install it containerized:
+  `docker compose exec web bun add short-uuid`. Import the **named** `createTranslator`
+  (the default export isn't callable under Bun's ESM interop).
+- `@/lib/shortId` (`encodeId`/`decodeId`/`idParam`) is the single conversion point; its unit
+  tests in `apps/web/src/lib/shortId.test.ts` are the reference for the expected behavior
+  (round-trip, base58 alphabet, `notFound` on malformed input).
+
 ### 6. Public REST route — `apps/web/src/routes/api/<entity>/index.ts`
 
 ```ts

@@ -7,9 +7,11 @@ import { type UpdateUserInput, type UserId } from "@/db/schema/users";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { idParam } from "@/lib/shortId";
 import { usersRepo } from "@/repositories/users";
 
 export const Route = createFileRoute("/_authed/admin/users/$userId")({
+  params: idParam("userId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(usersRepo.byId(params.userId as UserId)),
   component: RouteComponent,
