@@ -137,7 +137,11 @@ query keys, and the REST API all keep the full uuid v7.
   uuid stays reachable from the DOM without re-decoding.
 - The REST route below and its JSON:API `id`/`self` links stay **full uuid** (backend
   boundary). `short-uuid` is the only dep; install it containerized:
-  `docker compose exec web bun add short-uuid`.
+  `docker compose exec web bun add short-uuid`. Import the **named** `createTranslator`
+  (the default export isn't callable under Bun's ESM interop).
+- `@/lib/shortId` (`encodeId`/`decodeId`/`idParam`) is the single conversion point; its unit
+  tests in `apps/web/src/lib/shortId.test.ts` are the reference for the expected behavior
+  (round-trip, base58 alphabet, `notFound` on malformed input).
 
 ### 6. Public REST route — `apps/web/src/routes/api/<entity>/index.ts`
 
