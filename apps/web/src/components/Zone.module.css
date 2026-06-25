@@ -125,7 +125,7 @@
   overflow: hidden;
   transition: height 0.3s ease;
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(60, 1fr);
   gap: var(--spacing-md);
 
   /* When empty, show a centered "Drop here" hint on its own full-width row,

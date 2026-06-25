@@ -17,7 +17,7 @@ import {
 import { arrayMove, rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { cx } from "class-variance-authority";
 import Zone, { ZoneGhost, type ZoneLayout } from "@/components/Zone";
-import { WidgetGhost, WidgetView } from "@/components/Widget";
+import { WidgetContent, WidgetGhost, WidgetView } from "@/components/Widget";
 import { useEditMode } from "@/components/EditMode";
 import { layoutsRepo } from "@/repositories/layouts";
 import { editOnlyWidgetKinds } from "@/components/widgetRegistry";
@@ -28,6 +28,12 @@ import styles from "./PageBuilder.module.css";
 
 function findZoneByWidgetId(zones: ZoneConfig[], widgetId: string): ZoneConfig | undefined {
   return zones.find((z) => z.widgets.some((w) => w.id === widgetId));
+}
+
+// Widgets shown in the read-only view: skip edit-only kinds (e.g. debug) and any layout
+// default this page suppressed.
+function visibleWidgets(zone: ZoneConfig): WidgetConfig[] {
+  return zone.widgets.filter((w) => !editOnlyWidgetKinds.has(w.kind) && !w.hidden);
 }
 
 // Zone content droppables use the pattern "${zoneId}:content"
@@ -321,21 +327,44 @@ export default function PageBuilder({
   const zoneIds = layout.zones.map((z) => z.id);
 
   if (!inEditMode) {
+    // The nav zone is hoisted out of <main> into its own top-level <nav> landmark
+    // (rendered before <main>, so the DOM order is header → nav → main → footer).
+    // Its widgets render content-only (no WidgetView <section> wrapper) so the markup
+    // stays tight — a menu becomes <nav><ul>…</ul></nav>. Menus render bare (element
+    // "none"): the zone already is the nav landmark, so they shed their own wrapper.
+    const navZone = layout.zones.find((z) => z.name === "nav");
+    const navWidgets = navZone ? visibleWidgets(navZone) : [];
     return (
-      <main>
-        {layout.zones.map((zone) => {
-          // Skip edit-only kinds (e.g. debug) and any layout default this page suppressed.
-          const visible = zone.widgets.filter((w) => !editOnlyWidgetKinds.has(w.kind) && !w.hidden);
-          if (visible.length === 0) return null;
-          return (
-            <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
-              {visible.map((widget) => (
-                <WidgetView key={widget.id} widget={widget} />
-              ))}
-            </div>
-          );
-        })}
-      </main>
+      <>
+        {navWidgets.length > 0 && navZone ? (
+          <nav>
+            {navWidgets.map((widget) => (
+              <WidgetContent
+                key={widget.id}
+                kind={widget.kind}
+                options={
+                  widget.kind === "menu" ? { ...widget.options, element: "none" } : widget.options
+                }
+                content={widget.content}
+              />
+            ))}
+          </nav>
+        ) : null}
+        <main>
+          {layout.zones.map((zone) => {
+            if (zone.name === "nav") return null;
+            const visible = visibleWidgets(zone);
+            if (visible.length === 0) return null;
+            return (
+              <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
+                {visible.map((widget) => (
+                  <WidgetView key={widget.id} widget={widget} />
+                ))}
+              </div>
+            );
+          })}
+        </main>
+      </>
     );
   }
 

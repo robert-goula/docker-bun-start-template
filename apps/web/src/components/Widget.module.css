@@ -189,10 +189,18 @@
 
 .hideToggle {
   all: unset;
-  font-size: var(--fontSize-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
-  padding-inline: var(--spacing-sm);
+  line-height: 1;
+
+  svg {
+    width: 1rem;
+    height: auto;
+    fill: currentColor;
+  }
 
   &:hover {
     color: var(--text-primary);

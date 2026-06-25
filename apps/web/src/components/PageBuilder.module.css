@@ -3,7 +3,7 @@
 /* Edit-mode page options bar: full-width row above the zones for page-level
    settings (currently the layout picker). */
 .options {
-  /* main is a 12-column grid; span every column so the bar is full width and
+  /* main is a 60-column grid; span every column so the bar is full width and
      never shares a row with a zone column. */
   grid-column: 1 / -1;
   display: flex;
@@ -40,11 +40,11 @@
   color: var(--text-primary);
 }
 
-/* Read-only view: a zone is just a 12-column grid carrying its size class, so
+/* Read-only view: a zone is just a 60-column grid carrying its size class, so
    its widgets keep the sizes chosen in the builder. No header/controls/chrome. */
 .viewZone {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(60, 1fr);
   grid-auto-rows: min-content;
   gap: var(--spacing-lg);
   align-content: start;

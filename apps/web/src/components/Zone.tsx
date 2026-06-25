@@ -29,7 +29,7 @@ import type { WidgetConfig, WidgetKind, WidgetSource } from "@/components/Widget
 import { widgetKindList } from "@/components/widgetRegistry";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
 
-export type ZoneSize = "full" | "½" | "⅓" | "⅔" | "¼" | "¾";
+export type ZoneSize = "full" | "½" | "⅓" | "⅔" | "¼" | "¾" | "⅕" | "⅖" | "⅗" | "⅘";
 export type ZoneLayout = {
   zones: ZoneConfig[];
 };
@@ -42,6 +42,10 @@ export const zoneSizeOptions: { label: string; value: ZoneSize }[] = [
   { label: "1/2", value: "½" },
   { label: "1/3", value: "⅓" },
   { label: "1/4", value: "¼" },
+  { label: "1/5", value: "⅕"},
+  { label: "2/5", value: "⅖" },
+  { label: "3/5", value: "⅗" },
+  { label: "4/5", value: "⅘" },
 ];
 
 interface ZoneContextProps {

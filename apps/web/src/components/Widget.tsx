@@ -5,7 +5,14 @@ import { Suspense, createContext, useContext, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cx } from "class-variance-authority";
 import s from "@/components/Widget.module.css";
-import { DeleteIcon, DragIndicatorIcon, EditIcon, SettingsIcon } from "@/components/icons";
+import {
+  DeleteIcon,
+  DragIndicatorIcon,
+  EditIcon,
+  SettingsIcon,
+  VisibilityIcon,
+  VisibilityOffIcon,
+} from "@/components/icons";
 import {
   Dialog,
   DialogClose,
@@ -180,8 +187,10 @@ export function LayoutWidgetCard({
             className={s.hideToggle}
             onClick={onToggleHidden}
             aria-pressed={hidden}
+            aria-label={hidden ? "Restore on this page" : "Hide on this page"}
+            title={hidden ? "Restore on this page" : "Hide on this page"}
           >
-            {hidden ? "Restore" : "Hide on this page"}
+            {hidden ? <VisibilityOffIcon /> : <VisibilityIcon />}
           </button>
         )}
       </header>

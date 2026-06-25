@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
+import { cx } from "class-variance-authority";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_LOCALE } from "@/db/schema/pages";
 import type { MenuId, MenuLink, MenuSubmenuMode } from "@/db/schema/menus";
@@ -8,6 +9,16 @@ import { resolveLocale } from "@/lib/locale";
 import { menusRepo } from "@/repositories/menus";
 import type { WidgetContentProps } from "@/components/Widget";
 import s from "./Menu.module.css";
+
+// The wrapper element the menu renders as. `nav` (default) makes the menu its own
+// navigation landmark; `div` sheds that landmark while keeping a wrapper; `none` sheds
+// the wrapper entirely (the menu's <ul> carries the nav styling) for menus placed inside
+// the nav zone, which is already a top-level <nav> — avoiding redundant nested elements.
+const MENU_ELEMENTS = ["nav", "div", "none"] as const;
+type MenuElement = (typeof MENU_ELEMENTS)[number];
+const DEFAULT_MENU_ELEMENT: MenuElement = "nav";
+const isMenuElement = (value: unknown): value is MenuElement =>
+  typeof value === "string" && (MENU_ELEMENTS as readonly string[]).includes(value);
 
 /**
  * The "menu" widget kind: renders a reusable menu (built in the admin menu builder) bound
@@ -22,6 +33,7 @@ export default function Menu({
   onEditingChange,
 }: WidgetContentProps) {
   const menuId = options.menuId as string | undefined;
+  const element = isMenuElement(options.element) ? options.element : DEFAULT_MENU_ELEMENT;
 
   if (editing) {
     return (
@@ -41,21 +53,40 @@ export default function Menu({
     ) : null;
   }
 
-  return <MenuView menuId={menuId as MenuId} />;
+  return <MenuView menuId={menuId as MenuId} element={element} />;
 }
 
 // View path: reads the locale-baked render projection (SSR-prefetched in the page loader)
 // for the current locale and renders the nested nav. A missing/empty menu renders nothing.
-function MenuView({ menuId }: { menuId: MenuId }) {
+// The wrapper keeps `s.nav` + `data-orientation` on whichever element so the orientation
+// styling still applies; the menu-name aria-label is only meaningful on the nav landmark.
+function MenuView({ menuId, element }: { menuId: MenuId; element: MenuElement }) {
   const { pathname } = useLocation();
   const locale = resolveLocale(pathname).locale ?? DEFAULT_LOCALE;
   const { data: menu } = useQuery(menusRepo.forRender(menuId, locale));
 
   if (!menu || menu.items.length === 0) return null;
+  // `none`: no wrapper — the menu's own <ul> carries the nav styling + orientation, for
+  // a tight <nav><ul>…</ul> when the zone already provides the navigation landmark.
+  if (element === "none") {
+    return (
+      <MenuTree
+        items={menu.items}
+        submenuMode={menu.submenuMode}
+        asNav
+        orientation={menu.orientation}
+      />
+    );
+  }
+  const Wrapper = element;
   return (
-    <nav className={s.nav} aria-label={menu.name} data-orientation={menu.orientation}>
+    <Wrapper
+      className={s.nav}
+      data-orientation={menu.orientation}
+      {...(element === "nav" ? { "aria-label": menu.name } : {})}
+    >
       <MenuTree items={menu.items} submenuMode={menu.submenuMode} />
-    </nav>
+    </Wrapper>
   );
 }
 
@@ -63,15 +94,25 @@ function MenuTree({
   items,
   submenuMode,
   isPanel = false,
+  asNav = false,
+  orientation,
 }: {
   items: ReadonlyArray<MenuLink>;
   submenuMode: MenuSubmenuMode;
   // Marks a nested list as a dropdown panel so CSS can position it (horizontal) instead of
   // applying the inline indentation used for always-expanded / accordion lists.
   isPanel?: boolean;
+  // When this <ul> doubles as the nav root (element "none"), carry the nav styling and the
+  // orientation that would otherwise live on a wrapper element.
+  asNav?: boolean;
+  orientation?: string;
 }) {
   return (
-    <ul className={s.list} {...(isPanel ? { "data-panel": "" } : {})}>
+    <ul
+      className={cx(s.list, asNav && s.nav)}
+      {...(isPanel ? { "data-panel": "" } : {})}
+      {...(orientation ? { "data-orientation": orientation } : {})}
+    >
       {items.map((item) => (
         <MenuNode key={item.id} item={item} submenuMode={submenuMode} />
       ))}
@@ -155,6 +196,7 @@ function MenuPicker({
   onEditingChange?: (editing: boolean) => void;
 }) {
   const { data: menus = [] } = useQuery(menusRepo.list());
+  const element = isMenuElement(options.element) ? options.element : DEFAULT_MENU_ELEMENT;
 
   return (
     <div className={s.picker}>
@@ -173,6 +215,26 @@ function MenuPicker({
           {menus.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className={s.pickerLabel}>
+        Wrapper element
+        <select
+          className={s.select}
+          value={element}
+          onChange={(e) => {
+            // Drop the key when set back to the default to keep options minimal.
+            const { element: _omit, ...rest } = options;
+            onOptionsChange?.(
+              e.target.value === DEFAULT_MENU_ELEMENT ? rest : { ...rest, element: e.target.value },
+            );
+          }}
+        >
+          {MENU_ELEMENTS.map((el) => (
+            <option key={el} value={el}>
+              {el}
             </option>
           ))}
         </select>

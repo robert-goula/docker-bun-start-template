@@ -9,7 +9,7 @@ export const ZONE_NAMES = ["nav", "hero", "sidebar", "main", "footer"] as const;
 export type ZoneName = (typeof ZONE_NAMES)[number];
 
 // Canonical sizing tokens, shared with widgets and layoutZone options to avoid drift.
-export const zoneSizes = ["full", "½", "⅓", "⅔", "¼", "¾"] as const;
+export const zoneSizes = ["full", "½", "⅓", "⅔", "¼", "¾", "⅕", "⅖", "⅗", "⅘"] as const;
 export const DEFAULT_ZONE_SIZE = "full" satisfies (typeof zoneSizes)[number];
 export type ZoneSize = (typeof zoneSizes)[number];
 

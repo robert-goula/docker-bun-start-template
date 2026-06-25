@@ -13,8 +13,11 @@
   padding: 0;
 }
 
-/* Horizontal orientation lays the top level out in a row. Nested lists stay vertical. */
-.nav[data-orientation="horizontal"] > .list {
+/* Horizontal orientation lays the top level out in a row. Nested lists stay vertical.
+   The first rule covers a wrapper element (nav/div) holding the list; the second covers
+   element "none", where the <ul> itself is the nav root and carries data-orientation. */
+.nav[data-orientation="horizontal"] > .list,
+.list.nav[data-orientation="horizontal"] {
   flex-direction: row;
   align-items: center;
   gap: var(--spacing-md);

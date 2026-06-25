@@ -32,13 +32,13 @@ interface LayoutBuilderProps {
 
 const gridStyle: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "repeat(12, 1fr)",
+  gridTemplateColumns: "repeat(60, 1fr)",
   gap: "var(--spacing-lg)",
 };
 
 /**
  * Visual editor for a layout's zone arrangement. Zones render as sized blocks in a
- * 12-column grid (a live preview of the layout): drag to reorder, and use each
+ * 60-column grid (a live preview of the layout): drag to reorder, and use each
  * zone's settings to change size, title and default-open. Reports every change
  * through `onChange` so the caller can persist it.
  */
