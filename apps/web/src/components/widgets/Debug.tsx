@@ -1,4 +1,6 @@
+import type { ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { resolveLocale } from "@/lib/locale";
 import s from "./Debug.module.css";
 
@@ -17,6 +19,7 @@ interface LeafMatch {
 }
 
 export default function Debug() {
+  const content = useIntlayer("debug");
   const { routeId, template, params, pathname } = useRouterState({
     select: (state) => {
       const matches = state.matches as ReadonlyArray<LeafMatch>;
@@ -33,20 +36,20 @@ export default function Debug() {
   // The resolver (src/lib/locale.ts) is the source of truth for locale, not the
   // structural `{-$locale}` route param — so resolve from the pathname directly.
   const resolved = resolveLocale(pathname);
-  const locale = resolved.redirect !== undefined ? "(redirecting…)" : resolved.locale;
+  const locale = resolved.redirect !== undefined ? content.redirecting : resolved.locale;
 
-  const rows: Array<[string, string]> = [
-    ["Locale", locale],
-    ["Route ID", routeId],
-    ["Route (with params)", template],
-    ["Params", JSON.stringify(params)],
-    ["Resolved slug", pathname],
+  const rows: Array<{ key: string; label: ReactNode; value: ReactNode }> = [
+    { key: "locale", label: content.locale, value: locale },
+    { key: "routeId", label: content.routeId, value: routeId },
+    { key: "template", label: content.routeWithParams, value: template },
+    { key: "params", label: content.params, value: JSON.stringify(params) },
+    { key: "pathname", label: content.resolvedSlug, value: pathname },
   ];
 
   return (
     <dl className={s.debug}>
-      {rows.map(([label, value]) => (
-        <div key={label} className={s.row}>
+      {rows.map(({ key, label, value }) => (
+        <div key={key} className={s.row}>
           <dt className={s.label}>{label}</dt>
           <dd className={s.value}>{value}</dd>
         </div>
