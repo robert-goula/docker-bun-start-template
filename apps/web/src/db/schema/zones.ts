@@ -5,7 +5,7 @@ import * as z from "zod";
 
 // Fixed catalog of placement zones. A zone is identity only (name); its per-layout
 // arrangement (title, size, order, defaultOpen) lives on `layoutZone.options`.
-export const ZONE_NAMES = ["hero", "sidebar", "main", "footer"] as const;
+export const ZONE_NAMES = ["nav", "hero", "sidebar", "main", "footer"] as const;
 export type ZoneName = (typeof ZONE_NAMES)[number];
 
 // Canonical sizing tokens, shared with widgets and layoutZone options to avoid drift.

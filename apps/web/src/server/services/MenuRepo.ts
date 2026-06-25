@@ -1,7 +1,14 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import { Database, DatabaseLive } from "@/db/layer";
-import { type MenuId, type MenuItem, type MenuRender, menus } from "@/db/schema/menus";
+import {
+  type MenuId,
+  type MenuItem,
+  type MenuOrientation,
+  type MenuRender,
+  type MenuSubmenuMode,
+  menus,
+} from "@/db/schema/menus";
 import { DEFAULT_LOCALE, type Locale, pages } from "@/db/schema/pages";
 import { indexPagesByGroup, resolveMenuItems } from "@/lib/menu";
 import { CurrentUser } from "./CurrentUser";
@@ -17,6 +24,8 @@ export interface UpdateMenuInput {
   name?: string;
   slug?: string;
   description?: string | null;
+  orientation?: MenuOrientation;
+  submenuMode?: MenuSubmenuMode;
   items?: ReadonlyArray<MenuItem>;
 }
 
@@ -120,6 +129,8 @@ export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
           id: row.id,
           name: row.name,
           slug: row.slug,
+          orientation: row.orientation,
+          submenuMode: row.submenuMode,
           items: resolveMenuItems(row.items, locale, (groupId) => byGroup.get(groupId)),
         } satisfies MenuRender;
 
@@ -170,6 +181,8 @@ export class MenuRepo extends Effect.Service<MenuRepo>()("app/MenuRepo", {
             if (patch.name !== undefined) set.name = patch.name;
             if (patch.slug !== undefined) set.slug = patch.slug;
             if (patch.description !== undefined) set.description = patch.description;
+            if (patch.orientation !== undefined) set.orientation = patch.orientation;
+            if (patch.submenuMode !== undefined) set.submenuMode = patch.submenuMode;
             if (patch.items !== undefined) set.items = patch.items;
             return db.update(menus).set(set).where(eq(menus.id, id));
           },

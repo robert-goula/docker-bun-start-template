@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_LOCALE } from "@/db/schema/pages";
-import type { MenuId, MenuLink } from "@/db/schema/menus";
+import type { MenuId, MenuLink, MenuSubmenuMode } from "@/db/schema/menus";
 import { resolveLocale } from "@/lib/locale";
 import { menusRepo } from "@/repositories/menus";
 import type { WidgetContentProps } from "@/components/Widget";
@@ -52,32 +53,91 @@ function MenuView({ menuId }: { menuId: MenuId }) {
 
   if (!menu || menu.items.length === 0) return null;
   return (
-    <nav className={s.nav} aria-label={menu.name}>
-      <MenuTree items={menu.items} />
+    <nav className={s.nav} aria-label={menu.name} data-orientation={menu.orientation}>
+      <MenuTree items={menu.items} submenuMode={menu.submenuMode} />
     </nav>
   );
 }
 
-function MenuTree({ items }: { items: ReadonlyArray<MenuLink> }) {
+function MenuTree({
+  items,
+  submenuMode,
+  isPanel = false,
+}: {
+  items: ReadonlyArray<MenuLink>;
+  submenuMode: MenuSubmenuMode;
+  // Marks a nested list as a dropdown panel so CSS can position it (horizontal) instead of
+  // applying the inline indentation used for always-expanded / accordion lists.
+  isPanel?: boolean;
+}) {
   return (
-    <ul className={s.list}>
+    <ul className={s.list} {...(isPanel ? { "data-panel": "" } : {})}>
       {items.map((item) => (
-        <li key={item.id} className={s.item}>
-          {item.href ? (
-            <a
-              href={item.href}
-              className={s.link}
-              {...(item.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-            >
-              {item.label}
-            </a>
-          ) : (
-            <span className={s.heading}>{item.label}</span>
-          )}
-          {item.children.length > 0 && <MenuTree items={item.children} />}
-        </li>
+        <MenuNode key={item.id} item={item} submenuMode={submenuMode} />
       ))}
     </ul>
+  );
+}
+
+// A single menu node. With `submenuMode === "dropdown"` a node that has children becomes a
+// disclosure: the child list is mounted only when open and toggled by a caret (link items) or
+// by the label itself (headings). Otherwise children render inline and always-expanded.
+function MenuNode({ item, submenuMode }: { item: MenuLink; submenuMode: MenuSubmenuMode }) {
+  const hasChildren = item.children.length > 0;
+  const dropdown = submenuMode === "dropdown" && hasChildren;
+  const [open, setOpen] = useState(false);
+
+  const label = item.href ? (
+    <a
+      href={item.href}
+      className={s.link}
+      {...(item.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      {item.label}
+    </a>
+  ) : (
+    <span className={s.heading}>{item.label}</span>
+  );
+
+  if (!dropdown) {
+    return (
+      <li className={s.item}>
+        {label}
+        {hasChildren && <MenuTree items={item.children} submenuMode={submenuMode} />}
+      </li>
+    );
+  }
+
+  const caret = <span className={s.caret} aria-hidden="true" />;
+
+  return (
+    <li className={s.item} {...(open ? { "data-open": "" } : {})}>
+      {item.href ? (
+        <div className={s.nodeRow}>
+          {label}
+          <button
+            type="button"
+            className={s.toggle}
+            aria-expanded={open}
+            aria-label={`Toggle ${item.label} submenu`}
+            onClick={() => setOpen((o) => !o)}
+          >
+            {caret}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className={s.disclosure}
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {item.label}
+          {caret}
+        </button>
+      )}
+      {open && <MenuTree items={item.children} submenuMode={submenuMode} isPanel />}
+    </li>
   );
 }
 

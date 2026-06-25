@@ -11,6 +11,16 @@ export type MenuId = z.infer<typeof MenuIdSchema>;
 // enforced by menuItemsSchema (a deeper tree is rejected at save time).
 export const MENU_MAX_DEPTH = 3;
 
+// Presentation settings, stored on the menu and applied everywhere it's placed.
+// `orientation` lays the top level out as a column (vertical) or row (horizontal);
+// `submenuMode` shows children always-expanded or collapsed into dropdowns. Both default
+// to the original behavior so existing menus render unchanged.
+export const MENU_ORIENTATIONS = ["vertical", "horizontal"] as const;
+export type MenuOrientation = (typeof MENU_ORIENTATIONS)[number];
+
+export const MENU_SUBMENU_MODES = ["expanded", "dropdown"] as const;
+export type MenuSubmenuMode = (typeof MENU_SUBMENU_MODES)[number];
+
 /**
  * A single menu item. A tagged union on `type`:
  * - `page`     — links to a page by its canonical `groupId` (shared across locale
@@ -91,6 +101,10 @@ export const menus = pgTable(
     // Stable machine key, slugified from the name.
     slug: varchar({ length: 80 }).notNull(),
     description: varchar({ length: 500 }),
+    // Presentation: top-level layout and how submenus reveal (see MENU_ORIENTATIONS /
+    // MENU_SUBMENU_MODES). Default to the original vertical, always-expanded rendering.
+    orientation: varchar({ length: 16 }).$type<MenuOrientation>().notNull().default("vertical"),
+    submenuMode: varchar({ length: 16 }).$type<MenuSubmenuMode>().notNull().default("expanded"),
     items: jsonb<MenuItem[]>("items").notNull().default([]),
     created: timestamp({ precision: 3, withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid(),
@@ -119,11 +133,15 @@ export const insertMenuSchema = insertMenuBaseSchema.extend({
   name: z.string().min(1).max(80),
   slug: z.string().min(1).max(80),
   description: z.string().max(500).nullable().optional(),
+  orientation: z.enum(MENU_ORIENTATIONS).default("vertical"),
+  submenuMode: z.enum(MENU_SUBMENU_MODES).default("expanded"),
   items: menuItemsSchema.default([]),
 });
 export type InsertMenuInput = z.infer<typeof insertMenuSchema>;
 
 export const selectMenuSchema = createSelectSchema(menus).extend({
+  orientation: z.enum(MENU_ORIENTATIONS),
+  submenuMode: z.enum(MENU_SUBMENU_MODES),
   items: menuItemsSchema,
   created: z.coerce.date(),
   updated: z.coerce.date().nullable(),
@@ -134,6 +152,8 @@ export const updateMenuSchema = z
     name: z.string().min(1).max(80),
     slug: z.string().min(1).max(80),
     description: z.string().max(500).nullable(),
+    orientation: z.enum(MENU_ORIENTATIONS),
+    submenuMode: z.enum(MENU_SUBMENU_MODES),
     items: menuItemsSchema,
   })
   .partial();
@@ -158,6 +178,8 @@ export interface MenuRender {
   id: string;
   name: string;
   slug: string;
+  orientation: MenuOrientation;
+  submenuMode: MenuSubmenuMode;
   items: MenuLink[];
 }
 
@@ -175,5 +197,7 @@ export const menuRenderSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
+  orientation: z.enum(MENU_ORIENTATIONS),
+  submenuMode: z.enum(MENU_SUBMENU_MODES),
   items: z.array(menuLinkSchema),
 });

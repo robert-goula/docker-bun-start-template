@@ -3,3 +3,16 @@
 .itemsHeading {
   margin-block-start: var(--spacing-lg);
 }
+
+.select {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+
+  &:focus-within {
+    outline-color: var(--border-focus);
+  }
+}

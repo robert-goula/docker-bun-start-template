@@ -22,6 +22,7 @@ export type LayoutZoneOptions = z.infer<typeof layoutZoneOptionsSchema>;
 // Canonical zone arrangement seeded into a new layout (and matched by the migration
 // for the `default` layout). One entry per catalog zone.
 export const DEFAULT_ZONE_ARRANGEMENT: Record<ZoneName, LayoutZoneOptions> = {
+  nav: { title: "Nav", size: "full", order: -1, defaultOpen: true },
   hero: { title: "Hero", size: "full", order: 0, defaultOpen: true },
   main: { title: "Main", size: "⅔", order: 1, defaultOpen: true },
   sidebar: { title: "Sidebar", size: "⅓", order: 2, defaultOpen: true },

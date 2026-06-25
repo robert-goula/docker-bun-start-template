@@ -4,6 +4,8 @@ import * as z from "zod";
 import {
   type MenuId,
   type MenuRender,
+  MENU_ORIENTATIONS,
+  MENU_SUBMENU_MODES,
   menuItemsSchema,
   menuRenderSchema,
   selectMenuSchema,
@@ -28,6 +30,8 @@ export const updateMenuAttributesSchema = z.object({
   name: z.string().min(1).max(80).optional(),
   slug: z.string().min(1).max(80).optional(),
   description: z.string().max(500).nullable().optional(),
+  orientation: z.enum(MENU_ORIENTATIONS).optional(),
+  submenuMode: z.enum(MENU_SUBMENU_MODES).optional(),
   items: menuItemsSchema.optional(),
 });
 export type UpdateMenuAttributes = z.infer<typeof updateMenuAttributesSchema>;
@@ -80,19 +84,20 @@ export const getMenuByIdFn = createServerFn({ method: "GET" })
 // single bad widget can't 500 a public page (and SSR dehydration carries no error).
 export const getMenuForRenderFn = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => MenuRenderInput.parse(input))
-  .handler(({ data }): Promise<MenuRender | null> =>
-    runtime.runPromise(
-      Effect.gen(function* () {
-        const repo = yield* MenuRepo;
-        const resolved = yield* repo.findForRender(data.id as MenuId, data.locale);
-        return menuRenderSchema.parse(resolved);
-      }).pipe(
-        Effect.catchTags({
-          MenuNotFound: () => Effect.succeed(null),
-          DatabaseError: () => Effect.succeed(null),
-        }),
+  .handler(
+    ({ data }): Promise<MenuRender | null> =>
+      runtime.runPromise(
+        Effect.gen(function* () {
+          const repo = yield* MenuRepo;
+          const resolved = yield* repo.findForRender(data.id as MenuId, data.locale);
+          return menuRenderSchema.parse(resolved);
+        }).pipe(
+          Effect.catchTags({
+            MenuNotFound: () => Effect.succeed(null),
+            DatabaseError: () => Effect.succeed(null),
+          }),
+        ),
       ),
-    ),
   );
 
 export const createMenuFn = createServerFn({ method: "POST" })

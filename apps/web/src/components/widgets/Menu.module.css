@@ -13,12 +13,46 @@
   padding: 0;
 }
 
-/* Nested lists indent under their parent. */
+/* Horizontal orientation lays the top level out in a row. Nested lists stay vertical. */
+.nav[data-orientation="horizontal"] > .list {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Nested lists indent under their parent (always-expanded and vertical accordion). */
 .item .list {
   margin-inline-start: var(--spacing-md);
   padding-inline-start: var(--spacing-md);
   margin-block-start: var(--spacing-xs);
   border-inline-start: 2px solid var(--border-subtle);
+}
+
+/* An item that owns a dropdown panel anchors it. */
+.item:has(> .nodeRow),
+.item:has(> .disclosure) {
+  position: relative;
+}
+
+/* Dropdown panels: floating menus in a horizontal nav. Top-level drops below its trigger;
+   deeper panels fly out to the side. In a vertical nav they keep the inline indented look. */
+.nav[data-orientation="horizontal"] .list[data-panel] {
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
+  z-index: 10;
+  min-width: max-content;
+  margin: var(--spacing-xs) 0 0;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-default);
+  border-radius: var(--borderRadius-sm);
+  background-color: var(--bg-raised, var(--bg-sunken));
+}
+
+.nav[data-orientation="horizontal"] .list[data-panel] .list[data-panel] {
+  top: 0;
+  inset-inline-start: 100%;
+  margin: 0 0 0 var(--spacing-xs);
 }
 
 .link {
@@ -38,6 +72,49 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-secondary);
+}
+
+/* Dropdown trigger row: a link plus its caret toggle. */
+.nodeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Caret toggle for link items, and the heading-as-button disclosure. */
+.toggle,
+.disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.disclosure {
+  font-weight: 600;
+  font-size: var(--fontSize-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+/* CSS caret; rotates when its node is open. */
+.caret {
+  width: 0;
+  height: 0;
+  border-inline: 0.3em solid transparent;
+  border-block-start: 0.35em solid currentColor;
+  transition: transform 0.15s ease;
+}
+
+.item[data-open] .caret {
+  transform: rotate(180deg);
 }
 
 .notice {

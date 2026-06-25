@@ -5,7 +5,13 @@ import { toast } from "sonner";
 import MenuItemsBuilder from "@/components/MenuItemsBuilder";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { type MenuId, type MenuItem, menuItemsSchema } from "@/db/schema/menus";
+import {
+  type MenuId,
+  type MenuItem,
+  type MenuOrientation,
+  type MenuSubmenuMode,
+  menuItemsSchema,
+} from "@/db/schema/menus";
 import { menusKeys, menusRepo } from "@/repositories/menus";
 import { pagesRepo } from "@/repositories/pages";
 import { type UpdateMenuAttributes, updateMenuFn } from "@/server/fns/menus";
@@ -33,6 +39,8 @@ function RouteComponent() {
   const [name, setName] = useState(menu.name);
   const [slug, setSlug] = useState(menu.slug);
   const [description, setDescription] = useState(menu.description ?? "");
+  const [orientation, setOrientation] = useState<MenuOrientation>(menu.orientation);
+  const [submenuMode, setSubmenuMode] = useState<MenuSubmenuMode>(menu.submenuMode);
 
   // Autosave a partial patch and write the returned detail straight into the cache.
   function save(patch: UpdateMenuAttributes) {
@@ -114,6 +122,42 @@ function RouteComponent() {
                   save({ description: description.trim() || null })
                 }
               />
+            </FieldBody>
+          </Field>
+          <Field className="⅓">
+            <FieldLabel htmlFor="menu-orientation">Orientation</FieldLabel>
+            <FieldBody>
+              <select
+                id="menu-orientation"
+                className={s.select}
+                value={orientation}
+                onChange={(e) => {
+                  const next = e.target.value as MenuOrientation;
+                  setOrientation(next);
+                  save({ orientation: next });
+                }}
+              >
+                <option value="vertical">Vertical</option>
+                <option value="horizontal">Horizontal</option>
+              </select>
+            </FieldBody>
+          </Field>
+          <Field className="⅓">
+            <FieldLabel htmlFor="menu-submenu-mode">Submenu display</FieldLabel>
+            <FieldBody>
+              <select
+                id="menu-submenu-mode"
+                className={s.select}
+                value={submenuMode}
+                onChange={(e) => {
+                  const next = e.target.value as MenuSubmenuMode;
+                  setSubmenuMode(next);
+                  save({ submenuMode: next });
+                }}
+              >
+                <option value="expanded">Always expanded</option>
+                <option value="dropdown">Dropdown</option>
+              </select>
             </FieldBody>
           </Field>
         </FieldGroup>
