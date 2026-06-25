@@ -11,6 +11,7 @@ import {
   customWidgetFieldsSchema,
 } from "@/db/schema/customWidgets";
 import { type WidgetElement, widgetElements } from "@/db/schema/widgets";
+import { idParam } from "@/lib/shortId";
 import { customWidgetsKeys, customWidgetsRepo } from "@/repositories/customWidgets";
 import {
   type UpdateCustomWidgetAttributes,
@@ -19,6 +20,7 @@ import {
 import s from "./$widgetId.module.css";
 
 export const Route = createFileRoute("/_authed/admin/custom-widgets/$widgetId")({
+  params: idParam("widgetId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(customWidgetsRepo.byId(params.widgetId as CustomWidgetId)),
   component: RouteComponent,

@@ -7,12 +7,14 @@ import LayoutBuilder, { type LayoutZoneState } from "@/components/LayoutBuilder"
 import PageBuilder from "@/components/PageBuilder";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { idParam } from "@/lib/shortId";
 import { layoutsKeys, layoutsRepo } from "@/repositories/layouts";
 import { layoutWidgetsRepo, saveLayoutWidgets } from "@/repositories/layoutWidgets";
 import { type UpdateLayoutAttributes, updateLayoutFn } from "@/server/fns/layouts";
 import styles from "./$layoutId.module.css";
 
 export const Route = createFileRoute("/_authed/admin/layouts/$layoutId")({
+  params: idParam("layoutId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(layoutsRepo.byId(params.layoutId as LayoutId)),
   component: RouteComponent,

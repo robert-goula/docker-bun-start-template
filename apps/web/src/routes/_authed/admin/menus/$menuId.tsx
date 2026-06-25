@@ -12,12 +12,14 @@ import {
   type MenuSubmenuMode,
   menuItemsSchema,
 } from "@/db/schema/menus";
+import { idParam } from "@/lib/shortId";
 import { menusKeys, menusRepo } from "@/repositories/menus";
 import { pagesRepo } from "@/repositories/pages";
 import { type UpdateMenuAttributes, updateMenuFn } from "@/server/fns/menus";
 import s from "./$menuId.module.css";
 
 export const Route = createFileRoute("/_authed/admin/menus/$menuId")({
+  params: idParam("menuId"),
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(menusRepo.byId(params.menuId as MenuId)),
