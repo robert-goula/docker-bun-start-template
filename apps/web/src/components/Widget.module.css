@@ -74,65 +74,6 @@
   transform: rotate(-90deg);
 }
 
-/* Widget settings dialog */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-block-end: var(--spacing-lg);
-}
-
-.fieldLabel {
-  font-size: var(--fontSize-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.tagSelect {
-  color: var(--text-primary);
-  background-color: var(--bg-sunken);
-  border-radius: var(--borderRadius-sm);
-  outline: 1px solid var(--border-default);
-  padding-block: var(--spacing-xs);
-  padding-inline: var(--spacing-md);
-
-  &:focus-within {
-    outline-color: var(--border-focus);
-  }
-}
-
-.sizeOptions {
-  border: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.sizeLabel {
-  font-size: var(--fontSize-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-block-end: var(--spacing-sm);
-}
-
-.sizeOption {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  font-size: var(--fontSize-sm);
-  color: var(--text-primary);
-  cursor: pointer;
-
-  input[type="radio"] {
-    accent-color: var(--primary-400);
-    width: 1rem;
-    height: 1rem;
-    cursor: pointer;
-  }
-}
-
 .btnCancel {
   font-size: var(--fontSize-xs);
   padding-block: var(--spacing-sm);

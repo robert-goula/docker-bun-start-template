@@ -22,7 +22,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { type ZoneSize, zoneSizeOptions } from "@/components/Zone";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
 import {
@@ -74,6 +82,18 @@ export interface WidgetConfig {
   // Hidden defaults are skipped in view mode and shown with a restore control in edit mode.
   hidden?: boolean;
 }
+
+// Settings-dialog Select options. Tag's empty value defers to the widget/global default.
+const tagOptions: { label: string; value: WidgetElement | "" }[] = [
+  { label: "Default", value: "" },
+  ...widgetElements.map((el) => ({ label: el, value: el })),
+];
+
+const pinLabels: Record<WidgetPin, string> = {
+  top: "Top (above page widgets)",
+  bottom: "Bottom (below page widgets)",
+};
+const pinOptions = widgetPins.map((value) => ({ label: pinLabels[value], value }));
 
 const WidgetContext = createContext<WidgetContextProps | null>(null);
 
@@ -339,69 +359,84 @@ const Widget = function Widget({
                 <DialogHeader>
                   <DialogTitle>Widget Settings</DialogTitle>
                 </DialogHeader>
-                <div className={s.field}>
-                  <label className={s.fieldLabel} htmlFor={`widget-class-${widgetId}`}>
-                    Class names
-                  </label>
-                  <Input
-                    id={`widget-class-${widgetId}`}
-                    value={pendingClassName}
-                    onChange={(e) => setPendingClassName(e.target.value)}
-                    placeholder="e.g. featured highlight"
-                  />
-                </div>
-                <div className={s.field}>
-                  <label className={s.fieldLabel} htmlFor={`widget-tag-${widgetId}`}>
-                    Tag
-                  </label>
-                  <select
-                    id={`widget-tag-${widgetId}`}
-                    className={s.tagSelect}
-                    value={pendingAs}
-                    onChange={(e) => setPendingAs(e.target.value as WidgetElement | "")}
-                  >
-                    <option value="">Default</option>
-                    {widgetElements.map((el) => (
-                      <option key={el} value={el}>
-                        {el}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <fieldset className={s.sizeOptions}>
-                  <legend className={s.sizeLabel}>Size</legend>
-                  {zoneSizeOptions.map(({ label, value }) => (
-                    <label key={value} className={s.sizeOption}>
-                      <input
-                        type="radio"
-                        name={`widget-size-${widgetId}`}
-                        value={value}
-                        checked={pendingSize === value}
-                        onChange={() => setPendingSize(value)}
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor={`widget-class-${widgetId}`}>Class names</FieldLabel>
+                    <FieldBody>
+                      <Input
+                        id={`widget-class-${widgetId}`}
+                        value={pendingClassName}
+                        onChange={(e) => setPendingClassName(e.target.value)}
+                        placeholder="e.g. featured highlight"
                       />
-                      {label}
-                    </label>
-                  ))}
-                </fieldset>
-                {pinnable && (
-                  <fieldset className={s.sizeOptions}>
-                    <legend className={s.sizeLabel}>Pin in zone</legend>
-                    {widgetPins.map((value) => (
-                      <label key={value} className={s.sizeOption}>
-                        <input
-                          type="radio"
-                          name={`widget-pin-${widgetId}`}
-                          value={value}
-                          checked={pendingPin === value}
-                          onChange={() => setPendingPin(value)}
-                        />
-                        {value === "top"
-                          ? "Top (above page widgets)"
-                          : "Bottom (below page widgets)"}
-                      </label>
-                    ))}
-                  </fieldset>
-                )}
+                    </FieldBody>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={`widget-tag-${widgetId}`}>Tag</FieldLabel>
+                    <FieldBody>
+                      <Select
+                        items={tagOptions}
+                        value={pendingAs}
+                        onValueChange={(value) => setPendingAs(value as WidgetElement | "")}
+                      >
+                        <SelectTrigger id={`widget-tag-${widgetId}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tagOptions.map(({ label, value }) => (
+                            <SelectItem key={value || "default"} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldBody>
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor={`widget-size-${widgetId}`}>Size</FieldLabel>
+                    <FieldBody>
+                      <Select
+                        items={zoneSizeOptions}
+                        value={pendingSize}
+                        onValueChange={(value) => setPendingSize(value as ZoneSize)}
+                      >
+                        <SelectTrigger id={`widget-size-${widgetId}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {zoneSizeOptions.map(({ label, value }) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FieldBody>
+                  </Field>
+                  {pinnable && (
+                    <Field>
+                      <FieldLabel htmlFor={`widget-pin-${widgetId}`}>Pin in zone</FieldLabel>
+                      <FieldBody>
+                        <Select
+                          items={pinOptions}
+                          value={pendingPin}
+                          onValueChange={(value) => setPendingPin(value as WidgetPin)}
+                        >
+                          <SelectTrigger id={`widget-pin-${widgetId}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {pinOptions.map(({ label, value }) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldBody>
+                    </Field>
+                  )}
+                </FieldGroup>
                 <DialogFooter>
                   <DialogClose render={<button type="button" className={s.btnCancel} />}>
                     Cancel

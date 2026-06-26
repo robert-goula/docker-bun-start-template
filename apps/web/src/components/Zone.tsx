@@ -2,13 +2,7 @@
 // props to its <Zone.Content> compound component, which oxc misreads as recursion.
 import type React from "react";
 import { createContext, useContext, useId, useState } from "react";
-import {
-  AddIcon,
-  ArrowDropDownIcon,
-  DragIndicatorIcon,
-  MoreVertIcon,
-  SettingsIcon,
-} from "@/components/icons";
+import { AddIcon, ArrowDropDownIcon, DragIndicatorIcon, SettingsIcon } from "@/components/icons";
 import s from "./Zone.module.css";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -24,6 +18,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import type { WidgetConfig, WidgetKind, WidgetSource } from "@/components/Widget";
 import { widgetKindList } from "@/components/widgetRegistry";
@@ -42,7 +45,7 @@ export const zoneSizeOptions: { label: string; value: ZoneSize }[] = [
   { label: "1/2", value: "½" },
   { label: "1/3", value: "⅓" },
   { label: "1/4", value: "¼" },
-  { label: "1/5", value: "⅕"},
+  { label: "1/5", value: "⅕" },
   { label: "2/5", value: "⅖" },
   { label: "3/5", value: "⅗" },
   { label: "4/5", value: "⅘" },
@@ -243,41 +246,51 @@ function Zone({
                   <DialogHeader>
                     <DialogTitle>Zone Settings</DialogTitle>
                   </DialogHeader>
-                  {onArrangementChange && (
-                    <label className={s.sizeLabel}>
-                      Title
-                      <input
-                        type="text"
-                        value={pendingTitle}
-                        onChange={(e) => setPendingTitle(e.target.value)}
-                      />
-                    </label>
-                  )}
-                  <fieldset className={s.sizeOptions}>
-                    <legend className={s.sizeLabel}>Size</legend>
-                    {zoneSizeOptions.map(({ label, value }) => (
-                      <label key={value} className={s.sizeOption}>
+                  <FieldGroup>
+                    {onArrangementChange && (
+                      <Field>
+                        <FieldLabel htmlFor={`${internalId}-title`}>Title</FieldLabel>
+                        <FieldBody>
+                          <Input
+                            id={`${internalId}-title`}
+                            value={pendingTitle}
+                            onChange={(e) => setPendingTitle(e.target.value)}
+                          />
+                        </FieldBody>
+                      </Field>
+                    )}
+                    <Field>
+                      <FieldLabel htmlFor={`${internalId}-size`}>Size</FieldLabel>
+                      <FieldBody>
+                        <Select
+                          items={zoneSizeOptions}
+                          value={pendingSize}
+                          onValueChange={(value) => setPendingSize(value as ZoneSize)}
+                        >
+                          <SelectTrigger id={`${internalId}-size`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {zoneSizeOptions.map(({ label, value }) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FieldBody>
+                    </Field>
+                    {onArrangementChange && (
+                      <label className={s.sizeOption}>
                         <input
-                          type="radio"
-                          name={`zone-size-${internalId}`}
-                          value={value}
-                          checked={pendingSize === value}
-                          onChange={() => setPendingSize(value)}
+                          type="checkbox"
+                          checked={pendingDefaultOpen}
+                          onChange={(e) => setPendingDefaultOpen(e.target.checked)}
                         />
-                        {label}
+                        Open by default
                       </label>
-                    ))}
-                  </fieldset>
-                  {onArrangementChange && (
-                    <label className={s.sizeOption}>
-                      <input
-                        type="checkbox"
-                        checked={pendingDefaultOpen}
-                        onChange={(e) => setPendingDefaultOpen(e.target.checked)}
-                      />
-                      Open by default
-                    </label>
-                  )}
+                    )}
+                  </FieldGroup>
                   <DialogFooter>
                     <DialogClose render={<button type="button" className={s.btnCancel} />}>
                       Cancel
@@ -289,10 +302,6 @@ function Zone({
                 </DialogContent>
               </Dialog>
             )}
-            {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-            <button>
-              <MoreVertIcon />
-            </button>
           </Zone.Controls>
         </Zone.Header>
         {!contentless && (
