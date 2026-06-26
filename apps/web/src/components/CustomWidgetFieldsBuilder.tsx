@@ -23,11 +23,14 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { CustomWidgetField } from "@/db/schema/customWidgets";
+import { type CustomWidgetField, repeatItemsCap } from "@/db/schema/customWidgets";
 import {
+  type AdvancedFieldOption,
+  defaultMeasures,
   fieldControlDescriptorByKey,
   fieldControlDescriptors,
-} from "@/plugins/fieldControls/descriptors";
+  type MeasureConfig,
+} from "@/plugins/fieldControls";
 import s from "./CustomWidgetFieldsBuilder.module.css";
 
 // Each row carries a stable internal id so drag/keys survive while the editable
@@ -61,6 +64,17 @@ const floatOrUndef = (value: string): number | undefined => {
   return Number.isNaN(n) ? undefined : n;
 };
 
+// Coerce a select's raw string back to the option's original type (number options stay numbers);
+// the blank "—" option clears the value to undefined so select-backed config stays optional.
+const coerceSelectValue = (
+  raw: string,
+  options?: ReadonlyArray<AdvancedFieldOption>,
+): string | number | undefined => {
+  if (raw === "") return undefined;
+  const match = options?.find((o) => String(o.value) === raw);
+  return match ? match.value : raw;
+};
+
 // CustomWidgetField is flat (every value is a primitive), so a key-union shallow
 // compare is a complete equality check.
 function fieldsEqual(a: CustomWidgetField, b: CustomWidgetField): boolean {
@@ -85,6 +99,7 @@ function makeField(index: number): CustomWidgetField {
     type: "text",
     control: "input",
     required: false,
+    repeatable: false,
   };
 }
 
@@ -205,6 +220,45 @@ export default function CustomWidgetFieldsBuilder({
   );
 }
 
+// Editor for a measurement field's sub-measurements: a `name` (JSON key in stored content) and
+// a display `label` per measure. Falls back to the shared defaults until the author edits them.
+function MeasuresEditor({
+  idBase,
+  measures,
+  onChange,
+}: {
+  idBase: string;
+  measures: ReadonlyArray<MeasureConfig> | undefined;
+  onChange: (patch: Partial<CustomWidgetField>) => void;
+}) {
+  const list = measures?.length ? measures : defaultMeasures;
+  const update = (index: number, patch: Partial<MeasureConfig>) =>
+    onChange({ measures: list.map((m, j) => (j === index ? { ...m, ...patch } : m)) });
+  return (
+    <div className={s.measuresEditor}>
+      {list.map((measure, i) => (
+        // Positional identity: the inputs are value-controlled, so index keys are safe here.
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={i} className={s.measureConfigRow}>
+          <Input
+            aria-label={`Measurement ${i + 1} name`}
+            id={`${idBase}-measure-${i}-name`}
+            value={measure.name}
+            placeholder="name (json key)"
+            onChange={(e) => update(i, { name: e.target.value })}
+          />
+          <Input
+            aria-label={`Measurement ${i + 1} label`}
+            value={measure.label}
+            placeholder="Label"
+            onChange={(e) => update(i, { label: e.target.value })}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function FieldRow({
   row,
   onChange,
@@ -310,6 +364,53 @@ function FieldRow({
                   </FieldBody>
                 </Field>
 
+                {/* Repeatable is generic (works for every control), so it lives here rather than
+                    in a control's descriptor. Min/max instance inputs appear only when enabled. */}
+                <Field className="¼">
+                  <FieldLabel htmlFor={`${idBase}-repeatable`}>Repeatable</FieldLabel>
+                  <FieldBody>
+                    <label className={s.checkbox}>
+                      <input
+                        id={`${idBase}-repeatable`}
+                        type="checkbox"
+                        checked={field.repeatable ?? false}
+                        onChange={(e) => onChange({ repeatable: e.target.checked })}
+                      />
+                      Allow multiple
+                    </label>
+                  </FieldBody>
+                </Field>
+                {field.repeatable && (
+                  <>
+                    <Field className="¼">
+                      <FieldLabel htmlFor={`${idBase}-minItems`}>Min items</FieldLabel>
+                      <FieldBody>
+                        <Input
+                          id={`${idBase}-minItems`}
+                          type="number"
+                          min={1}
+                          max={repeatItemsCap}
+                          value={field.minItems ?? ""}
+                          onChange={(e) => onChange({ minItems: numOrUndef(e.target.value) })}
+                        />
+                      </FieldBody>
+                    </Field>
+                    <Field className="¼">
+                      <FieldLabel htmlFor={`${idBase}-maxItems`}>Max items</FieldLabel>
+                      <FieldBody>
+                        <Input
+                          id={`${idBase}-maxItems`}
+                          type="number"
+                          min={1}
+                          max={repeatItemsCap}
+                          value={field.maxItems ?? ""}
+                          onChange={(e) => onChange({ maxItems: numOrUndef(e.target.value) })}
+                        />
+                      </FieldBody>
+                    </Field>
+                  </>
+                )}
+
                 <Field className="½">
                   <FieldLabel htmlFor={`${idBase}-name`}>Name</FieldLabel>
                   <FieldBody>
@@ -382,25 +483,51 @@ function FieldRow({
                     <Field key={spec.key} className={spec.width ?? "½"}>
                       <FieldLabel htmlFor={`${idBase}-${spec.key}`}>{spec.label}</FieldLabel>
                       <FieldBody>
-                        <Input
-                          id={`${idBase}-${spec.key}`}
-                          type={spec.inputType === "number" ? "number" : undefined}
-                          min={spec.min}
-                          max={spec.max}
-                          step={spec.step}
-                          placeholder={spec.placeholder}
-                          value={raw == null ? "" : (raw as string | number)}
-                          onChange={(e) =>
-                            onChange({
-                              [spec.key]:
-                                spec.inputType === "number"
-                                  ? (spec.step === "any" ? floatOrUndef : numOrUndef)(
-                                      e.target.value,
-                                    )
-                                  : e.target.value || undefined,
-                            } as Partial<CustomWidgetField>)
-                          }
-                        />
+                        {spec.inputType === "measures" ? (
+                          <MeasuresEditor
+                            idBase={idBase}
+                            measures={field.measures}
+                            onChange={onChange}
+                          />
+                        ) : spec.inputType === "select" ? (
+                          <select
+                            id={`${idBase}-${spec.key}`}
+                            className={s.select}
+                            value={raw == null ? "" : String(raw)}
+                            onChange={(e) =>
+                              onChange({
+                                [spec.key]: coerceSelectValue(e.target.value, spec.options),
+                              } as Partial<CustomWidgetField>)
+                            }
+                          >
+                            <option value="">—</option>
+                            {spec.options?.map((o) => (
+                              <option key={String(o.value)} value={String(o.value)}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Input
+                            id={`${idBase}-${spec.key}`}
+                            type={spec.inputType === "number" ? "number" : undefined}
+                            min={spec.min}
+                            max={spec.max}
+                            step={spec.step}
+                            placeholder={spec.placeholder}
+                            value={raw == null ? "" : (raw as string | number)}
+                            onChange={(e) =>
+                              onChange({
+                                [spec.key]:
+                                  spec.inputType === "number"
+                                    ? (spec.step === "any" ? floatOrUndef : numOrUndef)(
+                                        e.target.value,
+                                      )
+                                    : e.target.value || undefined,
+                              } as Partial<CustomWidgetField>)
+                            }
+                          />
+                        )}
                       </FieldBody>
                     </Field>
                   );

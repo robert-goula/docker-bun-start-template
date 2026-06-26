@@ -1,15 +1,17 @@
 import type { ComponentType } from "react";
 import type { CustomWidgetField } from "@/db/schema/customWidgets";
+import type { Json } from "@/types/Json";
 import type { EventBus } from "./events";
 
 // Props every field-control component receives. `field` carries the full per-field config
-// (required, minlength, pattern, rows, …) so a control can read whatever it needs; `value`
-// and `onChange` drive the edited string.
+// (required, minlength, pattern, rows, …) so a control can read whatever it needs. `value` is
+// the stored value — a string for simple controls, or structured Json for compound ones (e.g.
+// the measurement control's `{ [name]: decimal }`); `onChange` writes the next value.
 export interface FieldControlProps {
   id: string;
   field: CustomWidgetField;
-  value: string;
-  onChange: (value: string) => void;
+  value: Json;
+  onChange: (value: Json) => void;
 }
 
 export type FieldControlComponent = ComponentType<FieldControlProps>;

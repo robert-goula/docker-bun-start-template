@@ -1,4 +1,5 @@
 import type { CustomWidgetField } from "@/db/schema/customWidgets";
+import type { Json } from "@/types/Json";
 
 // The typed catalog of lifecycle events flowing through the bus. Extend this interface
 // (here or via declaration merging) as new hooks are added; the keys gate `on`/`trigger`
@@ -9,7 +10,7 @@ export interface AppEvents {
   "widget:save": {
     definitionId: string;
     fields: CustomWidgetField[];
-    values: Record<string, string>;
+    values: Record<string, Json>;
   };
 }
 
