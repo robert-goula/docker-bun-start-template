@@ -76,7 +76,7 @@ export const customWidgetFieldSchema = z
     // Compound "measurement" control config. All sub-measurements share one fraction
     // granularity (`denominator`) and `unit`. `measures` is the ordered set of named/labeled
     // sub-measurements; absent → the defaults in `fieldControls/keys.ts`. The measurement control
-    // is currently experimental (parked, not registered), so this config is dormant.
+    // lives in `plugins/extra/measurement.tsx` (parked, not registered), so this config is dormant.
     denominator: z.union([z.literal(4), z.literal(8), z.literal(16), z.literal(32)]).optional(),
     unit: z.string().max(12).optional(),
     measures: z.array(measureConfigSchema).min(1).max(6).optional(),

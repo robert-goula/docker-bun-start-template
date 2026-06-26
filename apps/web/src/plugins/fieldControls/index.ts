@@ -2,7 +2,7 @@
 // and view formatting, plus the plugins that register their components. This is the client-facing
 // barrel — the server schema imports the React-free `./keys` directly, never this file.
 //
-// Experimental / not-yet-committed controls (e.g. `../experimental/measurement`) are intentionally
+// Extra / not-yet-committed controls (e.g. `../extra/measurement`) are intentionally
 // absent here. To enable one, add its descriptor to `fieldControlDescriptors` and its plugin to
 // `builtinPlugins`. NOTE: only park a control once no field uses its key — an unregistered control
 // falls back to the input control and its stored value renders as "[object Object]".

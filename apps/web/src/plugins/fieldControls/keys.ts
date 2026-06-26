@@ -5,16 +5,12 @@
 
 // The control keys, as a literal tuple so `z.enum(fieldControls)` keeps its narrow type. Note this
 // includes keys for controls that are not registered/surfaced by default.
-export const fieldControls = [
-  "input",
-  "textarea",
-  "number",
-] as const;
+export const fieldControls = ["input", "textarea", "number"] as const;
 export type FieldControl = (typeof fieldControls)[number];
 
 // One named, labeled sub-measurement of a measurement control: `name` is the machine key written
 // into stored content (`{ [name]: decimal }`); `label` is the display text. Mirrors the field's
-// own name/label split. Shared by the schema and the (experimental) measurement control.
+// own name/label split. Shared by the schema and the extra (parked) measurement control.
 export interface MeasureConfig {
   name: string;
   label: string;

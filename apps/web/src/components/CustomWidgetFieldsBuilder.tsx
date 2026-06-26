@@ -26,10 +26,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type CustomWidgetField, repeatItemsCap } from "@/db/schema/customWidgets";
 import {
   type AdvancedFieldOption,
-  defaultMeasures,
   fieldControlDescriptorByKey,
   fieldControlDescriptors,
-  type MeasureConfig,
 } from "@/plugins/fieldControls";
 import s from "./CustomWidgetFieldsBuilder.module.css";
 
@@ -217,45 +215,6 @@ export default function CustomWidgetFieldsBuilder({
         </div>
       </DndContext>
     </ClientOnly>
-  );
-}
-
-// Editor for a measurement field's sub-measurements: a `name` (JSON key in stored content) and
-// a display `label` per measure. Falls back to the shared defaults until the author edits them.
-function MeasuresEditor({
-  idBase,
-  measures,
-  onChange,
-}: {
-  idBase: string;
-  measures: ReadonlyArray<MeasureConfig> | undefined;
-  onChange: (patch: Partial<CustomWidgetField>) => void;
-}) {
-  const list = measures?.length ? measures : defaultMeasures;
-  const update = (index: number, patch: Partial<MeasureConfig>) =>
-    onChange({ measures: list.map((m, j) => (j === index ? { ...m, ...patch } : m)) });
-  return (
-    <div className={s.measuresEditor}>
-      {list.map((measure, i) => (
-        // Positional identity: the inputs are value-controlled, so index keys are safe here.
-        // eslint-disable-next-line react/no-array-index-key
-        <div key={i} className={s.measureConfigRow}>
-          <Input
-            aria-label={`Measurement ${i + 1} name`}
-            id={`${idBase}-measure-${i}-name`}
-            value={measure.name}
-            placeholder="name (json key)"
-            onChange={(e) => update(i, { name: e.target.value })}
-          />
-          <Input
-            aria-label={`Measurement ${i + 1} label`}
-            value={measure.label}
-            placeholder="Label"
-            onChange={(e) => update(i, { label: e.target.value })}
-          />
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -483,13 +442,7 @@ function FieldRow({
                     <Field key={spec.key} className={spec.width ?? "½"}>
                       <FieldLabel htmlFor={`${idBase}-${spec.key}`}>{spec.label}</FieldLabel>
                       <FieldBody>
-                        {spec.inputType === "measures" ? (
-                          <MeasuresEditor
-                            idBase={idBase}
-                            measures={field.measures}
-                            onChange={onChange}
-                          />
-                        ) : spec.inputType === "select" ? (
+                        {spec.inputType === "select" ? (
                           <select
                             id={`${idBase}-${spec.key}`}
                             className={s.select}

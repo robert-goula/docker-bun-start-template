@@ -1,0 +1,41 @@
+@reference "@/styles.css";
+
+.measurePair {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.measureRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.measureLabel {
+  min-width: 5rem;
+  font-size: var(--fontSize-sm);
+  color: var(--text-secondary);
+}
+
+.whole {
+  width: 6rem;
+}
+
+.fraction {
+  color: var(--text-primary);
+  background-color: var(--bg-sunken);
+  border-radius: var(--borderRadius-sm);
+  outline: 1px solid var(--border-default);
+  padding-block: var(--spacing-xs);
+  padding-inline: var(--spacing-md);
+
+  &:focus-within {
+    outline-color: var(--border-focus);
+  }
+}
+
+.unit {
+  font-size: var(--fontSize-sm);
+  color: var(--text-secondary);
+}
