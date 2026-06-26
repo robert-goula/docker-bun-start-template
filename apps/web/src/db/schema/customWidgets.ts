@@ -3,7 +3,11 @@ import { pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 import { jsonb } from "../jsonb";
+import { fieldControls, type FieldControl } from "@/plugins/fieldControls/descriptors";
 import { widgetElements } from "./widgets";
+
+// Re-exported below so existing importers of `fieldControls` from this module keep working.
+export { fieldControls };
 
 const CustomWidgetIdSchema = z.uuidv7().brand<"CustomWidgetId">();
 export type CustomWidgetId = z.infer<typeof CustomWidgetIdSchema>;
@@ -14,8 +18,9 @@ export const fieldTypes = ["text"] as const;
 export type FieldType = (typeof fieldTypes)[number];
 
 // How a text field is rendered/edited: a single-line Input or a multi-line Textarea.
-export const fieldControls = ["input", "textarea"] as const;
-export type FieldControl = (typeof fieldControls)[number];
+// The control set is owned by the plugin layer (the source of truth for which controls
+// exist); re-exported here so existing schema/UI importers are unchanged.
+export type { FieldControl };
 
 // A single field definition within a custom widget. Position in the `fields` array
 // is the display/edit order (sortable in the builder). `name` is the stable key an
@@ -43,6 +48,11 @@ export const customWidgetFieldSchema = z
     description: z.string().max(300).optional(),
     // Visible rows for the textarea control only.
     rows: z.number().int().positive().max(50).optional(),
+    // Numeric range and decimal precision for the number control only. `precision` is the
+    // count of decimal places allowed (0 = integers); it drives the input's step.
+    min: z.number().optional(),
+    max: z.number().optional(),
+    precision: z.number().int().nonnegative().max(10).optional(),
   })
   .superRefine((field, ctx) => {
     if (
@@ -55,6 +65,9 @@ export const customWidgetFieldSchema = z
         path: ["minlength"],
         message: "minlength cannot exceed maxlength",
       });
+    }
+    if (field.min !== undefined && field.max !== undefined && field.min > field.max) {
+      ctx.addIssue({ code: "custom", path: ["min"], message: "min cannot exceed max" });
     }
     if (field.pattern) {
       try {

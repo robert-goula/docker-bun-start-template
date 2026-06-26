@@ -23,7 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type CustomWidgetField, fieldControls } from "@/db/schema/customWidgets";
+import type { CustomWidgetField } from "@/db/schema/customWidgets";
+import {
+  fieldControlDescriptorByKey,
+  fieldControlDescriptors,
+} from "@/plugins/fieldControls/descriptors";
 import s from "./CustomWidgetFieldsBuilder.module.css";
 
 // Each row carries a stable internal id so drag/keys survive while the editable
@@ -47,6 +51,13 @@ interface CustomWidgetFieldsBuilderProps {
 const numOrUndef = (value: string): number | undefined => {
   if (value.trim() === "") return undefined;
   const n = Number.parseInt(value, 10);
+  return Number.isNaN(n) ? undefined : n;
+};
+
+// Decimal-preserving parse for advanced config inputs that allow fractional values.
+const floatOrUndef = (value: string): number | undefined => {
+  if (value.trim() === "") return undefined;
+  const n = Number.parseFloat(value);
   return Number.isNaN(n) ? undefined : n;
 };
 
@@ -276,9 +287,9 @@ function FieldRow({
                         onChange({ control: e.target.value as CustomWidgetField["control"] })
                       }
                     >
-                      {fieldControls.map((control) => (
+                      {fieldControlDescriptors.map(({ control, label }) => (
                         <option key={control} value={control}>
-                          {control}
+                          {label}
                         </option>
                       ))}
                     </select>
@@ -363,32 +374,37 @@ function FieldRow({
                   </FieldBody>
                 </Field>
 
-                {field.control === "input" ? (
-                  <Field className="½">
-                    <FieldLabel htmlFor={`${idBase}-pattern`}>Pattern (regex)</FieldLabel>
-                    <FieldBody>
-                      <Input
-                        id={`${idBase}-pattern`}
-                        value={field.pattern ?? ""}
-                        onChange={(e) => onChange({ pattern: e.target.value || undefined })}
-                        placeholder="^[A-Za-z ]+$"
-                      />
-                    </FieldBody>
-                  </Field>
-                ) : (
-                  <Field className="¼">
-                    <FieldLabel htmlFor={`${idBase}-rows`}>Rows</FieldLabel>
-                    <FieldBody>
-                      <Input
-                        id={`${idBase}-rows`}
-                        type="number"
-                        min={1}
-                        value={field.rows ?? ""}
-                        onChange={(e) => onChange({ rows: numOrUndef(e.target.value) })}
-                      />
-                    </FieldBody>
-                  </Field>
-                )}
+                {/* Control-specific advanced inputs declared by the active control's descriptor
+                    (e.g. `pattern` for input, `rows` for textarea). */}
+                {fieldControlDescriptorByKey[field.control]?.advancedFields?.map((spec) => {
+                  const raw = field[spec.key as keyof CustomWidgetField];
+                  return (
+                    <Field key={spec.key} className={spec.width ?? "½"}>
+                      <FieldLabel htmlFor={`${idBase}-${spec.key}`}>{spec.label}</FieldLabel>
+                      <FieldBody>
+                        <Input
+                          id={`${idBase}-${spec.key}`}
+                          type={spec.inputType === "number" ? "number" : undefined}
+                          min={spec.min}
+                          max={spec.max}
+                          step={spec.step}
+                          placeholder={spec.placeholder}
+                          value={raw == null ? "" : (raw as string | number)}
+                          onChange={(e) =>
+                            onChange({
+                              [spec.key]:
+                                spec.inputType === "number"
+                                  ? (spec.step === "any" ? floatOrUndef : numOrUndef)(
+                                      e.target.value,
+                                    )
+                                  : e.target.value || undefined,
+                            } as Partial<CustomWidgetField>)
+                          }
+                        />
+                      </FieldBody>
+                    </Field>
+                  );
+                })}
 
                 <Field className="½">
                   <FieldLabel htmlFor={`${idBase}-placeholder`}>Placeholder</FieldLabel>

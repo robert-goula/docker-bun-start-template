@@ -2,8 +2,7 @@ import { type ComponentType, useEffect, useId, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { bus, getFieldControl } from "@/plugins";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
 import Headline from "./Headline";
 import type {
@@ -163,6 +162,11 @@ function DynamicEditor({
   }
 
   function save() {
+    bus.trigger("widget:save", {
+      definitionId: definition.id,
+      fields: definition.fields,
+      values: draft,
+    });
     onContentChange?.(draft);
     onEditingChange?.(false);
   }
@@ -208,33 +212,14 @@ function DynamicField({
   value: string;
   onChange: (value: string) => void;
 }) {
+  // Resolve the control component from the plugin registry (input/textarea are built-ins;
+  // unknown keys fall back to the input control).
+  const Control = getFieldControl(field.control);
   return (
     <Field>
       <FieldLabel htmlFor={id}>{field.label}</FieldLabel>
       <FieldBody>
-        {field.control === "textarea" ? (
-          <Textarea
-            id={id}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            required={field.required}
-            minLength={field.minlength}
-            maxLength={field.maxlength}
-            placeholder={field.placeholder}
-            rows={field.rows}
-          />
-        ) : (
-          <Input
-            id={id}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            required={field.required}
-            minLength={field.minlength}
-            maxLength={field.maxlength}
-            pattern={field.pattern}
-            placeholder={field.placeholder}
-          />
-        )}
+        {Control ? <Control id={id} field={field} value={value} onChange={onChange} /> : null}
         {field.description ? <FieldDescription>{field.description}</FieldDescription> : null}
       </FieldBody>
     </Field>
