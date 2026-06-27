@@ -20,7 +20,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { cx } from "class-variance-authority";
 import { DeleteIcon, DragIndicatorIcon } from "@/components/icons";
+import { AddButton } from "@/components/ui/addButton";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/iconButton";
 import { Field, FieldBody, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -237,9 +239,7 @@ export default function CustomWidgetFieldsBuilder({
         </SortableContext>
         {rows.length === 0 && <p className={s.empty}>No fields yet. Add one to get started.</p>}
         <div className={s.toolbar}>
-          <Button type="button" intent="primary" variant="outline" size="sm" onClick={addField}>
-            Add field
-          </Button>
+          <AddButton onClick={addField}>Add field</AddButton>
           {dirty && (
             <div className={s.saveActions}>
               {saveError && (
@@ -318,23 +318,16 @@ function FieldRow({
         </button>
         {(isNew || isEdited) && <span className={s.dirtyBadge}>{isNew ? "New" : "Edited"}</span>}
         <menu className={s.controls}>
-          <button
-            type="button"
-            className={s.iconButton}
+          <IconButton
             onClick={toggle}
             aria-expanded={open}
             aria-label={open ? "Collapse field" : "Expand field"}
           >
             <span className={cx(s.collapseIcon, !open && s.collapsed)}>▾</span>
-          </button>
-          <button
-            type="button"
-            className={s.iconButton}
-            aria-label="Remove field"
-            onClick={onRemove}
-          >
+          </IconButton>
+          <IconButton tone="danger" aria-label="Remove field" onClick={onRemove}>
             <DeleteIcon />
-          </button>
+          </IconButton>
         </menu>
       </div>
 

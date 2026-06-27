@@ -80,17 +80,6 @@
   touch-action: none;
 }
 
-/* Plain, flat icon buttons matching the widget header controls. `all: unset` lets
-   them inherit the muted header color for proper contrast (delete is NOT red). */
-.iconButton {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  line-height: 1;
-}
-
 .collapseIcon {
   display: inline-block;
   transition: transform 0.2s ease;

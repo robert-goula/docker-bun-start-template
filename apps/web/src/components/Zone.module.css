@@ -149,32 +149,10 @@
   }
 }
 
-/* Full-width "Add widget" button on its own row at the bottom of the zone. */
+/* Places the shared AddButton on its own full-width row at the bottom of the zone grid; the dashed
+   styling itself lives in the AddButton component (ui/addButton). */
 .addWidget {
   grid-column: 1 / -1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-xs);
-  font-size: var(--fontSize-xs);
-  color: var(--text-secondary);
-  background: transparent;
-  border: var(--borderWidth-sm) dashed var(--border-default);
-  border-radius: var(--borderRadius-md);
-  padding-block: var(--spacing-sm);
-  cursor: pointer;
-
-  svg {
-    width: 1rem;
-    height: auto;
-    fill: currentColor;
-  }
-
-  &:hover {
-    background: var(--bg-raised);
-    color: var(--text-primary);
-    border-color: var(--primary-400);
-  }
 }
 
 /* Add-widget picker dialog */

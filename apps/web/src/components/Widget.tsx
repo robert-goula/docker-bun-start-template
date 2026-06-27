@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { IconButton } from "@/components/ui/iconButton";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -202,16 +203,14 @@ export function LayoutWidgetCard({
         <span className={s.badge}>Layout</span>
         <span className={s.title}>{widget.kind}</span>
         {onToggleHidden && (
-          <button
-            type="button"
-            className={s.hideToggle}
+          <IconButton
             onClick={onToggleHidden}
             aria-pressed={hidden}
             aria-label={hidden ? "Restore on this page" : "Hide on this page"}
             title={hidden ? "Restore on this page" : "Hide on this page"}
           >
             {hidden ? <VisibilityOffIcon /> : <VisibilityIcon />}
-          </button>
+          </IconButton>
         )}
       </header>
       <WidgetView widget={widget} />
@@ -329,30 +328,27 @@ const Widget = function Widget({
             </span>
           )}
           <Widget.Controls>
-            <button
-              type="button"
-              className={s.collapseToggle}
+            <IconButton
               onClick={toggleOpen}
               aria-label={open ? "Collapse widget" : "Expand widget"}
             >
               <span className={cx(s.collapseIcon, !open && s.collapsed)}>▾</span>
-            </button>
+            </IconButton>
             {editable && (
-              <button
-                type="button"
+              <IconButton
                 aria-label={editing ? "Stop editing" : "Edit content"}
                 aria-pressed={editing}
                 onClick={toggleEdit}
               >
                 <EditIcon />
-              </button>
+              </IconButton>
             )}
             <Dialog open={settingsOpen} onOpenChange={handleSettingsOpenChange}>
               <DialogTrigger
                 render={
-                  <button type="button" aria-label="Widget settings">
+                  <IconButton aria-label="Widget settings">
                     <SettingsIcon />
-                  </button>
+                  </IconButton>
                 }
               />
               <DialogContent showCloseButton={false}>
@@ -450,9 +446,9 @@ const Widget = function Widget({
             <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
               <DialogTrigger
                 render={
-                  <button type="button" aria-label="Delete widget">
+                  <IconButton tone="danger" aria-label="Delete widget">
                     <DeleteIcon />
-                  </button>
+                  </IconButton>
                 }
               />
               <DialogContent showCloseButton={false}>

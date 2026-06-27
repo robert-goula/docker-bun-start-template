@@ -7,6 +7,7 @@ import { type TaxonomyId } from "@/db/schema/taxonomy";
 import { DEFAULT_LOCALE } from "@/db/schema/pages";
 import { DeleteIcon, EditIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/iconButton";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -120,9 +121,7 @@ function RouteComponent() {
           const name = row.original.locales?.[DEFAULT_LOCALE] ?? row.original.value;
           return (
             <span style={{ display: "inline-flex", gap: "0.5rem" }}>
-              <Button
-                size="sm"
-                intent="primary"
+              <IconButton
                 aria-label={`Edit ${name}`}
                 onClick={() =>
                   navigate({
@@ -132,16 +131,15 @@ function RouteComponent() {
                 }
               >
                 <EditIcon />
-              </Button>
-              <Button
-                size="sm"
-                intent="danger"
+              </IconButton>
+              <IconButton
+                tone="danger"
                 aria-label={`Delete ${name}`}
                 onClick={() => handleDelete(row.original)}
                 disabled={removeMutation.isPending}
               >
                 <DeleteIcon />
-              </Button>
+              </IconButton>
             </span>
           );
         },
@@ -288,7 +286,7 @@ function CreateTaxonomy({
           </FieldBody>
         </Field>
         <Button type="submit" intent="primary" disabled={!value.trim() || createMutation.isPending}>
-          {createMutation.isPending ? "Adding…" : "Add"}
+          {createMutation.isPending ? "Creating…" : "Create"}
         </Button>
       </FieldGroup>
     </form>

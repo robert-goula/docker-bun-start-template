@@ -1,7 +1,9 @@
 import { type ComponentType, useEffect, useId, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DeleteIcon } from "@/components/icons";
+import { AddButton } from "@/components/ui/addButton";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/iconButton";
 import { Field, FieldBody, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { bus, getFieldControl, getFieldView } from "@/plugins";
 import { fieldControlDescriptorByKey } from "@/plugins/fieldControls";
@@ -289,27 +291,19 @@ function RepeatableField({
               />
             ) : null}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
+          <IconButton
             aria-label="Remove item"
+            tone="danger"
             disabled={items.length <= min}
             onClick={() => commit(items.filter((_, j) => j !== i))}
           >
             <DeleteIcon />
-          </Button>
+          </IconButton>
         </div>
       ))}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={items.length >= max}
-        onClick={() => commit([...items, ""])}
-      >
-        Add
-      </Button>
+      <AddButton block disabled={items.length >= max} onClick={() => commit([...items, ""])}>
+        Add item
+      </AddButton>
     </div>
   );
 }
