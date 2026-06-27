@@ -12,7 +12,7 @@
   min-height: 1.75rem;
   padding: var(--spacing-xs);
   border-radius: var(--borderRadius-sm);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   cursor: pointer;
   line-height: 1;
   transition:
