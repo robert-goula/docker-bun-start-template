@@ -42,6 +42,14 @@ db-migrate:
   eval "$(varlock load --format shell)" && \
     docker compose exec web bun run db:migrate
 
+config-export:
+  eval "$(varlock load --format shell)" && \
+    docker compose exec web bun run config:export
+
+config-import:
+  eval "$(varlock load --format shell)" && \
+    docker compose exec web bun run config:import
+
 bump TYPE="patch|minor|major|preminor|premajor|beta|rc":
   #!/usr/bin/env bash
   set -euo pipefail

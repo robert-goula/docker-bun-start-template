@@ -78,6 +78,13 @@
       "when": 1782358870666,
       "tag": "0010_flimsy_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782507371617,
+      "tag": "0011_military_the_executioner",
+      "breakpoints": true
     }
   ]
 }

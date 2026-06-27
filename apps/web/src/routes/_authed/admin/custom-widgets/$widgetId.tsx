@@ -79,7 +79,7 @@ function RouteComponent() {
   }
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <button type="button" onClick={() => router.history.back()}>
           ← Back
@@ -158,6 +158,6 @@ function RouteComponent() {
       <section className="full">
         <CustomWidgetFieldsBuilder initialFields={widget.fields} onSave={saveFields} />
       </section>
-    </main>
+    </>
   );
 }

@@ -10,7 +10,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import PasswordRehashedBanner from "../components/PasswordRehashedBanner";
-import { EditModeProvider } from "../components/EditMode";
+import { EditModeProvider } from "@/components/EditMode";
 import { meQueryOptions } from "@/server/fns/auth";
 import { themeQueryOptions } from "@/server/fns/theme";
 import { sizeQueryOptions } from "@/server/fns/size";

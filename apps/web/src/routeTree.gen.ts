@@ -26,10 +26,12 @@ import { Route as AuthedAdminPagesIndexRouteImport } from './routes/_authed/admi
 import { Route as AuthedAdminMenusIndexRouteImport } from './routes/_authed/admin/menus/index'
 import { Route as AuthedAdminLayoutsIndexRouteImport } from './routes/_authed/admin/layouts/index'
 import { Route as AuthedAdminCustomWidgetsIndexRouteImport } from './routes/_authed/admin/custom-widgets/index'
+import { Route as AuthedAdminConfigIndexRouteImport } from './routes/_authed/admin/config/index'
 import { Route as AuthedAdminUsersUserIdRouteImport } from './routes/_authed/admin/users/$userId'
 import { Route as AuthedAdminMenusMenuIdRouteImport } from './routes/_authed/admin/menus/$menuId'
 import { Route as AuthedAdminLayoutsLayoutIdRouteImport } from './routes/_authed/admin/layouts/$layoutId'
 import { Route as AuthedAdminCustomWidgetsWidgetIdRouteImport } from './routes/_authed/admin/custom-widgets/$widgetId'
+import { Route as AuthedAdminConfigConfigIdRouteImport } from './routes/_authed/admin/config/$configId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -120,6 +122,11 @@ const AuthedAdminCustomWidgetsIndexRoute =
     path: '/custom-widgets/',
     getParentRoute: () => AuthedAdminRouteRoute,
   } as any)
+const AuthedAdminConfigIndexRoute = AuthedAdminConfigIndexRouteImport.update({
+  id: '/config/',
+  path: '/config/',
+  getParentRoute: () => AuthedAdminRouteRoute,
+} as any)
 const AuthedAdminUsersUserIdRoute = AuthedAdminUsersUserIdRouteImport.update({
   id: '/users/$userId',
   path: '/users/$userId',
@@ -142,6 +149,12 @@ const AuthedAdminCustomWidgetsWidgetIdRoute =
     path: '/custom-widgets/$widgetId',
     getParentRoute: () => AuthedAdminRouteRoute,
   } as any)
+const AuthedAdminConfigConfigIdRoute =
+  AuthedAdminConfigConfigIdRouteImport.update({
+    id: '/config/$configId',
+    path: '/config/$configId',
+    getParentRoute: () => AuthedAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
@@ -155,10 +168,12 @@ export interface FileRoutesByFullPath {
   '/api/users/$id': typeof ApiUsersIdRoute
   '/admin/': typeof AuthedAdminIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
+  '/admin/config/$configId': typeof AuthedAdminConfigConfigIdRoute
   '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
   '/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
   '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/admin/config/': typeof AuthedAdminConfigIndexRoute
   '/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
   '/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
   '/admin/menus/': typeof AuthedAdminMenusIndexRoute
@@ -176,10 +191,12 @@ export interface FileRoutesByTo {
   '/api/users/$id': typeof ApiUsersIdRoute
   '/admin': typeof AuthedAdminIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
+  '/admin/config/$configId': typeof AuthedAdminConfigConfigIdRoute
   '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
   '/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
   '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/admin/config': typeof AuthedAdminConfigIndexRoute
   '/admin/custom-widgets': typeof AuthedAdminCustomWidgetsIndexRoute
   '/admin/layouts': typeof AuthedAdminLayoutsIndexRoute
   '/admin/menus': typeof AuthedAdminMenusIndexRoute
@@ -200,10 +217,12 @@ export interface FileRoutesById {
   '/api/users/$id': typeof ApiUsersIdRoute
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
+  '/_authed/admin/config/$configId': typeof AuthedAdminConfigConfigIdRoute
   '/_authed/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
   '/_authed/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
   '/_authed/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
   '/_authed/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
+  '/_authed/admin/config/': typeof AuthedAdminConfigIndexRoute
   '/_authed/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
   '/_authed/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
   '/_authed/admin/menus/': typeof AuthedAdminMenusIndexRoute
@@ -225,10 +244,12 @@ export interface FileRouteTypes {
     | '/api/users/$id'
     | '/admin/'
     | '/api/users/'
+    | '/admin/config/$configId'
     | '/admin/custom-widgets/$widgetId'
     | '/admin/layouts/$layoutId'
     | '/admin/menus/$menuId'
     | '/admin/users/$userId'
+    | '/admin/config/'
     | '/admin/custom-widgets/'
     | '/admin/layouts/'
     | '/admin/menus/'
@@ -246,10 +267,12 @@ export interface FileRouteTypes {
     | '/api/users/$id'
     | '/admin'
     | '/api/users'
+    | '/admin/config/$configId'
     | '/admin/custom-widgets/$widgetId'
     | '/admin/layouts/$layoutId'
     | '/admin/menus/$menuId'
     | '/admin/users/$userId'
+    | '/admin/config'
     | '/admin/custom-widgets'
     | '/admin/layouts'
     | '/admin/menus'
@@ -269,10 +292,12 @@ export interface FileRouteTypes {
     | '/api/users/$id'
     | '/_authed/admin/'
     | '/api/users/'
+    | '/_authed/admin/config/$configId'
     | '/_authed/admin/custom-widgets/$widgetId'
     | '/_authed/admin/layouts/$layoutId'
     | '/_authed/admin/menus/$menuId'
     | '/_authed/admin/users/$userId'
+    | '/_authed/admin/config/'
     | '/_authed/admin/custom-widgets/'
     | '/_authed/admin/layouts/'
     | '/_authed/admin/menus/'
@@ -413,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminCustomWidgetsIndexRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/config/': {
+      id: '/_authed/admin/config/'
+      path: '/config'
+      fullPath: '/admin/config/'
+      preLoaderRoute: typeof AuthedAdminConfigIndexRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
     '/_authed/admin/users/$userId': {
       id: '/_authed/admin/users/$userId'
       path: '/users/$userId'
@@ -441,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminCustomWidgetsWidgetIdRouteImport
       parentRoute: typeof AuthedAdminRouteRoute
     }
+    '/_authed/admin/config/$configId': {
+      id: '/_authed/admin/config/$configId'
+      path: '/config/$configId'
+      fullPath: '/admin/config/$configId'
+      preLoaderRoute: typeof AuthedAdminConfigConfigIdRouteImport
+      parentRoute: typeof AuthedAdminRouteRoute
+    }
   }
 }
 
@@ -462,10 +501,12 @@ const Char123LocaleChar125RouteRouteWithChildren =
 
 interface AuthedAdminRouteRouteChildren {
   AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
+  AuthedAdminConfigConfigIdRoute: typeof AuthedAdminConfigConfigIdRoute
   AuthedAdminCustomWidgetsWidgetIdRoute: typeof AuthedAdminCustomWidgetsWidgetIdRoute
   AuthedAdminLayoutsLayoutIdRoute: typeof AuthedAdminLayoutsLayoutIdRoute
   AuthedAdminMenusMenuIdRoute: typeof AuthedAdminMenusMenuIdRoute
   AuthedAdminUsersUserIdRoute: typeof AuthedAdminUsersUserIdRoute
+  AuthedAdminConfigIndexRoute: typeof AuthedAdminConfigIndexRoute
   AuthedAdminCustomWidgetsIndexRoute: typeof AuthedAdminCustomWidgetsIndexRoute
   AuthedAdminLayoutsIndexRoute: typeof AuthedAdminLayoutsIndexRoute
   AuthedAdminMenusIndexRoute: typeof AuthedAdminMenusIndexRoute
@@ -476,10 +517,12 @@ interface AuthedAdminRouteRouteChildren {
 
 const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
   AuthedAdminIndexRoute: AuthedAdminIndexRoute,
+  AuthedAdminConfigConfigIdRoute: AuthedAdminConfigConfigIdRoute,
   AuthedAdminCustomWidgetsWidgetIdRoute: AuthedAdminCustomWidgetsWidgetIdRoute,
   AuthedAdminLayoutsLayoutIdRoute: AuthedAdminLayoutsLayoutIdRoute,
   AuthedAdminMenusMenuIdRoute: AuthedAdminMenusMenuIdRoute,
   AuthedAdminUsersUserIdRoute: AuthedAdminUsersUserIdRoute,
+  AuthedAdminConfigIndexRoute: AuthedAdminConfigIndexRoute,
   AuthedAdminCustomWidgetsIndexRoute: AuthedAdminCustomWidgetsIndexRoute,
   AuthedAdminLayoutsIndexRoute: AuthedAdminLayoutsIndexRoute,
   AuthedAdminMenusIndexRoute: AuthedAdminMenusIndexRoute,

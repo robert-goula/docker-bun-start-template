@@ -1,0 +1,6 @@
+id: plugins.enabled
+description: Field-control plugins enabled for the widget builder.
+value:
+  - input-field
+  - textarea
+  - number

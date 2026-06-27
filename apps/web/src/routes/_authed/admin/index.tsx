@@ -6,8 +6,6 @@ export const Route = createFileRoute("/_authed/admin/")({
 
 function Page() {
   return (
-    <main className="zone">
-      <p>Admin…</p>
-    </main>
+    <p>Admin…</p>
   );
 }

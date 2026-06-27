@@ -82,7 +82,7 @@ function RouteComponent() {
   }
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <p>
           <Link to="/admin/menus">← Menus</Link>
@@ -167,6 +167,6 @@ function RouteComponent() {
         <h2 className={s.itemsHeading}>Items</h2>
         <MenuItemsBuilder initialItems={menu.items} pageGroups={pageGroups} onSave={saveItems} />
       </section>
-    </main>
+    </>
   );
 }

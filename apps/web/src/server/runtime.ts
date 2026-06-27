@@ -1,4 +1,5 @@
 import { Layer, ManagedRuntime } from "effect";
+import { ConfigRepo } from "./services/ConfigRepo";
 import { CustomWidgetRepo } from "./services/CustomWidgetRepo";
 import { LayoutRepo } from "./services/LayoutRepo";
 import { LayoutWidgetRepo } from "./services/LayoutWidgetRepo";
@@ -21,6 +22,7 @@ const MainLive = Layer.mergeAll(
   CustomWidgetRepo.Default,
   MenuRepo.Default,
   ZoneRepo.Default,
+  ConfigRepo.Default,
 );
 
 export const runtime = ManagedRuntime.make(MainLive);

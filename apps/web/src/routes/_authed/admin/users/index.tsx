@@ -163,7 +163,7 @@ function RouteComponent() {
   const lastItem = Math.min(pageNumber * pageSize, totalCount);
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <h1>Users</h1>
         <Input
@@ -295,7 +295,7 @@ function RouteComponent() {
           </label>
         </div>
       </section>
-    </main>
+    </>
   );
 }
 
