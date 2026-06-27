@@ -25,7 +25,7 @@ export const textareaDescriptor: FieldControlDescriptor = {
 };
 
 export const textareaPlugin: Plugin = {
-  name: "textarea-field",
+  name: "textarea",
   setup(api) {
     api.registerFieldControl("textarea", TextareaControl);
   },

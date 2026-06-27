@@ -53,7 +53,7 @@ export const numberDescriptor: FieldControlDescriptor = {
 };
 
 export const numberPlugin: Plugin = {
-  name: "number-field",
+  name: "number",
   setup(api) {
     api.registerFieldControl("number", NumberControl);
   },

@@ -94,7 +94,10 @@ export const myControlDescriptor: FieldControlDescriptor = {
 };
 
 export const myControlPlugin: Plugin = {
-  name: "my-control",
+  // Convention: the plugin `name` IS the control key. It's only an internal dedup id (the
+  // `PluginManager.registered` set), but matching the key keeps one vocabulary — `plugins.enabled`
+  // and the builder gate compare against control keys, so a divergent name would be invisible there.
+  name: "myControl",
   setup(api) { api.registerFieldControl("myControl", MyControl); },
 };
 ```

@@ -31,7 +31,6 @@ import {
   type AdvancedFieldOption,
   fieldControlDescriptorByKey,
   fieldControlDescriptors,
-  fieldControlPluginNames,
 } from "@/plugins/fieldControls";
 import type { FieldControlDescriptor } from "@/plugins/fieldControls";
 import { TaxonomyParentPicker } from "@/plugins/fieldControls/select";
@@ -45,8 +44,7 @@ import s from "./CustomWidgetFieldsBuilder.module.css";
 const PLUGINS_ENABLED = "plugins.enabled";
 
 // Resolve the enabled-control allow-list from config. `null` means "no restriction" (key absent or
-// empty array); otherwise the explicit set of enabled identifiers. An entry may be a control key
-// ("input") or the registering plugin's name ("input-field") — both resolve to the same control.
+// empty array); otherwise the explicit set of enabled control keys (e.g. "input", "select").
 function useEnabledControls(): ReadonlySet<string> | null {
   const { data: configs } = useQuery(configRepo.list());
   return useMemo(() => {
@@ -154,12 +152,7 @@ export default function CustomWidgetFieldsBuilder({
   const enabled = useEnabledControls();
   const visibleDescriptors = useMemo(
     () =>
-      enabled
-        ? fieldControlDescriptors.filter(
-            // A config entry can name the control by its key or its plugin name.
-            (d) => enabled.has(d.control) || enabled.has(fieldControlPluginNames[d.control]),
-          )
-        : fieldControlDescriptors,
+      enabled ? fieldControlDescriptors.filter((d) => enabled.has(d.control)) : fieldControlDescriptors,
     [enabled],
   );
 

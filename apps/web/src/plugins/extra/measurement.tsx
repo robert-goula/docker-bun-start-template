@@ -185,7 +185,7 @@ export const measurementDescriptor: MeasurementControlDescriptor = {
 };
 
 export const measurementPlugin: Plugin = {
-  name: "measurement-field",
+  name: "measurement",
   setup(api) {
     api.registerFieldControl("measurement", MeasurementControl);
   },

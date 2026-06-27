@@ -33,7 +33,7 @@ export const inputDescriptor: FieldControlDescriptor = {
 };
 
 export const inputPlugin: Plugin = {
-  name: "input-field",
+  name: "input",
   setup(api) {
     api.registerFieldControl("input", InputControl);
   },
