@@ -1,0 +1,73 @@
+@reference "../../styles.css";
+
+/* ── Group ───────────────────────────────────────────────── */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+/* ── Item (label row) ────────────────────────────────────── */
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-size: var(--fontSize-xs);
+  line-height: 1.625;
+  color: var(--text-primary);
+  cursor: default;
+  user-select: none;
+
+  &:has([data-disabled]) {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+
+/* ── Radio circle ────────────────────────────────────────── */
+.radio {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  border: var(--borderWidth-sm) solid var(--border-default);
+  background-color: color-mix(in srgb, var(--bg-sunken) 20%, transparent);
+  background-clip: padding-box;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
+
+  &:focus-visible {
+    border-color: var(--border-focus);
+    outline: none;
+    box-shadow: 0 0 0 var(--borderWidth-md) color-mix(in srgb, var(--border-focus) 35%, transparent);
+  }
+
+  &[data-checked] {
+    border-color: var(--border-focus);
+  }
+}
+
+/* ── Selected dot ────────────────────────────────────────── */
+.indicator {
+  display: flex;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background-color: var(--border-focus);
+
+  &[data-unchecked] {
+    display: none;
+  }
+}
+
+.label {
+  flex: 1;
+}

@@ -1,6 +1,5 @@
 import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldLabel } from "@/components/ui/field";
@@ -16,32 +15,10 @@ import {
 } from "@/components/ui/select";
 import { DEFAULT_LOCALE } from "@/db/schema/pages";
 import { type TaxonomyId, type TaxonomyOptionGroup } from "@/db/schema/taxonomy";
-import { resolveLocale } from "@/lib/locale";
 import { taxonomyRepo } from "@/repositories/taxonomy";
 import { asStr, type FieldControlDescriptor } from "./shared";
+import { resolveLabels, selectableLabels, useOptionGroups, useRenderLocale } from "./taxonomyOptions";
 import type { FieldControlProps, FieldViewProps, Plugin } from "../types";
-
-// A node with children renders as an `<optgroup>` heading (not itself selectable); a childless
-// node is a plain option. Flatten the grouped tree to the set of SELECTABLE id → label pairs:
-// childless children at the top level plus every grandchild.
-function selectableLabels(groups: ReadonlyArray<TaxonomyOptionGroup>): Record<string, string> {
-  const map: Record<string, string> = {};
-  for (const group of groups) {
-    if (group.children.length > 0) {
-      for (const child of group.children) map[child.id] = child.label;
-    } else {
-      map[group.id] = group.label;
-    }
-  }
-  return map;
-}
-
-// The render locale comes from the URL (default locale is unprefixed) — same rule the rest of
-// the public render path uses (see Menu.tsx).
-function useRenderLocale() {
-  const { pathname } = useLocation();
-  return resolveLocale(pathname).locale ?? DEFAULT_LOCALE;
-}
 
 // Renders the grouped options: children that have children become `<optgroup>`s (Base UI
 // SelectGroup) of their grandchildren; childless children are plain options.
@@ -76,10 +53,7 @@ function optionContent(groups: ReadonlyArray<TaxonomyOptionGroup>) {
 export function SelectControl({ id, field, value, onChange }: FieldControlProps) {
   const locale = useRenderLocale();
   const parentId = (field.taxonomyId ?? null) as TaxonomyId | null;
-  const { data: groups = [], isLoading } = useQuery({
-    ...taxonomyRepo.optionGroups(parentId, locale),
-    enabled: parentId !== null,
-  });
+  const { data: groups = [], isLoading } = useOptionGroups(parentId, locale);
   const labels = useMemo(() => selectableLabels(groups), [groups]);
 
   if (parentId === null) {
@@ -143,14 +117,10 @@ export function SelectControl({ id, field, value, onChange }: FieldControlProps)
 export function SelectView({ field, value }: FieldViewProps) {
   const locale = useRenderLocale();
   const parentId = (field.taxonomyId ?? null) as TaxonomyId | null;
-  const { data: groups = [] } = useQuery({
-    ...taxonomyRepo.optionGroups(parentId, locale),
-    enabled: parentId !== null,
-  });
+  const { data: groups = [] } = useOptionGroups(parentId, locale);
   const labels = useMemo(() => selectableLabels(groups), [groups]);
 
-  const ids = Array.isArray(value) ? value : value ? [value] : [];
-  const resolved = ids.map((v) => labels[String(v)]).filter((label): label is string => !!label);
+  const resolved = resolveLabels(value, labels);
   if (resolved.length === 0) return null;
   return <>{resolved.join(", ")}</>;
 }
