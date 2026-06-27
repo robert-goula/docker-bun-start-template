@@ -43,10 +43,36 @@ function useRenderLocale() {
   return resolveLocale(pathname).locale ?? DEFAULT_LOCALE;
 }
 
-// Edit control: a single-select sourced from a taxonomy parent's children. Children that
-// themselves have children become `<optgroup>`s (Base UI SelectGroup) of their grandchildren.
-// Stores the selected taxonomy id (stable across renames/translations); the label is resolved per
-// locale at render. Repetition is handled by the framework's RepeatableField wrapper.
+// Renders the grouped options: children that have children become `<optgroup>`s (Base UI
+// SelectGroup) of their grandchildren; childless children are plain options.
+function optionContent(groups: ReadonlyArray<TaxonomyOptionGroup>) {
+  return (
+    <SelectContent>
+      {groups.map((group) =>
+        group.children.length > 0 ? (
+          <SelectGroup key={group.id}>
+            <SelectGroupLabel>{group.label}</SelectGroupLabel>
+            {group.children.map((child) => (
+              <SelectItem key={child.id} value={child.id}>
+                {child.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        ) : (
+          <SelectItem key={group.id} value={group.id}>
+            {group.label}
+          </SelectItem>
+        ),
+      )}
+    </SelectContent>
+  );
+}
+
+// Edit control: a select sourced from a taxonomy parent's children. Children that themselves have
+// children become `<optgroup>`s of their grandchildren. Stores the selected taxonomy id(s) (stable
+// across renames/translations); labels resolve per locale at render. When the field is repeatable
+// ("Allow multiple"), this renders a native multi-select storing an array of ids — the descriptor's
+// `selfRepeats` opts it out of the framework's Add/Remove wrapper.
 export function SelectControl({ id, field, value, onChange }: FieldControlProps) {
   const locale = useRenderLocale();
   const parentId = (field.taxonomyId ?? null) as TaxonomyId | null;
@@ -55,7 +81,6 @@ export function SelectControl({ id, field, value, onChange }: FieldControlProps)
     enabled: parentId !== null,
   });
   const labels = useMemo(() => selectableLabels(groups), [groups]);
-  const selected = asStr(value);
 
   if (parentId === null) {
     return (
@@ -65,6 +90,36 @@ export function SelectControl({ id, field, value, onChange }: FieldControlProps)
     );
   }
 
+  // Multi-select: value is an array of ids; the popup stays open for multiple picks.
+  if (field.repeatable) {
+    const selected = Array.isArray(value)
+      ? (value.filter((v) => typeof v === "string") as string[])
+      : value
+        ? [String(value)]
+        : [];
+    return (
+      <Select
+        multiple
+        items={labels}
+        value={selected}
+        onValueChange={(next) => onChange(next as string[])}
+        disabled={isLoading}
+      >
+        <SelectTrigger id={id} aria-required={field.required}>
+          <SelectValue placeholder={isLoading ? "Loading…" : "Select options"}>
+            {(vals) => {
+              const arr = (vals as string[] | null) ?? [];
+              return arr.length ? arr.map((v) => labels[v] ?? v).join(", ") : "Select options";
+            }}
+          </SelectValue>
+        </SelectTrigger>
+        {optionContent(groups)}
+      </Select>
+    );
+  }
+
+  // Single-select: value is one id (or empty).
+  const selected = asStr(value);
   return (
     <Select
       items={labels}
@@ -77,24 +132,7 @@ export function SelectControl({ id, field, value, onChange }: FieldControlProps)
           {(val) => (val ? (labels[val as string] ?? (val as string)) : "Select an option")}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent>
-        {groups.map((group) =>
-          group.children.length > 0 ? (
-            <SelectGroup key={group.id}>
-              <SelectGroupLabel>{group.label}</SelectGroupLabel>
-              {group.children.map((child) => (
-                <SelectItem key={child.id} value={child.id}>
-                  {child.label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          ) : (
-            <SelectItem key={group.id} value={group.id}>
-              {group.label}
-            </SelectItem>
-          ),
-        )}
-      </SelectContent>
+      {optionContent(groups)}
     </Select>
   );
 }
@@ -120,6 +158,9 @@ export function SelectView({ field, value }: FieldViewProps) {
 export const selectDescriptor: FieldControlDescriptor = {
   control: "select",
   label: "Select",
+  // "Allow multiple" renders a native multi-select (one box, many picks), not the generic
+  // Add/Remove repeated dropdowns.
+  selfRepeats: true,
   advancedFields: [
     {
       key: "taxonomyId",

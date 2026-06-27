@@ -189,6 +189,14 @@ for **every** control via `RepeatableField`, which stores a **native array** of 
 (strings or structured objects) and manages Add/Remove. A control stays unaware of repetition. Don't
 reimplement it.
 
+**Opting out — `selfRepeats`:** a control whose natural "allow multiple" UX is a single widget (e.g.
+a native multi-select) sets `selfRepeats: true` on its descriptor. `DynamicField` then renders the
+control **directly** (not wrapped in `RepeatableField`) even when `field.repeatable` is true; the
+control receives the **array** value, branches on `field.repeatable`, and stores the same native
+array shape (so the view + stored data are identical to the generic path). The `select` control is
+the worked example (single-select string vs. multi-select array). `minItems`/`maxItems` don't apply
+to a `selfRepeats` control.
+
 ## Gotchas (each cost real time)
 
 - **`z.boolean().default(false)` is required in the inferred output type.** Adding a defaulted bool

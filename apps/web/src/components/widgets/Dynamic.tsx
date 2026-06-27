@@ -218,11 +218,14 @@ function DynamicField({
   // Resolve the control component from the plugin registry (input/textarea are built-ins;
   // unknown keys fall back to the input control).
   const Control = getFieldControl(field.control);
+  // A `selfRepeats` control (e.g. the multi-select) handles repetition itself, so it isn't wrapped
+  // in the generic Add/Remove RepeatableField — it receives the array value directly.
+  const selfRepeats = fieldControlDescriptorByKey[field.control]?.selfRepeats ?? false;
   return (
     <Field>
       <FieldLabel htmlFor={id}>{field.label}</FieldLabel>
       <FieldBody>
-        {field.repeatable ? (
+        {field.repeatable && !selfRepeats ? (
           <RepeatableField
             id={id}
             field={field}
