@@ -26,6 +26,9 @@ function AdminLayout() {
         <Link to="/admin/menus">
           Menus
         </Link>
+        <Link to="/admin/taxonomy">
+          Taxonomy
+        </Link>
         <Link to="/admin/zones">
           Zones
         </Link>

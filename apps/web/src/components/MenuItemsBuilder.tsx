@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { ClientOnly } from "@tanstack/react-router";
-import { DeleteIcon } from "@/components/icons";
+import { AddIcon, DeleteIcon } from "@/components/icons";
+import { AddButton } from "@/components/ui/addButton";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldLabel } from "@/components/ui/field";
+import { IconButton } from "@/components/ui/iconButton";
 import { Input } from "@/components/ui/input";
 import { MENU_MAX_DEPTH, type MenuItem } from "@/db/schema/menus";
 import type { SafePageGroup } from "@/server/fns/pages";
@@ -163,31 +165,21 @@ export default function MenuItemsBuilder({
 
       <div className={s.toolbar}>
         <div className={s.addRoot}>
-          <Button
-            type="button"
-            intent="primary"
-            variant="outline"
-            size="sm"
+          <AddButton
             onClick={() => mutate((prev) => addChild(prev, null, makeItem("page", pageGroups)))}
           >
             Add page link
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
+          </AddButton>
+          <AddButton
             onClick={() => mutate((prev) => addChild(prev, null, makeItem("external", pageGroups)))}
           >
             Add external link
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
+          </AddButton>
+          <AddButton
             onClick={() => mutate((prev) => addChild(prev, null, makeItem("heading", pageGroups)))}
           >
             Add heading
-          </Button>
+          </AddButton>
         </div>
         {dirty && (
           <div className={s.saveActions}>
@@ -387,60 +379,46 @@ function ItemRow({
         </div>
 
         <menu className={s.controls}>
-          <button
-            type="button"
-            className={s.iconButton}
+          <IconButton
             aria-label="Move up"
             disabled={index === 0}
             onClick={() => onMutate((prev) => moveSibling(prev, item.id, -1))}
           >
             ↑
-          </button>
-          <button
-            type="button"
-            className={s.iconButton}
+          </IconButton>
+          <IconButton
             aria-label="Move down"
             disabled={index === siblingCount - 1}
             onClick={() => onMutate((prev) => moveSibling(prev, item.id, 1))}
           >
             ↓
-          </button>
-          <button
-            type="button"
-            className={s.iconButton}
+          </IconButton>
+          <IconButton
             aria-label="Indent (nest under previous item)"
             disabled={index === 0 || depth >= MENU_MAX_DEPTH}
             onClick={() => onMutate((prev) => indent(prev, item.id))}
           >
             →
-          </button>
-          <button
-            type="button"
-            className={s.iconButton}
+          </IconButton>
+          <IconButton
             aria-label="Outdent"
             disabled={depth === 1}
             onClick={() => onMutate((prev) => outdent(prev, item.id))}
           >
             ←
-          </button>
+          </IconButton>
           {canChildNest && (
-            <button
-              type="button"
-              className={s.iconButton}
-              aria-label="Add child item"
-              onClick={() => onAdd(item.id, "page")}
-            >
-              +
-            </button>
+            <IconButton aria-label="Add child item" onClick={() => onAdd(item.id, "page")}>
+              <AddIcon />
+            </IconButton>
           )}
-          <button
-            type="button"
-            className={s.iconButton}
+          <IconButton
+            tone="danger"
             aria-label="Delete item"
             onClick={() => onMutate((prev) => removeItem(prev, item.id))}
           >
             <DeleteIcon />
-          </button>
+          </IconButton>
         </menu>
       </div>
 

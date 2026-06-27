@@ -20,7 +20,9 @@ export interface AdvancedFieldOption {
 export interface AdvancedFieldSpec {
   key: string;
   label: string;
-  inputType: "text" | "number" | "select";
+  // "text"/"number"/"select" are rendered generically by the builder. "taxonomyParent" is a
+  // bespoke branch (a live taxonomy picker) — see CustomWidgetFieldsBuilder.
+  inputType: "text" | "number" | "select" | "taxonomyParent";
   // Fixed choices for `inputType: "select"`. A blank "—" option is added by the builder so a
   // select-backed config value stays optional (clearing it sets the field prop to undefined).
   options?: ReadonlyArray<AdvancedFieldOption>;
@@ -45,6 +47,10 @@ export interface FieldControlDescriptor {
   control: FieldControl;
   label: string;
   advancedFields?: ReadonlyArray<AdvancedFieldSpec>;
+  // When true, the control does its own multi-value editing for repeatable fields (e.g. a native
+  // multi-select), so the framework does NOT wrap it in the generic Add/Remove `RepeatableField`.
+  // The control then receives the array value directly and must branch on `field.repeatable`.
+  selfRepeats?: boolean;
   // Optional view-mode formatter: turns a stored value (string or structured Json) into display
   // text. May return a multi-line string (rendered with `white-space: pre-line`). React-free so
   // the SSR view path can call it.

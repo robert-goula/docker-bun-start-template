@@ -55,15 +55,6 @@
   box-shadow: 0 -3px 0 0 var(--primary-400);
 }
 
-.collapseToggle {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  line-height: 1;
-}
-
 .collapseIcon {
   display: inline-block;
   transition: transform 0.2s ease;
@@ -126,26 +117,6 @@
   border-radius: var(--borderRadius-sm);
   background-color: var(--primary-base);
   color: var(--primary-text);
-}
-
-.hideToggle {
-  all: unset;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  cursor: pointer;
-  line-height: 1;
-
-  svg {
-    width: 1rem;
-    height: auto;
-    fill: currentColor;
-  }
-
-  &:hover {
-    color: var(--text-primary);
-  }
 }
 
 /* Ghost rendered in DragOverlay */

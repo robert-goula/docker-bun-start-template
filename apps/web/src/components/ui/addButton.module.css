@@ -1,0 +1,47 @@
+@reference "../../styles.css";
+
+/* "Add to a collection" affordance: a dashed, muted button with a leading plus icon. Inline by
+   default (sits in a toolbar/row); add the `.block` modifier to span its container on its own row
+   (e.g. "Add widget" in a zone, "Add item" under a repeatable field). */
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  font-size: var(--fontSize-xs);
+  color: var(--text-secondary);
+  background: transparent;
+  border: var(--borderWidth-sm) dashed var(--border-default);
+  border-radius: var(--borderRadius-md);
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-md);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
+
+  svg {
+    width: 1rem;
+    height: auto;
+    fill: currentColor;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: var(--bg-raised);
+    color: var(--text-primary);
+    border-color: var(--primary-400);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Full-width, own-row variant. */
+.block {
+  display: flex;
+  width: 100%;
+}

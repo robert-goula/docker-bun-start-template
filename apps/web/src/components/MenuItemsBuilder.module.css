@@ -62,36 +62,6 @@
   list-style: none;
 }
 
-.iconButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border-default);
-  border-radius: var(--borderRadius-sm);
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    color: var(--text-primary);
-    background-color: var(--bg-sunken);
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  svg {
-    width: 1rem;
-    height: auto;
-    fill: currentColor;
-  }
-}
-
 /* Nested children, indented and rule-marked so hierarchy is legible. */
 .children {
   margin-inline-start: var(--spacing-lg);

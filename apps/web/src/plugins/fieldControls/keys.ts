@@ -5,7 +5,7 @@
 
 // The control keys, as a literal tuple so `z.enum(fieldControls)` keeps its narrow type. Note this
 // includes keys for controls that are not registered/surfaced by default.
-export const fieldControls = ["input", "textarea", "number"] as const;
+export const fieldControls = ["input", "textarea", "number", "select"] as const;
 export type FieldControl = (typeof fieldControls)[number];
 
 // One named, labeled sub-measurement of a measurement control: `name` is the machine key written

@@ -34,6 +34,14 @@
 
 .repeatControl {
   flex: 1;
+  min-width: 0;
+}
+
+/* The base input uses `field-sizing: content`, so an empty/short input collapses to a couple of
+   characters instead of filling the row (textareas already set width: 100%). Force inputs to fill
+   the flex column so they stretch up to the Remove button. */
+.repeatControl :global(input) {
+  width: 100%;
 }
 
 .repeatList {

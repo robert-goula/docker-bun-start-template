@@ -6,6 +6,7 @@ import { LayoutWidgetRepo } from "./services/LayoutWidgetRepo";
 import { MenuRepo } from "./services/MenuRepo";
 import { PageRepo } from "./services/PageRepo";
 import { SessionStore } from "./services/SessionStore";
+import { TaxonomyRepo } from "./services/TaxonomyRepo";
 import { UserRepo } from "./services/UserRepo";
 import { ZoneRepo } from "./services/ZoneRepo";
 
@@ -21,6 +22,7 @@ const MainLive = Layer.mergeAll(
   LayoutWidgetRepo.Default,
   CustomWidgetRepo.Default,
   MenuRepo.Default,
+  TaxonomyRepo.Default,
   ZoneRepo.Default,
   ConfigRepo.Default,
 );

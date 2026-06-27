@@ -9,6 +9,7 @@
 
 import { inputDescriptor, inputPlugin } from "./input";
 import { numberDescriptor, numberPlugin } from "./number";
+import { selectDescriptor, selectPlugin } from "./select";
 import { textareaDescriptor, textareaPlugin } from "./textarea";
 import type { FieldControl } from "./keys";
 import type { FieldControlDescriptor } from "./shared";
@@ -30,6 +31,7 @@ export const builtinPlugins: ReadonlyArray<Plugin> = [
   inputPlugin,
   textareaPlugin,
   numberPlugin,
+  selectPlugin,
   lifecycleDemoPlugin,
 ];
 
@@ -38,6 +40,7 @@ export const fieldControlDescriptors: ReadonlyArray<FieldControlDescriptor> = [
   inputDescriptor,
   textareaDescriptor,
   numberDescriptor,
+  selectDescriptor,
 ];
 
 // Lookup by key. Partial in practice — keys without a committed descriptor (e.g. "measurement")
@@ -45,6 +48,16 @@ export const fieldControlDescriptors: ReadonlyArray<FieldControlDescriptor> = [
 export const fieldControlDescriptorByKey = Object.fromEntries(
   fieldControlDescriptors.map((d) => [d.control, d]),
 ) as Record<FieldControl, FieldControlDescriptor>;
+
+// Maps a control key to its registering plugin's name. Lets config that gates controls (e.g.
+// `plugins.enabled`) accept either identifier — the control key ("input") or the plugin name
+// ("input-field") — and resolve both to the same control. Keep in sync when adding a control.
+export const fieldControlPluginNames: Record<FieldControl, string> = {
+  input: inputPlugin.name,
+  textarea: textareaPlugin.name,
+  number: numberPlugin.name,
+  select: selectPlugin.name,
+};
 
 export { defaultMeasures, fieldControls } from "./keys";
 export type { FieldControl, MeasureConfig } from "./keys";

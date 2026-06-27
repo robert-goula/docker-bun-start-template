@@ -1,5 +1,5 @@
 import { bus } from "./events";
-import type { FieldControlComponent, Plugin, PluginApi } from "./types";
+import type { FieldControlComponent, FieldViewComponent, Plugin, PluginApi } from "./types";
 
 /**
  * Inversion-of-control container for the plugin system. Plugins register field-control
@@ -8,6 +8,7 @@ import type { FieldControlComponent, Plugin, PluginApi } from "./types";
  */
 export class PluginManager {
   private fieldControls = new Map<string, FieldControlComponent>();
+  private fieldViews = new Map<string, FieldViewComponent>();
   private registered = new Set<string>();
 
   register(plugin: Plugin): void {
@@ -15,6 +16,7 @@ export class PluginManager {
     this.registered.add(plugin.name);
     const api: PluginApi = {
       registerFieldControl: (control, component) => this.fieldControls.set(control, component),
+      registerFieldView: (control, component) => this.fieldViews.set(control, component),
       bus,
     };
     plugin.setup(api);
@@ -24,6 +26,12 @@ export class PluginManager {
   // key — mirrors the old ternary's "else = input" so a stray control can't crash a render.
   getFieldControl(control: string): FieldControlComponent | undefined {
     return this.fieldControls.get(control) ?? this.fieldControls.get("input");
+  }
+
+  // Resolve a control's optional view-mode component. No fallback: a control without a registered
+  // view uses the generic `format`/stringify path in the view renderer.
+  getFieldView(control: string): FieldViewComponent | undefined {
+    return this.fieldViews.get(control);
   }
 }
 

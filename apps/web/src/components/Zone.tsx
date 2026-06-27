@@ -2,7 +2,9 @@
 // props to its <Zone.Content> compound component, which oxc misreads as recursion.
 import type React from "react";
 import { createContext, useContext, useId, useState } from "react";
-import { AddIcon, ArrowDropDownIcon, DragIndicatorIcon, SettingsIcon } from "@/components/icons";
+import { ArrowDropDownIcon, DragIndicatorIcon, SettingsIcon } from "@/components/icons";
+import { AddButton } from "@/components/ui/addButton";
+import { IconButton } from "@/components/ui/iconButton";
 import s from "./Zone.module.css";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -237,9 +239,9 @@ function Zone({
               <Dialog open={settingsOpen} onOpenChange={handleSettingsOpenChange}>
                 <DialogTrigger
                   render={
-                    <button type="button" aria-label="Zone settings">
+                    <IconButton aria-label="Zone settings">
                       <SettingsIcon />
-                    </button>
+                    </IconButton>
                   }
                 />
                 <DialogContent showCloseButton={false}>
@@ -432,10 +434,9 @@ Zone.Content = function ZoneContent({
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogTrigger
           render={
-            <button type="button" className={s.addWidget} aria-label="Add widget to this zone">
-              <AddIcon aria-hidden="true" />
+            <AddButton block className={s.addWidget} aria-label="Add widget to this zone">
               Add widget
-            </button>
+            </AddButton>
           }
         />
         <DialogContent showCloseButton={false}>

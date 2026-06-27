@@ -30,6 +30,8 @@
   :global(svg) {
     pointer-events: none;
     flex-shrink: 0;
+    /* Icons follow the button's text color (matches the header icon buttons). */
+    fill: currentColor;
   }
 }
 
@@ -44,6 +46,7 @@
 
 /* Intent */
 .primary {
+  color: var(--text-on-accent);
   background-color: var(--primary-base);
   outline-color: var(--primary-base);
   &:hover {
@@ -76,6 +79,7 @@
 }
 
 .danger {
+  color: var(--text-on-accent);
   background-color: var(--danger-base);
   outline-color: var(--danger-base);
   &:hover {
