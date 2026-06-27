@@ -1,3 +1,4 @@
+export { config } from "./config";
 export { customWidgets } from "./customWidgets";
 export { layouts } from "./layouts";
 export { layoutWidgets } from "./layoutWidgets";

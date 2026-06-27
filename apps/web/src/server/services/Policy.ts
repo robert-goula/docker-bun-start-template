@@ -136,4 +136,17 @@ export const Policy = {
     if (hasRole(user.roles, "admin")) return;
     return yield* Effect.fail(new Forbidden({ action: "menu:delete" }));
   }),
+
+  // Config is global, admin-managed site settings — no per-row ownership.
+  canReadConfig: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "config:read" }));
+  }),
+
+  canManageConfig: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "config:manage" }));
+  }),
 };

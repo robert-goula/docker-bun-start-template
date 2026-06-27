@@ -56,7 +56,7 @@ function RouteComponent() {
   });
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <h1>Layouts</h1>
         <CreateLayout />
@@ -91,7 +91,7 @@ function RouteComponent() {
           </TableBody>
         </Table>
       </section>
-    </main>
+    </>
   );
 }
 

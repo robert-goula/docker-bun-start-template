@@ -19,3 +19,30 @@
   justify-content: flex-end;
   gap: var(--spacing-sm);
 }
+
+.repeat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.repeatItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.repeatControl {
+  flex: 1;
+}
+
+.repeatList {
+  margin: 0;
+  padding-left: var(--spacing-lg);
+  list-style: disc;
+}
+
+/* Compound controls (e.g. measurement) format to a multi-line block; honour the newlines. */
+.preline {
+  white-space: pre-line;
+}

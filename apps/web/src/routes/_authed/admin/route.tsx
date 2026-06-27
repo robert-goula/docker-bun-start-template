@@ -1,5 +1,4 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import styles from "./admin.module.css";
 
 export const Route = createFileRoute("/_authed/admin")({
   component: AdminLayout,
@@ -8,35 +7,35 @@ export const Route = createFileRoute("/_authed/admin")({
 function AdminLayout() {
   return (
     <>
-      <nav className={styles.nav}>
-        <Link
-          to="/admin"
-          className="nav-link"
-          activeOptions={{ exact: true }}
-          activeProps={{ className: "nav-link is-active" }}
-        >
+      <nav id="top">
+        <Link to="/admin">
           Admin
         </Link>
-        <Link to="/admin/users" activeProps={{ className: "nav-link is-active" }}>
+        <Link to="/admin/users">
           Users
         </Link>
-        <Link to="/admin/pages" activeProps={{ className: "nav-link is-active" }}>
+        <Link to="/admin/pages">
           Pages
         </Link>
-        <Link to="/admin/layouts" activeProps={{ className: "nav-link is-active" }}>
+        <Link to="/admin/layouts">
           Layouts
         </Link>
-        <Link to="/admin/custom-widgets" activeProps={{ className: "nav-link is-active" }}>
+        <Link to="/admin/custom-widgets">
           Custom widgets
         </Link>
-        <Link to="/admin/menus" activeProps={{ className: "nav-link is-active" }}>
+        <Link to="/admin/menus">
           Menus
         </Link>
-        <Link to="/admin/zones" activeProps={{ className: "nav-link is-active" }}>
+        <Link to="/admin/zones">
           Zones
         </Link>
+        <Link to="/admin/config">
+          Config
+        </Link>
       </nav>
-      <Outlet />
+      <main>
+        <Outlet />
+      </main>
     </>
   );
 }

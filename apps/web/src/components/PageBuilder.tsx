@@ -337,7 +337,7 @@ export default function PageBuilder({
     return (
       <>
         {navWidgets.length > 0 && navZone ? (
-          <nav>
+          <nav id="top">
             {navWidgets.map((widget) => (
               <WidgetContent
                 key={widget.id}

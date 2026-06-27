@@ -118,7 +118,7 @@ function RouteComponent() {
   });
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <Link to="/admin/users">← Back to users</Link>
         <h1>Edit {user.username}</h1>
@@ -246,6 +246,6 @@ function RouteComponent() {
           </FieldGroup>
         </form>
       </section>
-    </main>
+    </>
   );
 }

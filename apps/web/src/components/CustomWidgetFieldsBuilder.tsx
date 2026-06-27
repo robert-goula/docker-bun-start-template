@@ -23,7 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type CustomWidgetField, fieldControls } from "@/db/schema/customWidgets";
+import { type CustomWidgetField, repeatItemsCap } from "@/db/schema/customWidgets";
+import {
+  type AdvancedFieldOption,
+  fieldControlDescriptorByKey,
+  fieldControlDescriptors,
+} from "@/plugins/fieldControls";
 import s from "./CustomWidgetFieldsBuilder.module.css";
 
 // Each row carries a stable internal id so drag/keys survive while the editable
@@ -50,6 +55,24 @@ const numOrUndef = (value: string): number | undefined => {
   return Number.isNaN(n) ? undefined : n;
 };
 
+// Decimal-preserving parse for advanced config inputs that allow fractional values.
+const floatOrUndef = (value: string): number | undefined => {
+  if (value.trim() === "") return undefined;
+  const n = Number.parseFloat(value);
+  return Number.isNaN(n) ? undefined : n;
+};
+
+// Coerce a select's raw string back to the option's original type (number options stay numbers);
+// the blank "—" option clears the value to undefined so select-backed config stays optional.
+const coerceSelectValue = (
+  raw: string,
+  options?: ReadonlyArray<AdvancedFieldOption>,
+): string | number | undefined => {
+  if (raw === "") return undefined;
+  const match = options?.find((o) => String(o.value) === raw);
+  return match ? match.value : raw;
+};
+
 // CustomWidgetField is flat (every value is a primitive), so a key-union shallow
 // compare is a complete equality check.
 function fieldsEqual(a: CustomWidgetField, b: CustomWidgetField): boolean {
@@ -74,6 +97,7 @@ function makeField(index: number): CustomWidgetField {
     type: "text",
     control: "input",
     required: false,
+    repeatable: false,
   };
 }
 
@@ -276,9 +300,9 @@ function FieldRow({
                         onChange({ control: e.target.value as CustomWidgetField["control"] })
                       }
                     >
-                      {fieldControls.map((control) => (
+                      {fieldControlDescriptors.map(({ control, label }) => (
                         <option key={control} value={control}>
-                          {control}
+                          {label}
                         </option>
                       ))}
                     </select>
@@ -298,6 +322,53 @@ function FieldRow({
                     </label>
                   </FieldBody>
                 </Field>
+
+                {/* Repeatable is generic (works for every control), so it lives here rather than
+                    in a control's descriptor. Min/max instance inputs appear only when enabled. */}
+                <Field className="¼">
+                  <FieldLabel htmlFor={`${idBase}-repeatable`}>Repeatable</FieldLabel>
+                  <FieldBody>
+                    <label className={s.checkbox}>
+                      <input
+                        id={`${idBase}-repeatable`}
+                        type="checkbox"
+                        checked={field.repeatable ?? false}
+                        onChange={(e) => onChange({ repeatable: e.target.checked })}
+                      />
+                      Allow multiple
+                    </label>
+                  </FieldBody>
+                </Field>
+                {field.repeatable && (
+                  <>
+                    <Field className="¼">
+                      <FieldLabel htmlFor={`${idBase}-minItems`}>Min items</FieldLabel>
+                      <FieldBody>
+                        <Input
+                          id={`${idBase}-minItems`}
+                          type="number"
+                          min={1}
+                          max={repeatItemsCap}
+                          value={field.minItems ?? ""}
+                          onChange={(e) => onChange({ minItems: numOrUndef(e.target.value) })}
+                        />
+                      </FieldBody>
+                    </Field>
+                    <Field className="¼">
+                      <FieldLabel htmlFor={`${idBase}-maxItems`}>Max items</FieldLabel>
+                      <FieldBody>
+                        <Input
+                          id={`${idBase}-maxItems`}
+                          type="number"
+                          min={1}
+                          max={repeatItemsCap}
+                          value={field.maxItems ?? ""}
+                          onChange={(e) => onChange({ maxItems: numOrUndef(e.target.value) })}
+                        />
+                      </FieldBody>
+                    </Field>
+                  </>
+                )}
 
                 <Field className="½">
                   <FieldLabel htmlFor={`${idBase}-name`}>Name</FieldLabel>
@@ -363,32 +434,57 @@ function FieldRow({
                   </FieldBody>
                 </Field>
 
-                {field.control === "input" ? (
-                  <Field className="½">
-                    <FieldLabel htmlFor={`${idBase}-pattern`}>Pattern (regex)</FieldLabel>
-                    <FieldBody>
-                      <Input
-                        id={`${idBase}-pattern`}
-                        value={field.pattern ?? ""}
-                        onChange={(e) => onChange({ pattern: e.target.value || undefined })}
-                        placeholder="^[A-Za-z ]+$"
-                      />
-                    </FieldBody>
-                  </Field>
-                ) : (
-                  <Field className="¼">
-                    <FieldLabel htmlFor={`${idBase}-rows`}>Rows</FieldLabel>
-                    <FieldBody>
-                      <Input
-                        id={`${idBase}-rows`}
-                        type="number"
-                        min={1}
-                        value={field.rows ?? ""}
-                        onChange={(e) => onChange({ rows: numOrUndef(e.target.value) })}
-                      />
-                    </FieldBody>
-                  </Field>
-                )}
+                {/* Control-specific advanced inputs declared by the active control's descriptor
+                    (e.g. `pattern` for input, `rows` for textarea). */}
+                {fieldControlDescriptorByKey[field.control]?.advancedFields?.map((spec) => {
+                  const raw = field[spec.key as keyof CustomWidgetField];
+                  return (
+                    <Field key={spec.key} className={spec.width ?? "½"}>
+                      <FieldLabel htmlFor={`${idBase}-${spec.key}`}>{spec.label}</FieldLabel>
+                      <FieldBody>
+                        {spec.inputType === "select" ? (
+                          <select
+                            id={`${idBase}-${spec.key}`}
+                            className={s.select}
+                            value={raw == null ? "" : String(raw)}
+                            onChange={(e) =>
+                              onChange({
+                                [spec.key]: coerceSelectValue(e.target.value, spec.options),
+                              } as Partial<CustomWidgetField>)
+                            }
+                          >
+                            <option value="">—</option>
+                            {spec.options?.map((o) => (
+                              <option key={String(o.value)} value={String(o.value)}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Input
+                            id={`${idBase}-${spec.key}`}
+                            type={spec.inputType === "number" ? "number" : undefined}
+                            min={spec.min}
+                            max={spec.max}
+                            step={spec.step}
+                            placeholder={spec.placeholder}
+                            value={raw == null ? "" : (raw as string | number)}
+                            onChange={(e) =>
+                              onChange({
+                                [spec.key]:
+                                  spec.inputType === "number"
+                                    ? (spec.step === "any" ? floatOrUndef : numOrUndef)(
+                                        e.target.value,
+                                      )
+                                    : e.target.value || undefined,
+                              } as Partial<CustomWidgetField>)
+                            }
+                          />
+                        )}
+                      </FieldBody>
+                    </Field>
+                  );
+                })}
 
                 <Field className="½">
                   <FieldLabel htmlFor={`${idBase}-placeholder`}>Placeholder</FieldLabel>

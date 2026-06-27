@@ -50,7 +50,7 @@ function RouteComponent() {
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <h1>Custom widgets</h1>
         <CreateCustomWidget />
@@ -85,7 +85,7 @@ function RouteComponent() {
           </TableBody>
         </Table>
       </section>
-    </main>
+    </>
   );
 }
 

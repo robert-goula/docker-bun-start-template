@@ -70,7 +70,7 @@ function RouteComponent() {
   }
 
   return (
-    <main className="zone">
+    <>
       <section className="full">
         <button type="button" onClick={() => router.history.back()}>
           ← Back
@@ -125,7 +125,7 @@ function RouteComponent() {
         </p>
         <DefaultWidgets layoutId={id} />
       </section>
-    </main>
+    </>
   );
 }
 

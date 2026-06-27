@@ -529,6 +529,13 @@
     -moz-osx-font-smoothing: grayscale;
     & > nav {
       grid-area: nav / content;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--spacing-lg);
+      padding-inline: var(--spacing-lg);
+      padding-block: var(--spacing-sm);
+      background-color: var(--bg-sunken);
     }
     & > header {
       background-color: var(--bg-header);
@@ -555,6 +562,9 @@
     & > section {
       padding-inline: var(--spacing-lg);
       padding-block: var(--spacing-lg);
+      &:empty {
+        display: none;
+      }
     }
   }
 }
