@@ -19,7 +19,7 @@ import {
 } from "@/server/fns/customWidgets";
 import s from "./$widgetId.module.css";
 
-export const Route = createFileRoute("/_authed/admin/custom-widgets/$widgetId")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/custom-widgets/$widgetId")({
   params: idParam("widgetId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(customWidgetsRepo.byId(params.widgetId as CustomWidgetId)),
@@ -79,7 +79,7 @@ function RouteComponent() {
         <button type="button" onClick={() => router.history.back()}>
           ← Back
         </button>
-        <Link to="/admin/custom-widgets">Back to custom widgets</Link>
+        <Link to="/{-$locale}/admin/custom-widgets">Back to custom widgets</Link>
         <h1>{widget.name}</h1>
 
         <FieldGroup>

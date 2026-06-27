@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ConfigId } from "@/db/schema/config";
 import { configRepo } from "@/repositories/config";
 
-export const Route = createFileRoute("/_authed/admin/config/$configId")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/config/$configId")({
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(configRepo.byId(params.configId as ConfigId)),
   component: RouteComponent,
@@ -61,7 +61,7 @@ function RouteComponent() {
     try {
       await removeMutation.mutateAsync(id);
       toast.success(`Config "${id}" deleted`);
-      navigate({ to: "/admin/config" });
+      navigate({ to: "/{-$locale}/admin/config" });
     } catch (err) {
       toast.error("Couldn’t delete config", {
         description: err instanceof Error ? err.message : "Please try again.",
@@ -73,7 +73,7 @@ function RouteComponent() {
     <>
       <section className="full">
         <p>
-          <Link to="/admin/config">← Config</Link>
+          <Link to="/{-$locale}/admin/config">← Config</Link>
         </p>
         <h1>Edit config</h1>
 

@@ -21,7 +21,7 @@ export default function Header() {
     mutationFn: () => logoutFn(),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["me"] });
-      router.navigate({ to: "/login" });
+      router.navigate({ to: "/{-$locale}/login" });
     },
   });
 
@@ -45,7 +45,7 @@ export default function Header() {
           {me.data?.roles.includes("admin") && (
             <>
               <Link
-                to="/admin"
+                to="/{-$locale}/admin"
                 className="nav-link"
                 activeProps={{ className: "nav-link is-active" }}
               >
@@ -74,7 +74,7 @@ export default function Header() {
             </Button>
           </div>
         ) : (
-          <Link to="/login" className="nav-link">
+          <Link to="/{-$locale}/login" className="nav-link">
             {content.signIn}
           </Link>
         )}

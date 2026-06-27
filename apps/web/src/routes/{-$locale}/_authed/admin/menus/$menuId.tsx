@@ -18,7 +18,7 @@ import { pagesRepo } from "@/repositories/pages";
 import { type UpdateMenuAttributes, updateMenuFn } from "@/server/fns/menus";
 import s from "./$menuId.module.css";
 
-export const Route = createFileRoute("/_authed/admin/menus/$menuId")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/menus/$menuId")({
   params: idParam("menuId"),
   loader: async ({ context, params }) => {
     await Promise.all([
@@ -85,7 +85,7 @@ function RouteComponent() {
     <>
       <section className="full">
         <p>
-          <Link to="/admin/menus">← Menus</Link>
+          <Link to="/{-$locale}/admin/menus">← Menus</Link>
         </p>
         <h1>Edit menu</h1>
 

@@ -14,37 +14,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { menusRepo } from "@/repositories/menus";
-import type { SafeMenu } from "@/server/fns/menus";
+import { customWidgetsRepo } from "@/repositories/customWidgets";
+import type { SafeCustomWidget } from "@/server/fns/customWidgets";
 
-export const Route = createFileRoute("/_authed/admin/menus/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(menusRepo.list()),
+export const Route = createFileRoute("/{-$locale}/_authed/admin/custom-widgets/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(customWidgetsRepo.list()),
   component: RouteComponent,
 });
 
-// Counts every node in a menu tree (top-level + nested).
-const countItems = (items: SafeMenu["items"]): number =>
-  items.reduce((sum, item) => sum + 1 + countItems(item.children), 0);
-
-const columns: ColumnDef<SafeMenu>[] = [
+const columns: ColumnDef<SafeCustomWidget>[] = [
   {
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => (
-      <Link to="/admin/menus/$menuId" params={{ menuId: row.original.id }}>
+      <Link to="/{-$locale}/admin/custom-widgets/$widgetId" params={{ widgetId: row.original.id }}>
         {row.original.name}
       </Link>
     ),
   },
   {
-    accessorKey: "slug",
-    header: "Slug",
-    cell: ({ row }) => row.original.slug,
-  },
-  {
-    accessorKey: "items",
-    header: "Items",
-    cell: ({ row }) => countItems(row.original.items),
+    accessorKey: "fields",
+    header: "Fields",
+    cell: ({ row }) => row.original.fields.length,
   },
   {
     accessorKey: "description",
@@ -54,15 +45,15 @@ const columns: ColumnDef<SafeMenu>[] = [
 ];
 
 function RouteComponent() {
-  const { data = [] } = useQuery(menusRepo.list());
+  const { data = [] } = useQuery(customWidgetsRepo.list());
 
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
     <>
       <section className="full">
-        <h1>Menus</h1>
-        <CreateMenu />
+        <h1>Custom widgets</h1>
+        <CreateCustomWidget />
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -78,7 +69,7 @@ function RouteComponent() {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length}>No menus yet.</TableCell>
+                <TableCell colSpan={columns.length}>No custom widgets yet.</TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
@@ -98,13 +89,13 @@ function RouteComponent() {
   );
 }
 
-// Creating a menu starts it empty; the admin builds the tree on the edit page.
-function CreateMenu() {
+// Creating a definition starts it with no fields; the admin adds fields on the edit page.
+function CreateCustomWidget() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const createMutation = useMutation(menusRepo.create(qc));
+  const createMutation = useMutation(customWidgetsRepo.create(qc));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -114,10 +105,10 @@ function CreateMenu() {
         name: name.trim(),
         description: description.trim() || null,
       });
-      toast.success(`Menu "${created.name}" created`);
-      navigate({ to: "/admin/menus/$menuId", params: { menuId: created.id } });
+      toast.success(`Custom widget "${created.name}" created`);
+      navigate({ to: "/{-$locale}/admin/custom-widgets/$widgetId", params: { widgetId: created.id } });
     } catch (err) {
-      toast.error("Couldn’t create menu", {
+      toast.error("Couldn’t create custom widget", {
         description: err instanceof Error ? err.message : "Please try again.",
       });
     }
@@ -127,21 +118,21 @@ function CreateMenu() {
     <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
       <FieldGroup>
         <Field className="½">
-          <FieldLabel htmlFor="new-menu-name">New menu name</FieldLabel>
+          <FieldLabel htmlFor="new-cw-name">New custom widget name</FieldLabel>
           <FieldBody>
             <Input
-              id="new-menu-name"
+              id="new-cw-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Main navigation"
+              placeholder="Headline"
             />
           </FieldBody>
         </Field>
         <Field className="½">
-          <FieldLabel htmlFor="new-menu-description">Description</FieldLabel>
+          <FieldLabel htmlFor="new-cw-description">Description</FieldLabel>
           <FieldBody>
             <Input
-              id="new-menu-description"
+              id="new-cw-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional"
@@ -149,7 +140,7 @@ function CreateMenu() {
           </FieldBody>
         </Field>
         <Button type="submit" intent="primary" disabled={!name.trim() || createMutation.isPending}>
-          {createMutation.isPending ? "Creating…" : "Create menu"}
+          {createMutation.isPending ? "Creating…" : "Create custom widget"}
         </Button>
       </FieldGroup>
     </form>

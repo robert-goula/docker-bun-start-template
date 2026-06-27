@@ -14,36 +14,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { insertConfigSchema } from "@/db/schema/config";
-import { configRepo } from "@/repositories/config";
-import type { SafeConfig } from "@/server/fns/config";
+import { menusRepo } from "@/repositories/menus";
+import type { SafeMenu } from "@/server/fns/menus";
 
-export const Route = createFileRoute("/_authed/admin/config/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(configRepo.list()),
+export const Route = createFileRoute("/{-$locale}/_authed/admin/menus/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(menusRepo.list()),
   component: RouteComponent,
 });
 
-// One-line preview of a value for the table (objects/arrays shown as compact JSON).
-const preview = (value: unknown) => {
-  const json = JSON.stringify(value);
-  return json.length > 80 ? `${json.slice(0, 79)}…` : json;
-};
+// Counts every node in a menu tree (top-level + nested).
+const countItems = (items: SafeMenu["items"]): number =>
+  items.reduce((sum, item) => sum + 1 + countItems(item.children), 0);
 
-const columns: ColumnDef<SafeConfig>[] = [
+const columns: ColumnDef<SafeMenu>[] = [
   {
-    accessorKey: "id",
-    header: "Key",
+    accessorKey: "name",
+    header: "Name",
     cell: ({ row }) => (
-      <Link to="/admin/config/$configId" params={{ configId: row.original.id }}>
-        {row.original.id}
+      <Link to="/{-$locale}/admin/menus/$menuId" params={{ menuId: row.original.id }}>
+        {row.original.name}
       </Link>
     ),
   },
   {
-    accessorKey: "value",
-    header: "Value",
-    cell: ({ row }) => <code>{preview(row.original.value)}</code>,
+    accessorKey: "slug",
+    header: "Slug",
+    cell: ({ row }) => row.original.slug,
+  },
+  {
+    accessorKey: "items",
+    header: "Items",
+    cell: ({ row }) => countItems(row.original.items),
   },
   {
     accessorKey: "description",
@@ -53,15 +54,15 @@ const columns: ColumnDef<SafeConfig>[] = [
 ];
 
 function RouteComponent() {
-  const { data = [] } = useQuery(configRepo.list());
+  const { data = [] } = useQuery(menusRepo.list());
 
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
     <>
       <section className="full">
-        <h1>Config</h1>
-        <CreateConfig />
+        <h1>Menus</h1>
+        <CreateMenu />
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -77,7 +78,7 @@ function RouteComponent() {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length}>No config entries yet.</TableCell>
+                <TableCell colSpan={columns.length}>No menus yet.</TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
@@ -97,46 +98,26 @@ function RouteComponent() {
   );
 }
 
-// Creates (upserts) a config entry. The id is namespaced dotted notation; the value is entered
-// as JSON. Known keys are validated server-side against the registry.
-function CreateConfig() {
+// Creating a menu starts it empty; the admin builds the tree on the edit page.
+function CreateMenu() {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [id, setId] = useState("");
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [valueText, setValueText] = useState("null");
-  const setMutation = useMutation(configRepo.set(qc));
+  const createMutation = useMutation(menusRepo.create(qc));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-
-    const parsedId = insertConfigSchema.shape.id.safeParse(id.trim());
-    if (!parsedId.success) {
-      toast.error("Invalid key", {
-        description:
-          parsedId.error.issues[0]?.message ?? "Use dotted notation, e.g. plugins.enabled",
-      });
-      return;
-    }
-
-    let value: unknown;
+    if (!name.trim()) return;
     try {
-      value = JSON.parse(valueText);
-    } catch {
-      toast.error("Value is not valid JSON");
-      return;
-    }
-
-    try {
-      const saved = await setMutation.mutateAsync({
-        id: parsedId.data,
-        value,
+      const created = await createMutation.mutateAsync({
+        name: name.trim(),
         description: description.trim() || null,
       });
-      toast.success(`Config "${saved.id}" saved`);
-      navigate({ to: "/admin/config/$configId", params: { configId: saved.id } });
+      toast.success(`Menu "${created.name}" created`);
+      navigate({ to: "/{-$locale}/admin/menus/$menuId", params: { menuId: created.id } });
     } catch (err) {
-      toast.error("Couldn’t save config", {
+      toast.error("Couldn’t create menu", {
         description: err instanceof Error ? err.message : "Please try again.",
       });
     }
@@ -146,41 +127,29 @@ function CreateConfig() {
     <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
       <FieldGroup>
         <Field className="½">
-          <FieldLabel htmlFor="new-config-id">New key</FieldLabel>
+          <FieldLabel htmlFor="new-menu-name">New menu name</FieldLabel>
           <FieldBody>
             <Input
-              id="new-config-id"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              placeholder="plugins.enabled"
+              id="new-menu-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Main navigation"
             />
           </FieldBody>
         </Field>
         <Field className="½">
-          <FieldLabel htmlFor="new-config-description">Description</FieldLabel>
+          <FieldLabel htmlFor="new-menu-description">Description</FieldLabel>
           <FieldBody>
             <Input
-              id="new-config-description"
+              id="new-menu-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional"
             />
           </FieldBody>
         </Field>
-        <Field className="full">
-          <FieldLabel htmlFor="new-config-value">Value (JSON)</FieldLabel>
-          <FieldBody>
-            <Textarea
-              id="new-config-value"
-              value={valueText}
-              onChange={(e) => setValueText(e.target.value)}
-              rows={4}
-              spellCheck={false}
-            />
-          </FieldBody>
-        </Field>
-        <Button type="submit" intent="primary" disabled={!id.trim() || setMutation.isPending}>
-          {setMutation.isPending ? "Saving…" : "Create config"}
+        <Button type="submit" intent="primary" disabled={!name.trim() || createMutation.isPending}>
+          {createMutation.isPending ? "Creating…" : "Create menu"}
         </Button>
       </FieldGroup>
     </form>

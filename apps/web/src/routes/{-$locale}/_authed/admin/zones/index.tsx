@@ -12,7 +12,7 @@ import {
 import { zonesRepo } from "@/repositories/zones";
 import type { SafeZone } from "@/server/fns/zones";
 
-export const Route = createFileRoute("/_authed/admin/zones/")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/zones/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(zonesRepo.list()),
   component: RouteComponent,
 });

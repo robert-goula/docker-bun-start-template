@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import { usersRepo, type SafeUser } from "@/repositories/users";
 
-export const Route = createFileRoute("/_authed/admin/users/")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/users/")({
   validateSearch: ListUsersSearch,
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) =>
@@ -46,7 +46,7 @@ const columns: ColumnDef<SafeUser>[] = [
     accessorKey: "username",
     header: "Username",
     cell: ({ row }) => (
-      <Link to="/admin/users/$userId" params={{ userId: row.original.id }}>
+      <Link to="/{-$locale}/admin/users/$userId" params={{ userId: row.original.id }}>
         {row.original.username}
       </Link>
     ),

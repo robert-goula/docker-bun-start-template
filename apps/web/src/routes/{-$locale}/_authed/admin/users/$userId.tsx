@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { idParam } from "@/lib/shortId";
 import { usersRepo } from "@/repositories/users";
 
-export const Route = createFileRoute("/_authed/admin/users/$userId")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/users/$userId")({
   params: idParam("userId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(usersRepo.byId(params.userId as UserId)),
@@ -120,7 +120,7 @@ function RouteComponent() {
   return (
     <>
       <section className="full">
-        <Link to="/admin/users">← Back to users</Link>
+        <Link to="/{-$locale}/admin/users">← Back to users</Link>
         <h1>Edit {user.username}</h1>
 
         <form

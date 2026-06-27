@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { encodeId, idParam } from "@/lib/shortId";
 import { taxonomyRepo } from "@/repositories/taxonomy";
 
-export const Route = createFileRoute("/_authed/admin/taxonomy/$taxonomyId")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/taxonomy/$taxonomyId")({
   params: idParam("taxonomyId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(taxonomyRepo.byId(params.taxonomyId as TaxonomyId)),
@@ -97,7 +97,7 @@ function RouteComponent() {
 
   return (
     <section className="full">
-      <Link to="/admin/taxonomy" search={backSearch}>
+      <Link to="/{-$locale}/admin/taxonomy" search={backSearch}>
         ← Back to list
       </Link>
       <h1>Edit taxonomy</h1>

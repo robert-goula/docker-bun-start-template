@@ -13,7 +13,7 @@ import { layoutWidgetsRepo, saveLayoutWidgets } from "@/repositories/layoutWidge
 import { type UpdateLayoutAttributes, updateLayoutFn } from "@/server/fns/layouts";
 import styles from "./$layoutId.module.css";
 
-export const Route = createFileRoute("/_authed/admin/layouts/$layoutId")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/layouts/$layoutId")({
   params: idParam("layoutId"),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(layoutsRepo.byId(params.layoutId as LayoutId)),
@@ -75,7 +75,7 @@ function RouteComponent() {
         <button type="button" onClick={() => router.history.back()}>
           ← Back
         </button>
-        <Link to="/admin/layouts">Back to layouts</Link>
+        <Link to="/{-$locale}/admin/layouts">Back to layouts</Link>
         <h1>{layout.name}</h1>
 
         <FieldGroup>

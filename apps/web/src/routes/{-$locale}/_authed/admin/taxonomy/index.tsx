@@ -29,7 +29,7 @@ const taxonomySearchSchema = z.object({
   parent: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/_authed/admin/taxonomy/")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/taxonomy/")({
   validateSearch: taxonomySearchSchema,
   loaderDeps: ({ search }) => ({ parent: search.parent }),
   loader: ({ context, deps }) => {
@@ -85,7 +85,7 @@ function RouteComponent() {
         // Default-locale display label — drilling into this node's children. The label lives in
         // `locales`, never assumed to equal the canonical `value`.
         cell: ({ row }) => (
-          <Link to="/admin/taxonomy" search={{ parent: encodeId(row.original.id) }}>
+          <Link to="/{-$locale}/admin/taxonomy" search={{ parent: encodeId(row.original.id) }}>
             {row.original.locales?.[DEFAULT_LOCALE] ?? "—"}
           </Link>
         ),
@@ -125,7 +125,7 @@ function RouteComponent() {
                 aria-label={`Edit ${name}`}
                 onClick={() =>
                   navigate({
-                    to: "/admin/taxonomy/$taxonomyId",
+                    to: "/{-$locale}/admin/taxonomy/$taxonomyId",
                     params: { taxonomyId: row.original.id },
                   })
                 }
@@ -158,7 +158,7 @@ function RouteComponent() {
 
       {/* Breadcrumb: roots → current node. */}
       <nav style={{ marginBlockEnd: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <Link to="/admin/taxonomy" search={{ parent: undefined }} className="breadcrumb-item">
+        <Link to="/{-$locale}/admin/taxonomy" search={{ parent: undefined }} className="breadcrumb-item">
           All taxonomies
         </Link>
         {parentId ? (
@@ -171,7 +171,7 @@ function RouteComponent() {
       {parentId ? (
         <p style={{ marginBlockEnd: "1rem" }}>
           <Link
-            to="/admin/taxonomy"
+            to="/{-$locale}/admin/taxonomy"
             search={{ parent: current?.parentId ? encodeId(current.parentId) : undefined }}
           >
             ← Up one level

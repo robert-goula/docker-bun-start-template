@@ -15,7 +15,7 @@ import { buildHref, DEFAULT_LOCALE, LOCALES, type Locale } from "@/lib/locale";
 import { pagesKeys, pagesRepo } from "@/repositories/pages";
 import { createPageFn, createPageTranslationFn, type SafePageListItem } from "@/server/fns/pages";
 
-export const Route = createFileRoute("/_authed/admin/pages/")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/pages/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(pagesRepo.list()),
   component: RouteComponent,
 });

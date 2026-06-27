@@ -17,7 +17,7 @@ import {
 import { layoutsRepo } from "@/repositories/layouts";
 import type { SafeLayout } from "@/server/fns/layouts";
 
-export const Route = createFileRoute("/_authed/admin/layouts/")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin/layouts/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(layoutsRepo.list()),
   component: RouteComponent,
 });
@@ -29,7 +29,7 @@ const columns: ColumnDef<SafeLayout>[] = [
     accessorKey: "name",
     header: "Name",
     cell: ({ row }) => (
-      <Link to="/admin/layouts/$layoutId" params={{ layoutId: row.original.id }}>
+      <Link to="/{-$locale}/admin/layouts/$layoutId" params={{ layoutId: row.original.id }}>
         {row.original.name}
       </Link>
     ),
@@ -113,7 +113,7 @@ function CreateLayout() {
         description: description.trim() || null,
       });
       toast.success(`Layout "${created.name}" created`);
-      navigate({ to: "/admin/layouts/$layoutId", params: { layoutId: created.id } });
+      navigate({ to: "/{-$locale}/admin/layouts/$layoutId", params: { layoutId: created.id } });
     } catch (err) {
       toast.error("Couldn’t create layout", {
         description: err instanceof Error ? err.message : "Please try again.",

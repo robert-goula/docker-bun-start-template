@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authed/admin")({
+export const Route = createFileRoute("/{-$locale}/_authed/admin")({
   component: AdminLayout,
 });
 
@@ -8,31 +8,31 @@ function AdminLayout() {
   return (
     <>
       <nav id="top">
-        <Link to="/admin">
+        <Link to="/{-$locale}/admin">
           Admin
         </Link>
-        <Link to="/admin/users">
+        <Link to="/{-$locale}/admin/users">
           Users
         </Link>
-        <Link to="/admin/pages">
+        <Link to="/{-$locale}/admin/pages">
           Pages
         </Link>
-        <Link to="/admin/layouts">
+        <Link to="/{-$locale}/admin/layouts">
           Layouts
         </Link>
-        <Link to="/admin/custom-widgets">
+        <Link to="/{-$locale}/admin/custom-widgets">
           Custom widgets
         </Link>
-        <Link to="/admin/menus">
+        <Link to="/{-$locale}/admin/menus">
           Menus
         </Link>
-        <Link to="/admin/taxonomy">
+        <Link to="/{-$locale}/admin/taxonomy">
           Taxonomy
         </Link>
-        <Link to="/admin/zones">
+        <Link to="/{-$locale}/admin/zones">
           Zones
         </Link>
-        <Link to="/admin/config">
+        <Link to="/{-$locale}/admin/config">
           Config
         </Link>
       </nav>
