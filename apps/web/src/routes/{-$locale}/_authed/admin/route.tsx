@@ -7,7 +7,9 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin")({
 function AdminLayout() {
   return (
     <>
-      <nav id="top">
+      {/* Legacy admin menu. Kept above the page-builder chrome during the transition to
+          a CMS-driven admin nav (the embedded CmsPage nav zone), which will replace this. */}
+      <nav id="admin-menu">
         <Link to="/{-$locale}/admin">
           Admin
         </Link>

@@ -1,10 +1,12 @@
 import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import * as z from "zod";
 import { type TaxonomyId } from "@/db/schema/taxonomy";
 import { DEFAULT_LOCALE } from "@/db/schema/pages";
+import AdminCmsPage from "@/components/AdminCmsPage";
 import { DeleteIcon, EditIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/iconButton";
@@ -18,9 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { loadAdminPage } from "@/lib/loadPage";
 import { decodeIdParam, encodeId } from "@/lib/shortId";
 import { taxonomyRepo, type SafeTaxonomy } from "@/repositories/taxonomy";
 import { toast } from "sonner";
+
+const PAGE_SLUG = "/admin/taxonomy";
 
 // `parent` drives the drill-down: absent → roots (parentId IS NULL); a base58 id → that node's
 // children. It's the short-uuid form (matching path-param ids) — decoded to the real uuid at the
@@ -32,14 +37,17 @@ const taxonomySearchSchema = z.object({
 export const Route = createFileRoute("/{-$locale}/_authed/admin/taxonomy/")({
   validateSearch: taxonomySearchSchema,
   loaderDeps: ({ search }) => ({ parent: search.parent }),
-  loader: ({ context, deps }) => {
+  loader: async ({ context, deps }) => {
     const pid = (decodeIdParam(deps.parent) ?? null) as TaxonomyId | null;
-    return Promise.all([
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [layout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
       context.queryClient.ensureQueryData(taxonomyRepo.byParent(pid)),
       pid
         ? context.queryClient.ensureQueryData(taxonomyRepo.byId(pid))
         : Promise.resolve(undefined),
     ]);
+    return { layout, ref };
   },
   component: RouteComponent,
 });
@@ -47,6 +55,16 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin/taxonomy/")({
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
 function RouteComponent() {
+  const { layout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={layout}>
+      <TaxonomyList />
+    </AdminCmsPage>
+  );
+}
+
+function TaxonomyList() {
+  const content = useIntlayer("adminTaxonomy");
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const qc = useQueryClient();
@@ -64,15 +82,15 @@ function RouteComponent() {
 
   async function handleDelete(row: SafeTaxonomy) {
     const ok = window.confirm(
-      `Delete "${row.value}" and all of its descendant taxonomies? This cannot be undone.`,
+      `${content.deletePrefix.value}${row.value}${content.deleteSuffix.value}`,
     );
     if (!ok) return;
     try {
       await removeMutation.mutateAsync(row.id as TaxonomyId);
-      toast.success(`Deleted "${row.value}"`);
+      toast.success(`${content.deleted.value} "${row.value}"`);
     } catch (err) {
-      toast.error("Couldn’t delete taxonomy", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(content.deleteError.value, {
+        description: err instanceof Error ? err.message : content.tryAgain.value,
       });
     }
   }
@@ -81,7 +99,7 @@ function RouteComponent() {
     () => [
       {
         id: "label",
-        header: `Label (${DEFAULT_LOCALE})`,
+        header: `${content.colLabel.value} (${DEFAULT_LOCALE})`,
         // Default-locale display label — drilling into this node's children. The label lives in
         // `locales`, never assumed to equal the canonical `value`.
         cell: ({ row }) => (
@@ -92,13 +110,13 @@ function RouteComponent() {
       },
       {
         accessorKey: "value",
-        header: "Value",
+        header: content.colValue.value,
         // The canonical, immutable value (e.g. a key or hex code) — not a label.
         cell: ({ row }) => <code>{row.original.value}</code>,
       },
       {
         accessorKey: "locales",
-        header: "Locales",
+        header: content.colLocales.value,
         cell: ({ row }) => {
           const codes = Object.keys(row.original.locales ?? {});
           return codes.length ? codes.join(", ") : "—";
@@ -106,12 +124,12 @@ function RouteComponent() {
       },
       {
         accessorKey: "sort",
-        header: "Sort",
+        header: content.colSort.value,
         cell: ({ row }) => row.original.sort,
       },
       {
         accessorKey: "created",
-        header: "Created",
+        header: content.colCreated.value,
         cell: ({ row }) => dateFormatter.format(new Date(row.original.created)),
       },
       {
@@ -122,7 +140,7 @@ function RouteComponent() {
           return (
             <span style={{ display: "inline-flex", gap: "0.5rem" }}>
               <IconButton
-                aria-label={`Edit ${name}`}
+                aria-label={`${content.edit.value} ${name}`}
                 onClick={() =>
                   navigate({
                     to: "/{-$locale}/admin/taxonomy/$taxonomyId",
@@ -134,7 +152,7 @@ function RouteComponent() {
               </IconButton>
               <IconButton
                 tone="danger"
-                aria-label={`Delete ${name}`}
+                aria-label={`${content.delete.value} ${name}`}
                 onClick={() => handleDelete(row.original)}
                 disabled={removeMutation.isPending}
               >
@@ -154,12 +172,16 @@ function RouteComponent() {
 
   return (
     <section className="full">
-      <h1>Taxonomy</h1>
+      <h1>{content.title}</h1>
 
       {/* Breadcrumb: roots → current node. */}
       <nav style={{ marginBlockEnd: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <Link to="/{-$locale}/admin/taxonomy" search={{ parent: undefined }} className="breadcrumb-item">
-          All taxonomies
+        <Link
+          to="/{-$locale}/admin/taxonomy"
+          search={{ parent: undefined }}
+          className="breadcrumb-item"
+        >
+          {content.allTaxonomies}
         </Link>
         {parentId ? (
           <span className="breadcrumb-item">
@@ -174,7 +196,7 @@ function RouteComponent() {
             to="/{-$locale}/admin/taxonomy"
             search={{ parent: current?.parentId ? encodeId(current.parentId) : undefined }}
           >
-            ← Up one level
+            {content.upOneLevel}
           </Link>
         </p>
       ) : null}
@@ -200,7 +222,7 @@ function RouteComponent() {
           {table.getRowModel().rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={columns.length}>
-                {parentId ? "No child taxonomies yet." : "No taxonomies yet."}
+                {parentId ? content.noChild : content.noTaxonomies}
               </TableCell>
             </TableRow>
           ) : (
@@ -228,6 +250,7 @@ function CreateTaxonomy({
   parentId: TaxonomyId | null;
   parentLabel?: string;
 }) {
+  const content = useIntlayer("adminTaxonomy");
   const qc = useQueryClient();
   // `value` is the canonical, immutable value; `label` is the default-locale display label.
   // They're stored independently — the label (incl. the default locale) always lives in `locales`.
@@ -247,12 +270,14 @@ function CreateTaxonomy({
         parentId,
         locales: { [DEFAULT_LOCALE]: trimmedLabel },
       });
-      toast.success(`Added "${created.locales?.[DEFAULT_LOCALE] ?? created.value}"`);
+      toast.success(
+        `${content.added.value} "${created.locales?.[DEFAULT_LOCALE] ?? created.value}"`,
+      );
       setValue("");
       setLabel("");
     } catch (err) {
-      toast.error("Couldn’t add taxonomy", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(content.addError.value, {
+        description: err instanceof Error ? err.message : content.tryAgain.value,
       });
     }
   }
@@ -260,11 +285,13 @@ function CreateTaxonomy({
   return (
     <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
       <p style={{ marginBlockEnd: "0.5rem", color: "var(--text-muted)" }}>
-        {parentId ? `New term under “${parentLabel ?? "…"}”` : "New root taxonomy"}
+        {parentId
+          ? `${content.newTermUnder.value} “${parentLabel ?? "…"}”`
+          : content.newRootTaxonomy.value}
       </p>
       <FieldGroup>
         <Field className="½">
-          <FieldLabel htmlFor="new-taxonomy-value">Value (canonical)</FieldLabel>
+          <FieldLabel htmlFor="new-taxonomy-value">{content.valueCanonical}</FieldLabel>
           <FieldBody>
             <Input
               id="new-taxonomy-value"
@@ -275,7 +302,9 @@ function CreateTaxonomy({
           </FieldBody>
         </Field>
         <Field className="½">
-          <FieldLabel htmlFor="new-taxonomy-label">Label ({DEFAULT_LOCALE})</FieldLabel>
+          <FieldLabel htmlFor="new-taxonomy-label">
+            {content.labelWord} ({DEFAULT_LOCALE})
+          </FieldLabel>
           <FieldBody>
             <Input
               id="new-taxonomy-label"
@@ -286,7 +315,7 @@ function CreateTaxonomy({
           </FieldBody>
         </Field>
         <Button type="submit" intent="primary" disabled={!value.trim() || createMutation.isPending}>
-          {createMutation.isPending ? "Creating…" : "Create"}
+          {createMutation.isPending ? content.creating : content.create}
         </Button>
       </FieldGroup>
     </form>

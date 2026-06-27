@@ -1,6 +1,7 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,11 +15,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import AdminCmsPage from "@/components/AdminCmsPage";
+import { loadAdminPage } from "@/lib/loadPage";
 import { menusRepo } from "@/repositories/menus";
 import type { SafeMenu } from "@/server/fns/menus";
 
+const PAGE_SLUG = "/admin/menus";
+
 export const Route = createFileRoute("/{-$locale}/_authed/admin/menus/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(menusRepo.list()),
+  loader: async ({ context }) => {
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [layout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(menusRepo.list()),
+    ]);
+    return { layout, ref };
+  },
   component: RouteComponent,
 });
 
@@ -26,42 +38,55 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin/menus/")({
 const countItems = (items: SafeMenu["items"]): number =>
   items.reduce((sum, item) => sum + 1 + countItems(item.children), 0);
 
-const columns: ColumnDef<SafeMenu>[] = [
-  {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ row }) => (
-      <Link to="/{-$locale}/admin/menus/$menuId" params={{ menuId: row.original.id }}>
-        {row.original.name}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "slug",
-    header: "Slug",
-    cell: ({ row }) => row.original.slug,
-  },
-  {
-    accessorKey: "items",
-    header: "Items",
-    cell: ({ row }) => countItems(row.original.items),
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => row.original.description || "—",
-  },
-];
-
 function RouteComponent() {
+  const { layout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={layout}>
+      <MenusList />
+    </AdminCmsPage>
+  );
+}
+
+function MenusList() {
+  const content = useIntlayer("adminMenus");
   const { data = [] } = useQuery(menusRepo.list());
+
+  const columns = useMemo<ColumnDef<SafeMenu>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: content.colName.value,
+        cell: ({ row }) => (
+          <Link to="/{-$locale}/admin/menus/$menuId" params={{ menuId: row.original.id }}>
+            {row.original.name}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: "slug",
+        header: content.colSlug.value,
+        cell: ({ row }) => row.original.slug,
+      },
+      {
+        accessorKey: "items",
+        header: content.colItems.value,
+        cell: ({ row }) => countItems(row.original.items),
+      },
+      {
+        accessorKey: "description",
+        header: content.colDescription.value,
+        cell: ({ row }) => row.original.description || "—",
+      },
+    ],
+    [content],
+  );
 
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
     <>
       <section className="full">
-        <h1>Menus</h1>
+        <h1>{content.title}</h1>
         <CreateMenu />
         <Table>
           <TableHeader>
@@ -78,7 +103,7 @@ function RouteComponent() {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length}>No menus yet.</TableCell>
+                <TableCell colSpan={columns.length}>{content.noMenus}</TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
@@ -100,6 +125,7 @@ function RouteComponent() {
 
 // Creating a menu starts it empty; the admin builds the tree on the edit page.
 function CreateMenu() {
+  const content = useIntlayer("adminMenus");
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -114,11 +140,11 @@ function CreateMenu() {
         name: name.trim(),
         description: description.trim() || null,
       });
-      toast.success(`Menu "${created.name}" created`);
+      toast.success(content.createdToast.value, { description: created.name });
       navigate({ to: "/{-$locale}/admin/menus/$menuId", params: { menuId: created.id } });
     } catch (err) {
-      toast.error("Couldn’t create menu", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(content.createError.value, {
+        description: err instanceof Error ? err.message : content.tryAgain.value,
       });
     }
   }
@@ -127,7 +153,7 @@ function CreateMenu() {
     <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
       <FieldGroup>
         <Field className="½">
-          <FieldLabel htmlFor="new-menu-name">New menu name</FieldLabel>
+          <FieldLabel htmlFor="new-menu-name">{content.newMenuName}</FieldLabel>
           <FieldBody>
             <Input
               id="new-menu-name"
@@ -138,18 +164,18 @@ function CreateMenu() {
           </FieldBody>
         </Field>
         <Field className="½">
-          <FieldLabel htmlFor="new-menu-description">Description</FieldLabel>
+          <FieldLabel htmlFor="new-menu-description">{content.descriptionLabel}</FieldLabel>
           <FieldBody>
             <Input
               id="new-menu-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional"
+              placeholder={content.optional.value}
             />
           </FieldBody>
         </Field>
         <Button type="submit" intent="primary" disabled={!name.trim() || createMutation.isPending}>
-          {createMutation.isPending ? "Creating…" : "Create menu"}
+          {createMutation.isPending ? content.creating : content.createMenu}
         </Button>
       </FieldGroup>
     </form>

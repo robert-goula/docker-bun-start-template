@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { toast } from "sonner";
+import AdminCmsPage from "@/components/AdminCmsPage";
 import CustomWidgetFieldsBuilder from "@/components/CustomWidgetFieldsBuilder";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,7 @@ import {
   customWidgetFieldsSchema,
 } from "@/db/schema/customWidgets";
 import { type WidgetElement, widgetElements } from "@/db/schema/widgets";
+import { loadAdminPage } from "@/lib/loadPage";
 import { idParam } from "@/lib/shortId";
 import { customWidgetsKeys, customWidgetsRepo } from "@/repositories/customWidgets";
 import {
@@ -19,14 +22,34 @@ import {
 } from "@/server/fns/customWidgets";
 import s from "./$widgetId.module.css";
 
+const PAGE_SLUG = "/admin/custom-widgets";
+
 export const Route = createFileRoute("/{-$locale}/_authed/admin/custom-widgets/$widgetId")({
   params: idParam("widgetId"),
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(customWidgetsRepo.byId(params.widgetId as CustomWidgetId)),
+  loader: async ({ context, params }) => {
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [pageLayout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(
+        customWidgetsRepo.byId(params.widgetId as CustomWidgetId),
+      ),
+    ]);
+    return { pageLayout, ref };
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { pageLayout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+      <CustomWidgetDetail />
+    </AdminCmsPage>
+  );
+}
+
+function CustomWidgetDetail() {
+  const content = useIntlayer("adminCustomWidgets");
   const { widgetId } = Route.useParams();
   const id = widgetId as CustomWidgetId;
   const router = useRouter();
@@ -48,8 +71,8 @@ function RouteComponent() {
         qc.invalidateQueries({ queryKey: customWidgetsKeys.list() });
       })
       .catch((err) => {
-        toast.error("Couldn’t save changes", {
-          description: err instanceof Error ? err.message : "Please try again.",
+        toast.error(content.saveError.value, {
+          description: err instanceof Error ? err.message : content.tryAgain.value,
         });
       });
   }
@@ -61,7 +84,7 @@ function RouteComponent() {
   async function saveFields(fields: CustomWidgetField[]): Promise<string | null> {
     const result = customWidgetFieldsSchema.safeParse(fields);
     if (!result.success) {
-      return result.error.issues[0]?.message ?? "Some fields are invalid.";
+      return result.error.issues[0]?.message ?? content.fieldsInvalid.value;
     }
     try {
       const updated = await updateCustomWidgetFn({ data: { id, patch: { fields: result.data } } });
@@ -69,7 +92,7 @@ function RouteComponent() {
       qc.invalidateQueries({ queryKey: customWidgetsKeys.list() });
       return null;
     } catch (err) {
-      return err instanceof Error ? err.message : "Couldn’t save changes. Please try again.";
+      return err instanceof Error ? err.message : content.saveRetry.value;
     }
   }
 
@@ -77,14 +100,14 @@ function RouteComponent() {
     <>
       <section className="full">
         <button type="button" onClick={() => router.history.back()}>
-          ← Back
+          {content.back}
         </button>
-        <Link to="/{-$locale}/admin/custom-widgets">Back to custom widgets</Link>
+        <Link to="/{-$locale}/admin/custom-widgets">{content.backToList}</Link>
         <h1>{widget.name}</h1>
 
         <FieldGroup>
           <Field className="½">
-            <FieldLabel htmlFor="cw-name">Name</FieldLabel>
+            <FieldLabel htmlFor="cw-name">{content.nameLabel}</FieldLabel>
             <FieldBody>
               <Input
                 id="cw-name"
@@ -95,19 +118,19 @@ function RouteComponent() {
             </FieldBody>
           </Field>
           <Field className="½">
-            <FieldLabel htmlFor="cw-template">Template</FieldLabel>
+            <FieldLabel htmlFor="cw-template">{content.templateLabel}</FieldLabel>
             <FieldBody>
               <Input
                 id="cw-template"
                 value={template}
                 onChange={(e) => setTemplate(e.target.value)}
                 onBlur={() => save({ template: template.trim() || null })}
-                placeholder="Optional display component key (e.g. headline)"
+                placeholder={content.templatePlaceholder.value}
               />
             </FieldBody>
           </Field>
           <Field className="½">
-            <FieldLabel htmlFor="cw-element">Default tag</FieldLabel>
+            <FieldLabel htmlFor="cw-element">{content.defaultTagLabel}</FieldLabel>
             <FieldBody>
               <select
                 id="cw-element"
@@ -119,7 +142,7 @@ function RouteComponent() {
                   save({ element: next || null });
                 }}
               >
-                <option value="">Default (section)</option>
+                <option value="">{content.defaultTagOption.value}</option>
                 {widgetElements.map((el) => (
                   <option key={el} value={el}>
                     {el}
@@ -129,24 +152,21 @@ function RouteComponent() {
             </FieldBody>
           </Field>
           <Field>
-            <FieldLabel htmlFor="cw-description">Description</FieldLabel>
+            <FieldLabel htmlFor="cw-description">{content.descriptionLabel}</FieldLabel>
             <FieldBody>
               <Input
                 id="cw-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={() => save({ description: description.trim() || null })}
-                placeholder="Optional"
+                placeholder={content.optional.value}
               />
             </FieldBody>
           </Field>
         </FieldGroup>
 
-        <h2>Fields</h2>
-        <p>
-          Drag a field to reorder it; the order here is how the fields are shown when editing and
-          displaying an instance. Edits stay local until you click Save changes.
-        </p>
+        <h2>{content.fieldsHeading}</h2>
+        <p>{content.fieldsHelp}</p>
       </section>
 
       <section className="full">

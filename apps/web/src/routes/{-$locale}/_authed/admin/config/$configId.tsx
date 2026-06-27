@@ -1,21 +1,42 @@
 import { type FormEvent, useState } from "react";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { toast } from "sonner";
+import AdminCmsPage from "@/components/AdminCmsPage";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { ConfigId } from "@/db/schema/config";
+import { loadAdminPage } from "@/lib/loadPage";
 import { configRepo } from "@/repositories/config";
 
+const PAGE_SLUG = "/admin/config";
+
 export const Route = createFileRoute("/{-$locale}/_authed/admin/config/$configId")({
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(configRepo.byId(params.configId as ConfigId)),
+  loader: async ({ context, params }) => {
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [pageLayout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(configRepo.byId(params.configId as ConfigId)),
+    ]);
+    return { pageLayout, ref };
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { pageLayout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+      <ConfigDetail />
+    </AdminCmsPage>
+  );
+}
+
+function ConfigDetail() {
+  const content = useIntlayer("adminConfig");
   const { configId } = Route.useParams();
   const id = configId as ConfigId;
   const qc = useQueryClient();
@@ -36,7 +57,7 @@ function RouteComponent() {
     try {
       value = JSON.parse(valueText);
     } catch {
-      toast.error("Value is not valid JSON");
+      toast.error(content.notValidJson.value);
       return;
     }
 
@@ -48,23 +69,23 @@ function RouteComponent() {
       });
       // Re-baseline the editor from the persisted value so formatting matches what's stored.
       setValueText(JSON.stringify(saved.value, null, 2));
-      toast.success("Config saved");
+      toast.success(content.savedToast.value);
     } catch (err) {
-      toast.error("Couldn’t save config", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(content.saveError.value, {
+        description: err instanceof Error ? err.message : content.tryAgain.value,
       });
     }
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Delete config "${id}"? This cannot be undone.`)) return;
+    if (!window.confirm(`${content.deletePrefix.value}${id}${content.deleteSuffix.value}`)) return;
     try {
       await removeMutation.mutateAsync(id);
-      toast.success(`Config "${id}" deleted`);
+      toast.success(content.deletedToast.value, { description: id });
       navigate({ to: "/{-$locale}/admin/config" });
     } catch (err) {
-      toast.error("Couldn’t delete config", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(content.deleteError.value, {
+        description: err instanceof Error ? err.message : content.tryAgain.value,
       });
     }
   }
@@ -73,31 +94,31 @@ function RouteComponent() {
     <>
       <section className="full">
         <p>
-          <Link to="/{-$locale}/admin/config">← Config</Link>
+          <Link to="/{-$locale}/admin/config">{content.backToConfig}</Link>
         </p>
-        <h1>Edit config</h1>
+        <h1>{content.editConfig}</h1>
 
         <form onSubmit={handleSave} className="form">
           <FieldGroup>
             <Field className="full">
-              <FieldLabel htmlFor="config-id">Key</FieldLabel>
+              <FieldLabel htmlFor="config-id">{content.keyLabel}</FieldLabel>
               <FieldBody>
                 <Input id="config-id" value={id} readOnly disabled />
               </FieldBody>
             </Field>
             <Field className="full">
-              <FieldLabel htmlFor="config-description">Description</FieldLabel>
+              <FieldLabel htmlFor="config-description">{content.descriptionLabel}</FieldLabel>
               <FieldBody>
                 <Input
                   id="config-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Optional"
+                  placeholder={content.optional.value}
                 />
               </FieldBody>
             </Field>
             <Field className="full">
-              <FieldLabel htmlFor="config-value">Value (JSON)</FieldLabel>
+              <FieldLabel htmlFor="config-value">{content.valueJson}</FieldLabel>
               <FieldBody>
                 <Textarea
                   id="config-value"
@@ -109,7 +130,7 @@ function RouteComponent() {
               </FieldBody>
             </Field>
             <Button type="submit" intent="primary" disabled={setMutation.isPending}>
-              {setMutation.isPending ? "Saving…" : "Save"}
+              {setMutation.isPending ? content.saving : content.save}
             </Button>
             <Button
               type="button"
@@ -118,7 +139,7 @@ function RouteComponent() {
               onClick={handleDelete}
               disabled={removeMutation.isPending}
             >
-              Delete
+              {content.delete}
             </Button>
           </FieldGroup>
         </form>

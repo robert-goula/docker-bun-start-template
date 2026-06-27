@@ -123,6 +123,10 @@ interface PageBuilderProps {
   // mode). Used to embed page-specific content (e.g. admin screens) inside the
   // page-builder chrome. Falls back to the top of <main> if the layout has no hero.
   betweenHeroAndMain?: ReactNode;
+  // When true, the builder renders its nav + zones WITHOUT its own <main> wrapper, so it
+  // can nest inside a host that already provides one (e.g. the admin layout's <main>).
+  // The host's <main> becomes the grid container for the zones.
+  embedded?: boolean;
 }
 
 function PageLayoutOptions({
@@ -179,6 +183,7 @@ export default function PageBuilder({
   alwaysEdit = false,
   localeBadge,
   betweenHeroAndMain,
+  embedded = false,
 }: PageBuilderProps) {
   const { editMode } = useEditMode();
   const inEditMode = editMode || alwaysEdit;
@@ -342,61 +347,72 @@ export default function PageBuilder({
     // "none"): the zone already is the nav landmark, so they shed their own wrapper.
     const navZone = layout.zones.find((z) => z.name === "nav");
     const navWidgets = navZone ? visibleWidgets(navZone) : [];
-    return (
+    const navEl =
+      navWidgets.length > 0 && navZone ? (
+        // Embedded: the nav lives inside the host's <main> grid, so span all columns.
+        <nav id="top" style={embedded ? { gridColumn: "1 / -1" } : undefined}>
+          {navWidgets.map((widget) => (
+            <WidgetContent
+              key={widget.id}
+              kind={widget.kind}
+              options={
+                widget.kind === "menu" ? { ...widget.options, element: "none" } : widget.options
+              }
+              content={widget.content}
+            />
+          ))}
+        </nav>
+      ) : null;
+    const zoneEls = (
       <>
-        {navWidgets.length > 0 && navZone ? (
-          <nav id="top">
-            {navWidgets.map((widget) => (
-              <WidgetContent
-                key={widget.id}
-                kind={widget.kind}
-                options={
-                  widget.kind === "menu" ? { ...widget.options, element: "none" } : widget.options
-                }
-                content={widget.content}
-              />
-            ))}
-          </nav>
-        ) : null}
-        <main>
-          {!hasHero ? betweenHeroAndMain : null}
-          {layout.zones.map((zone) => {
-            if (zone.name === "nav") return null;
-            const visible = visibleWidgets(zone);
-            const zoneEl =
-              visible.length === 0 ? null : (
-                <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
-                  {visible.map((widget) => (
-                    <WidgetView key={widget.id} widget={widget} />
-                  ))}
-                </div>
-              );
-            // The caller's content sits directly after the hero zone (rendered even
-            // when the hero has no widgets of its own).
-            if (zone.name === "hero") {
-              return (
-                <Fragment key={`${zone.id}:hero-slot`}>
-                  {zoneEl}
-                  {betweenHeroAndMain}
-                </Fragment>
-              );
-            }
-            return zoneEl;
-          })}
-        </main>
+        {!hasHero ? betweenHeroAndMain : null}
+        {layout.zones.map((zone) => {
+          if (zone.name === "nav") return null;
+          const visible = visibleWidgets(zone);
+          const zoneEl =
+            visible.length === 0 ? null : (
+              <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
+                {visible.map((widget) => (
+                  <WidgetView key={widget.id} widget={widget} />
+                ))}
+              </div>
+            );
+          // The caller's content sits directly after the hero zone (rendered even
+          // when the hero has no widgets of its own).
+          if (zone.name === "hero") {
+            return (
+              <Fragment key={`${zone.id}:hero-slot`}>
+                {zoneEl}
+                {betweenHeroAndMain}
+              </Fragment>
+            );
+          }
+          return zoneEl;
+        })}
+      </>
+    );
+    // Embedded mode omits the <main> wrapper so the builder nests inside a host's main.
+    return embedded ? (
+      <>
+        {navEl}
+        {zoneEls}
+      </>
+    ) : (
+      <>
+        {navEl}
+        <main>{zoneEls}</main>
       </>
     );
   }
 
-  return (
-    <ClientOnly fallback={null}>
-      <main>
-        {layoutId && onLayoutChange ? (
-          <PageLayoutOptions layoutId={layoutId} onLayoutChange={onLayoutChange} />
-        ) : null}
-        {toolbar ? <div style={{ gridColumn: "1 / -1" }}>{toolbar}</div> : null}
-        {!hasHero ? betweenHeroAndMain : null}
-        <DndContext
+  const editInner = (
+    <>
+      {layoutId && onLayoutChange ? (
+        <PageLayoutOptions layoutId={layoutId} onLayoutChange={onLayoutChange} />
+      ) : null}
+      {toolbar ? <div style={{ gridColumn: "1 / -1" }}>{toolbar}</div> : null}
+      {!hasHero ? betweenHeroAndMain : null}
+      <DndContext
           sensors={sensors}
           collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
@@ -450,7 +466,11 @@ export default function PageBuilder({
             ) : null}
           </DragOverlay>
         </DndContext>
-      </main>
-    </ClientOnly>
+    </>
+  );
+
+  // Embedded mode omits the <main> wrapper so the builder nests inside a host's main.
+  return (
+    <ClientOnly fallback={null}>{embedded ? editInner : <main>{editInner}</main>}</ClientOnly>
   );
 }

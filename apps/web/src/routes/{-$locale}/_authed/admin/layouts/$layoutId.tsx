@@ -1,26 +1,47 @@
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { type LayoutId } from "@/db/schema/layouts";
 import { LOCALES, type Locale } from "@/db/schema/pages";
+import AdminCmsPage from "@/components/AdminCmsPage";
 import LayoutBuilder, { type LayoutZoneState } from "@/components/LayoutBuilder";
 import PageBuilder from "@/components/PageBuilder";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { loadAdminPage } from "@/lib/loadPage";
 import { idParam } from "@/lib/shortId";
 import { layoutsKeys, layoutsRepo } from "@/repositories/layouts";
 import { layoutWidgetsRepo, saveLayoutWidgets } from "@/repositories/layoutWidgets";
 import { type UpdateLayoutAttributes, updateLayoutFn } from "@/server/fns/layouts";
 import styles from "./$layoutId.module.css";
 
+const PAGE_SLUG = "/admin/layouts";
+
 export const Route = createFileRoute("/{-$locale}/_authed/admin/layouts/$layoutId")({
   params: idParam("layoutId"),
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(layoutsRepo.byId(params.layoutId as LayoutId)),
+  loader: async ({ context, params }) => {
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [pageLayout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(layoutsRepo.byId(params.layoutId as LayoutId)),
+    ]);
+    return { pageLayout, ref };
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const { pageLayout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+      <LayoutDetail />
+    </AdminCmsPage>
+  );
+}
+
+function LayoutDetail() {
+  const content = useIntlayer("adminLayouts");
   const { layoutId } = Route.useParams();
   const id = layoutId as LayoutId;
   const router = useRouter();
@@ -73,14 +94,14 @@ function RouteComponent() {
     <>
       <section className="full">
         <button type="button" onClick={() => router.history.back()}>
-          ← Back
+          {content.back}
         </button>
-        <Link to="/{-$locale}/admin/layouts">Back to layouts</Link>
+        <Link to="/{-$locale}/admin/layouts">{content.backToLayouts}</Link>
         <h1>{layout.name}</h1>
 
         <FieldGroup>
           <Field className="½">
-            <FieldLabel htmlFor="layout-name">Name</FieldLabel>
+            <FieldLabel htmlFor="layout-name">{content.nameLabel}</FieldLabel>
             <FieldBody>
               <Input
                 id="layout-name"
@@ -91,24 +112,21 @@ function RouteComponent() {
             </FieldBody>
           </Field>
           <Field className="½">
-            <FieldLabel htmlFor="layout-description">Description</FieldLabel>
+            <FieldLabel htmlFor="layout-description">{content.descriptionLabel}</FieldLabel>
             <FieldBody>
               <Input
                 id="layout-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={() => save({ description: description.trim() || null })}
-                placeholder="Optional"
+                placeholder={content.optional.value}
               />
             </FieldBody>
           </Field>
         </FieldGroup>
 
-        <h2>Zones</h2>
-        <p>
-          Drag a zone to reorder it; open a zone’s settings to change its size, title and default
-          state. The blocks below preview the layout. Changes save automatically.
-        </p>
+        <h2>{content.zonesHeading}</h2>
+        <p>{content.zonesHelp}</p>
       </section>
 
       <section className="full">
@@ -116,13 +134,8 @@ function RouteComponent() {
       </section>
 
       <section className="full">
-        <h2>Default widgets</h2>
-        <p>
-          Widgets placed here appear on every page using this layout, without being added per page.
-          Pick a locale to give that language its own defaults (e.g. a localized nav menu), or “All
-          locales” for defaults shared across languages (e.g. a debug panel). Each widget’s settings
-          let you pin it to the top or bottom of its zone.
-        </p>
+        <h2>{content.defaultWidgetsHeading}</h2>
+        <p>{content.defaultWidgetsHelp}</p>
         <DefaultWidgets layoutId={id} />
       </section>
     </>
@@ -133,16 +146,17 @@ function RouteComponent() {
 // all-locales defaults. Switching scope remounts PageBuilder (keyed by scope) so it
 // re-seeds from that scope's widgets; saves autosave back to the same scope.
 function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
+  const content = useIntlayer("adminLayouts");
   const [scope, setScope] = useState<Locale | null>(null);
   const { data: layout } = useQuery(layoutWidgetsRepo.forScope(layoutId, scope));
 
-  const scopeLabel = scope ?? "All locales";
+  const scopeLabel = scope ?? content.allLocales.value;
 
   return (
     <>
       <div className={styles.scopeBar}>
         <label htmlFor="layout-widget-scope" className={styles.scopeLabel}>
-          Editing defaults for
+          {content.editingDefaultsFor}
         </label>
         <select
           id="layout-widget-scope"
@@ -150,7 +164,7 @@ function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
           value={scope ?? ""}
           onChange={(e) => setScope(e.target.value === "" ? null : (e.target.value as Locale))}
         >
-          <option value="">All locales</option>
+          <option value="">{content.allLocales.value}</option>
           {LOCALES.map((l) => (
             <option key={l} value={l}>
               {l}
@@ -158,9 +172,13 @@ function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
           ))}
         </select>
         <span className={styles.scopeHint}>
-          {scope
-            ? `Shown only on ${scope} pages`
-            : "Shown on every locale unless overridden per-locale"}
+          {scope ? (
+            <>
+              {content.shownOnlyOn} {scope} {content.localePages}
+            </>
+          ) : (
+            content.scopeHintAll
+          )}
         </span>
       </div>
       {layout ? (
@@ -177,7 +195,7 @@ function DefaultWidgets({ layoutId }: { layoutId: LayoutId }) {
           }}
         />
       ) : (
-        <p>Loading…</p>
+        <p>{content.loading}</p>
       )}
     </>
   );

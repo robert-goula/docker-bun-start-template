@@ -24,6 +24,16 @@ export interface PageRef {
   locale: Locale;
 }
 
+// Admin screens render inside the page-builder chrome supplied by this layout. New admin
+// CMS pages are created on it by name (see loadAdminPage); existing pages keep their
+// assignment, and an absent "admin" layout falls back to the default one server-side.
+export const ADMIN_LAYOUT_NAME = "admin";
+
+/** Like {@link loadPage}, but creates the page on the "admin" layout when it doesn't exist. */
+export function loadAdminPage(queryClient: QueryClient, ref: PageRef) {
+  return loadPage(queryClient, ref, ADMIN_LAYOUT_NAME);
+}
+
 /**
  * Resolves a route pathname to a { slug, locale } page ref using the same authority as
  * the root resolver (src/lib/locale.ts). Editing actions in PageBuilder only have the
@@ -45,8 +55,8 @@ function refFromPathname(pathname: string): PageRef {
  * the DB (derived from the slug on first creation). Locale is resolved before render by the
  * root resolver and passed in via router context — never re-derived from a module global.
  */
-export async function loadPage(queryClient: QueryClient, ref: PageRef) {
-  const layout = await loadPageLayoutFn({ data: ref });
+export async function loadPage(queryClient: QueryClient, ref: PageRef, layoutName?: string) {
+  const layout = await loadPageLayoutFn({ data: { ...ref, layoutName } });
   await Promise.all(
     layout.zones.flatMap((zone) =>
       zone.widgets.flatMap((w) => {

@@ -1,19 +1,30 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import { toast } from "sonner";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/db/schema/pages";
 import { type TaxonomyId, type UpdateTaxonomyInput } from "@/db/schema/taxonomy";
+import AdminCmsPage from "@/components/AdminCmsPage";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { loadAdminPage } from "@/lib/loadPage";
 import { encodeId, idParam } from "@/lib/shortId";
 import { taxonomyRepo } from "@/repositories/taxonomy";
 
+const PAGE_SLUG = "/admin/taxonomy";
+
 export const Route = createFileRoute("/{-$locale}/_authed/admin/taxonomy/$taxonomyId")({
   params: idParam("taxonomyId"),
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(taxonomyRepo.byId(params.taxonomyId as TaxonomyId)),
+  loader: async ({ context, params }) => {
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [pageLayout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(taxonomyRepo.byId(params.taxonomyId as TaxonomyId)),
+    ]);
+    return { pageLayout, ref };
+  },
   component: RouteComponent,
 });
 
@@ -43,6 +54,16 @@ function sameLabels(a: LocaleLabels, b: LocaleLabels): boolean {
 }
 
 function RouteComponent() {
+  const { pageLayout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+      <TaxonomyDetail />
+    </AdminCmsPage>
+  );
+}
+
+function TaxonomyDetail() {
+  const content = useIntlayer("adminTaxonomy");
   const { taxonomyId } = Route.useParams();
   const id = taxonomyId as TaxonomyId;
   const qc = useQueryClient();
@@ -87,10 +108,12 @@ function RouteComponent() {
       setValue(updated.value);
       setSort(String(updated.sort));
       setLabels(toLabels(updated.locales ?? {}));
-      toast.success(`Saved "${updated.locales?.[DEFAULT_LOCALE] ?? updated.value}"`);
+      toast.success(
+        `${content.saved.value} "${updated.locales?.[DEFAULT_LOCALE] ?? updated.value}"`,
+      );
     } catch (err) {
-      toast.error("Couldn’t save taxonomy", {
-        description: err instanceof Error ? err.message : "Please try again.",
+      toast.error(content.saveError.value, {
+        description: err instanceof Error ? err.message : content.tryAgain.value,
       });
     }
   }
@@ -98,14 +121,14 @@ function RouteComponent() {
   return (
     <section className="full">
       <Link to="/{-$locale}/admin/taxonomy" search={backSearch}>
-        ← Back to list
+        {content.backToList}
       </Link>
-      <h1>Edit taxonomy</h1>
+      <h1>{content.editTaxonomy}</h1>
 
       <form onSubmit={handleSubmit} className="form">
         <FieldGroup>
           <Field className="½">
-            <FieldLabel htmlFor="taxonomy-value">Value (canonical)</FieldLabel>
+            <FieldLabel htmlFor="taxonomy-value">{content.valueCanonical}</FieldLabel>
             <FieldBody>
               <Input
                 id="taxonomy-value"
@@ -117,7 +140,7 @@ function RouteComponent() {
           </Field>
 
           <Field className="½">
-            <FieldLabel htmlFor="taxonomy-sort">Sort</FieldLabel>
+            <FieldLabel htmlFor="taxonomy-sort">{content.sortLabel}</FieldLabel>
             <FieldBody>
               <Input
                 id="taxonomy-sort"
@@ -132,14 +155,17 @@ function RouteComponent() {
           {LOCALES.map((locale) => (
             <Field key={locale} className="½">
               <FieldLabel htmlFor={`taxonomy-label-${locale}`}>
-                Label ({locale}){locale === DEFAULT_LOCALE ? " — default" : ""}
+                {content.labelWord} ({locale})
+                {locale === DEFAULT_LOCALE ? content.defaultSuffix.value : ""}
               </FieldLabel>
               <FieldBody>
                 <Input
                   id={`taxonomy-label-${locale}`}
                   value={labels[locale]}
                   onChange={(e) => setLabels((prev) => ({ ...prev, [locale]: e.target.value }))}
-                  placeholder={locale === DEFAULT_LOCALE ? "Red" : "translation"}
+                  placeholder={
+                    locale === DEFAULT_LOCALE ? "Red" : content.translationPlaceholder.value
+                  }
                 />
               </FieldBody>
             </Field>
@@ -150,7 +176,7 @@ function RouteComponent() {
             intent="primary"
             disabled={!value.trim() || !changed || updateMutation.isPending}
           >
-            {updateMutation.isPending ? "Saving…" : "Save changes"}
+            {updateMutation.isPending ? content.saving : content.saveChanges}
           </Button>
         </FieldGroup>
       </form>

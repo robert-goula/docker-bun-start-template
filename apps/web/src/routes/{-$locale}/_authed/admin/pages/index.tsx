@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import {
   Table,
   TableBody,
@@ -11,12 +12,23 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import AdminCmsPage from "@/components/AdminCmsPage";
+import { loadAdminPage } from "@/lib/loadPage";
 import { buildHref, DEFAULT_LOCALE, LOCALES, type Locale } from "@/lib/locale";
 import { pagesKeys, pagesRepo } from "@/repositories/pages";
 import { createPageFn, createPageTranslationFn, type SafePageListItem } from "@/server/fns/pages";
 
+const PAGE_SLUG = "/admin/pages";
+
 export const Route = createFileRoute("/{-$locale}/_authed/admin/pages/")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(pagesRepo.list()),
+  loader: async ({ context }) => {
+    const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
+    const [layout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(pagesRepo.list()),
+    ]);
+    return { layout, ref };
+  },
   component: RouteComponent,
 });
 
@@ -41,6 +53,16 @@ function groupBySlug(items: ReadonlyArray<SafePageListItem>): PageGroup[] {
 }
 
 function RouteComponent() {
+  const { layout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={layout}>
+      <PagesList />
+    </AdminCmsPage>
+  );
+}
+
+function PagesList() {
+  const content = useIntlayer("adminPages");
   const { data = [] } = useQuery(pagesRepo.list());
   const qc = useQueryClient();
   const invalidate = () => qc.invalidateQueries({ queryKey: pagesKeys.list() });
@@ -85,7 +107,7 @@ function RouteComponent() {
   return (
     <>
       <section className="full">
-        <h1>Pages</h1>
+        <h1>{content.title}</h1>
 
         <form
           onSubmit={submitNewPage}
@@ -98,7 +120,7 @@ function RouteComponent() {
           }}
         >
           <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <span className="text-xs">Slug</span>
+            <span className="text-xs">{content.slugLabel}</span>
             <Input
               value={newSlug}
               onChange={(e) => setNewSlug(e.target.value)}
@@ -106,7 +128,7 @@ function RouteComponent() {
             />
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <span className="text-xs">Locale</span>
+            <span className="text-xs">{content.localeLabel}</span>
             <select value={newLocale} onChange={(e) => setNewLocale(e.target.value as Locale)}>
               {LOCALES.map((l) => (
                 <option key={l} value={l}>
@@ -116,7 +138,7 @@ function RouteComponent() {
             </select>
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-            <span className="text-xs">Title (optional)</span>
+            <span className="text-xs">{content.titleLabel}</span>
             <Input
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
@@ -124,15 +146,15 @@ function RouteComponent() {
             />
           </label>
           <Button type="submit" size="sm" disabled={createPage.isPending || !newSlug.trim()}>
-            {createPage.isPending ? "Creating…" : "+ New page"}
+            {createPage.isPending ? content.creating : content.newPage}
           </Button>
         </form>
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Slug</TableHead>
-              <TableHead>Title</TableHead>
+              <TableHead>{content.slugLabel}</TableHead>
+              <TableHead>{content.colTitle}</TableHead>
               {LOCALES.map((l) => (
                 <TableHead key={l}>{l}</TableHead>
               ))}
@@ -141,7 +163,7 @@ function RouteComponent() {
           <TableBody>
             {groups.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={2 + LOCALES.length}>No pages yet.</TableCell>
+                <TableCell colSpan={2 + LOCALES.length}>{content.noPages}</TableCell>
               </TableRow>
             ) : (
               groups.map(({ slug, byLocale }) => {
@@ -161,7 +183,7 @@ function RouteComponent() {
                           <TableCell key={locale}>
                             <a
                               href={buildHref(locale, slug)}
-                              aria-label={`View ${slug} (${locale})`}
+                              aria-label={`${content.view.value} ${slug} (${locale})`}
                             >
                               ✔
                             </a>
@@ -183,7 +205,7 @@ function RouteComponent() {
                               })
                             }
                           >
-                            + Add
+                            {content.add}
                           </Button>
                         </TableCell>
                       );

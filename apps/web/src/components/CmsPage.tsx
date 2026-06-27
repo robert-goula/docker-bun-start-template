@@ -16,17 +16,22 @@ import type { PageMeta } from "@/server/services/PageRepo";
  *
  * `children`, when provided, render between the hero and main zones (see PageBuilder). This
  * lets callers (e.g. admin screens) embed their own content inside the page-builder chrome.
+ *
+ * `embedded` renders the builder without its own <main> wrapper, so the page-builder chrome
+ * can nest inside a host that already provides one (e.g. the admin layout's <main>).
  */
 export default function CmsPage({
   ref,
   page,
   meta,
   children,
+  embedded = false,
 }: {
   ref: PageRef;
   page: PageLayout & { layoutId: string };
   meta: PageMeta | null;
   children?: ReactNode;
+  embedded?: boolean;
 }) {
   const pathname = useLocation({ select: (l) => l.pathname });
   const router = useRouter();
@@ -36,6 +41,7 @@ export default function CmsPage({
       initialLayout={page}
       layoutId={page.layoutId}
       zonesLocked
+      embedded={embedded}
       betweenHeroAndMain={children}
       toolbar={
         <PageMetaPanel

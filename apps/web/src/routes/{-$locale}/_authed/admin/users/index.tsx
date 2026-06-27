@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useIntlayer } from "react-intlayer";
 import {
   type ColumnDef,
   type SortingState,
@@ -27,13 +28,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import AdminCmsPage from "@/components/AdminCmsPage";
+import { loadAdminPage } from "@/lib/loadPage";
 import { usersRepo, type SafeUser } from "@/repositories/users";
+
+// The admin users list is a page-builder–controlled page: it loads the CMS layout for this
+// slug (auto-created on first load) so the editable nav/hero/footer chrome renders around
+// the table, which is passed as CmsPage children (between the hero and main zones).
+const USERS_PAGE_SLUG = "/admin/users";
 
 export const Route = createFileRoute("/{-$locale}/_authed/admin/users/")({
   validateSearch: ListUsersSearch,
   loaderDeps: ({ search }) => search,
-  loader: ({ context, deps }) =>
-    context.queryClient.ensureQueryData(usersRepo.list(toListParams(deps))),
+  loader: async ({ context, deps }) => {
+    const ref = { slug: USERS_PAGE_SLUG, locale: context.i18n.locale };
+    const [layout] = await Promise.all([
+      loadAdminPage(context.queryClient, ref),
+      context.queryClient.ensureQueryData(usersRepo.list(toListParams(deps))),
+    ]);
+    return { layout, ref };
+  },
   component: RouteComponent,
 });
 
@@ -41,52 +55,17 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "medium",
 });
 
-const columns: ColumnDef<SafeUser>[] = [
-  {
-    accessorKey: "username",
-    header: "Username",
-    cell: ({ row }) => (
-      <Link to="/{-$locale}/admin/users/$userId" params={{ userId: row.original.id }}>
-        {row.original.username}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "firstName",
-    header: "First name",
-    cell: ({ row }) => row.original.firstName ?? "—",
-  },
-  {
-    accessorKey: "lastName",
-    header: "Last name",
-    cell: ({ row }) => row.original.lastName ?? "—",
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "roles",
-    header: "Roles",
-    enableSorting: false,
-    cell: ({ row }) => (
-      <span style={{ display: "inline-flex", gap: "0.25rem", flexWrap: "wrap" }}>
-        {row.original.roles.map((role) => (
-          <Badge key={role} size="sm">
-            {role}
-          </Badge>
-        ))}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "created",
-    header: "Created",
-    cell: ({ row }) => dateFormatter.format(new Date(row.original.created)),
-  },
-];
-
 function RouteComponent() {
+  const { layout, ref } = Route.useLoaderData();
+  return (
+    <AdminCmsPage pageRef={ref} layout={layout}>
+      <UsersList />
+    </AdminCmsPage>
+  );
+}
+
+function UsersList() {
+  const content = useIntlayer("adminUsers");
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
 
@@ -129,6 +108,54 @@ function RouteComponent() {
     });
   }
 
+  const columns = useMemo<ColumnDef<SafeUser>[]>(
+    () => [
+      {
+        accessorKey: "username",
+        header: content.colUsername.value,
+        cell: ({ row }) => (
+          <Link to="/{-$locale}/admin/users/$userId" params={{ userId: row.original.id }}>
+            {row.original.username}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: "firstName",
+        header: content.colFirstName.value,
+        cell: ({ row }) => row.original.firstName ?? "—",
+      },
+      {
+        accessorKey: "lastName",
+        header: content.colLastName.value,
+        cell: ({ row }) => row.original.lastName ?? "—",
+      },
+      {
+        accessorKey: "email",
+        header: content.colEmail.value,
+      },
+      {
+        accessorKey: "roles",
+        header: content.colRoles.value,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span style={{ display: "inline-flex", gap: "0.25rem", flexWrap: "wrap" }}>
+            {row.original.roles.map((role) => (
+              <Badge key={role} size="sm">
+                {role}
+              </Badge>
+            ))}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "created",
+        header: content.colCreated.value,
+        cell: ({ row }) => dateFormatter.format(new Date(row.original.created)),
+      },
+    ],
+    [content],
+  );
+
   const { data, isFetching } = useQuery({
     ...usersRepo.list(toListParams(search)),
     placeholderData: keepPreviousData,
@@ -165,10 +192,10 @@ function RouteComponent() {
   return (
     <>
       <section className="full">
-        <h1>Users</h1>
+        <h1>{content.title}</h1>
         <Input
           type="search"
-          placeholder="Search username or email…"
+          placeholder={content.searchPlaceholder.value}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           style={{ maxWidth: "20rem", marginBlock: "1rem" }}
@@ -197,7 +224,7 @@ function RouteComponent() {
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length}>No users found.</TableCell>
+                <TableCell colSpan={columns.length}>{content.noUsers}</TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
@@ -223,7 +250,13 @@ function RouteComponent() {
           }}
         >
           <span style={{ fontSize: "var(--fontSize-sm)", color: "var(--text-muted)" }}>
-            {totalCount === 0 ? "No results" : `${firstItem}–${lastItem} of ${totalCount} users`}
+            {totalCount === 0 ? (
+              content.noResults
+            ) : (
+              <>
+                {firstItem}–{lastItem} {content.of} {totalCount} {content.users}
+              </>
+            )}
           </span>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -240,10 +273,10 @@ function RouteComponent() {
                 })
               }
             >
-              ← Prev
+              {content.prev}
             </Button>
             <span style={{ fontSize: "var(--fontSize-sm)", whiteSpace: "nowrap" }}>
-              Page {pageNumber} of {pageCount}
+              {content.page} {pageNumber} {content.of} {pageCount}
             </span>
             <Button
               size="sm"
@@ -258,7 +291,7 @@ function RouteComponent() {
                 })
               }
             >
-              Next →
+              {content.next}
             </Button>
           </div>
 
@@ -271,7 +304,7 @@ function RouteComponent() {
               color: "var(--text-muted)",
             }}
           >
-            Per page
+            {content.perPage}
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
