@@ -1,5 +1,6 @@
 import { type ComponentType, useEffect, useId, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { DeleteIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { bus, getFieldControl, getFieldView } from "@/plugins";
@@ -296,7 +297,7 @@ function RepeatableField({
             disabled={items.length <= min}
             onClick={() => commit(items.filter((_, j) => j !== i))}
           >
-            Remove
+            <DeleteIcon />
           </Button>
         </div>
       ))}
