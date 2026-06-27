@@ -7,8 +7,10 @@
 // `builtinPlugins`. NOTE: only park a control once no field uses its key — an unregistered control
 // falls back to the input control and its stored value renders as "[object Object]".
 
+import { checkboxDescriptor, checkboxPlugin } from "./checkbox";
 import { inputDescriptor, inputPlugin } from "./input";
 import { numberDescriptor, numberPlugin } from "./number";
+import { radioDescriptor, radioPlugin } from "./radio";
 import { selectDescriptor, selectPlugin } from "./select";
 import { textareaDescriptor, textareaPlugin } from "./textarea";
 import type { FieldControl } from "./keys";
@@ -32,6 +34,8 @@ export const builtinPlugins: ReadonlyArray<Plugin> = [
   textareaPlugin,
   numberPlugin,
   selectPlugin,
+  radioPlugin,
+  checkboxPlugin,
   lifecycleDemoPlugin,
 ];
 
@@ -41,6 +45,8 @@ export const fieldControlDescriptors: ReadonlyArray<FieldControlDescriptor> = [
   textareaDescriptor,
   numberDescriptor,
   selectDescriptor,
+  radioDescriptor,
+  checkboxDescriptor,
 ];
 
 // Lookup by key. Partial in practice — keys without a committed descriptor (e.g. "measurement")
