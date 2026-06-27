@@ -305,6 +305,9 @@
   --text-disabled: light-dark(oklch(0.72 0.01 62), oklch(0.36 0.01 63));
   --text-muted: light-dark(oklch(0.72 0.01 62), oklch(0.46 0.01 63));
   --text-inverse: light-dark(oklch(0.96 0.008 66), oklch(0.16 0.01 64));
+  /* Foreground for filled accent surfaces (primary/danger buttons). Constant near-white in both
+     themes — those backgrounds are saturated and dark enough for white to contrast. */
+  --text-on-accent: oklch(0.98 0 0);
 
   /* Borders */
   /*--border-subtle: light-dark(var(--neutral-300) / 0.5, var(--color-secondary) / 0.5);*/

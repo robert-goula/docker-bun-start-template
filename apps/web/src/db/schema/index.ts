@@ -5,6 +5,7 @@ export { layoutWidgets } from "./layoutWidgets";
 export { layoutZones } from "./layoutZones";
 export { menus } from "./menus";
 export { pages } from "./pages";
+export { taxonomies } from "./taxonomy";
 export { users } from "./users";
 export { widgets } from "./widgets";
 export { zones } from "./zones";

@@ -139,9 +139,33 @@ query keys, and the REST API all keep the full uuid v7.
   boundary). `short-uuid` is the only dep; install it containerized:
   `docker compose exec web bun add short-uuid`. Import the **named** `createTranslator`
   (the default export isn't callable under Bun's ESM interop).
-- `@/lib/shortId` (`encodeId`/`decodeId`/`idParam`) is the single conversion point; its unit
-  tests in `apps/web/src/lib/shortId.test.ts` are the reference for the expected behavior
-  (round-trip, base58 alphabet, `notFound` on malformed input).
+- `@/lib/shortId` (`encodeId`/`decodeId`/`decodeIdParam`/`idParam`) is the single conversion
+  point; its unit tests in `apps/web/src/lib/shortId.test.ts` are the reference for the expected
+  behavior (round-trip, base58 alphabet, `notFound` on malformed input).
+
+### 5b. Base58 ids in `filter[…]` / search params
+
+The same rule applies to any **id-valued query param** — a `filter[<entity>Id]`, a `?parent=`
+drill-down, etc.: it must appear as **base58** in the URL (matching path-param ids), with the
+full uuid kept everywhere behind the boundary. `idParam` only covers *path* params, so search
+params need explicit encode/decode (there is no `stringify` hook for search — whatever
+`validateSearch` returns is what gets re-serialized into the URL, so the search **state itself
+must hold base58**).
+
+- Type the param as `z.string().optional().catch(undefined)` in `<Entity>Search` — **not**
+  `z.uuid()` (the URL value is base58, not a uuid).
+- **Decode at the point of use** (loader + queries + repo calls) with
+  `decodeIdParam(search.x)` from `@/lib/shortId` — it returns `undefined` for an absent or
+  malformed value instead of throwing, so a stale link degrades gracefully (e.g. falls back to
+  the unfiltered / root view).
+- **Encode when writing the param** onto a `<Link search>` / `navigate({ search })` with
+  `encodeId(row.original.id)`. Unlike path-param ids (where the router auto-stringifies), here
+  you pass the base58 string yourself. Clearing the filter is `{ x: undefined }`.
+- The public REST route keeps decoding ids the same way: the `filter[<entity>Id]` it reads off
+  the URL is base58 → `decodeIdParam` before handing it to `toListParams`/the repo. JSON:API
+  `id`/`self`/`links` stay full uuid.
+
+Reference: `apps/web/src/routes/_authed/admin/taxonomy/index.tsx` (the `parent` drill-down param).
 
 ### 6. Public REST route — `apps/web/src/routes/api/<entity>/index.ts`
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeId, encodeId, idParam } from "./shortId";
+import { decodeId, decodeIdParam, encodeId, idParam } from "./shortId";
 
 // flickrBase58 alphabet — what an encoded id may legally contain.
 const BASE58 = /^[1-9A-HJ-NP-Za-km-z]+$/;
@@ -59,5 +59,24 @@ describe("idParam", () => {
       thrown = error;
     }
     expect(thrown).toMatchObject({ isNotFound: true });
+  });
+});
+
+describe("decodeIdParam", () => {
+  const uuid = "0192f1a0-0000-7000-8000-000000000000";
+  const short = encodeId(uuid);
+
+  it("decodes a base58 id-valued search/filter param to the uuid", () => {
+    expect(decodeIdParam(short)).toBe(uuid);
+  });
+
+  it("returns undefined for an absent param", () => {
+    expect(decodeIdParam(undefined)).toBeUndefined();
+    expect(decodeIdParam("")).toBeUndefined();
+  });
+
+  it("returns undefined (not throw) for a malformed param", () => {
+    expect(decodeIdParam("not-base58!")).toBeUndefined();
+    expect(decodeIdParam("OIl")).toBeUndefined();
   });
 });

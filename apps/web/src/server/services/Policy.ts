@@ -137,6 +137,37 @@ export const Policy = {
     return yield* Effect.fail(new Forbidden({ action: "menu:delete" }));
   }),
 
+  // Taxonomies are global, admin-managed lookup content — no per-row ownership.
+  canListTaxonomies: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "taxonomy:list" }));
+  }),
+
+  canReadTaxonomy: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "taxonomy:read" }));
+  }),
+
+  canCreateTaxonomy: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "taxonomy:create" }));
+  }),
+
+  canUpdateTaxonomy: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "taxonomy:update" }));
+  }),
+
+  canDeleteTaxonomy: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "taxonomy:delete" }));
+  }),
+
   // Config is global, admin-managed site settings — no per-row ownership.
   canReadConfig: Effect.gen(function* () {
     const user = yield* CurrentUser;
