@@ -120,13 +120,18 @@ export const listPageGroupsFn = createServerFn({ method: "GET" })
     ),
   );
 
+// The optional `layoutName` links a *newly created* page to a named layout (e.g. "admin")
+// instead of the default; existing pages keep their assignment. Unknown names fall back to
+// the default layout server-side (see PageRepo.resolveLayoutIdByName).
+const loadPageLayoutInput = pageRefSchema.extend({ layoutName: z.string().max(64).optional() });
+
 export const loadPageLayoutFn = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) => pageRefSchema.parse(input))
+  .inputValidator((input: unknown) => loadPageLayoutInput.parse(input))
   .handler(({ data }) =>
     runtime.runPromise(
       Effect.gen(function* () {
         const repo = yield* PageRepo;
-        return yield* repo.getPageLayout(data);
+        return yield* repo.getPageLayout({ slug: data.slug, locale: data.locale }, data.layoutName);
       }).pipe(Effect.catchTags({ DatabaseError: dbError })),
     ),
   );

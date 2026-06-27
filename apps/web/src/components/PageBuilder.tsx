@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useState } from "react";
+import { Fragment, type ReactNode, useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ClientOnly, Link } from "@tanstack/react-router";
 import { SquarePen } from "lucide-react";
@@ -119,6 +119,14 @@ interface PageBuilderProps {
   // Layout-default editor: a scope label badged on each widget (e.g. "en-us" or
   // "All locales") so it's clear which locale's defaults are being edited.
   localeBadge?: string;
+  // Caller content rendered between the hero and main zones (in both view and edit
+  // mode). Used to embed page-specific content (e.g. admin screens) inside the
+  // page-builder chrome. Falls back to the top of <main> if the layout has no hero.
+  betweenHeroAndMain?: ReactNode;
+  // When true, the builder renders its nav + zones WITHOUT its own <main> wrapper, so it
+  // can nest inside a host that already provides one (e.g. the admin layout's <main>).
+  // The host's <main> becomes the grid container for the zones.
+  embedded?: boolean;
 }
 
 function PageLayoutOptions({
@@ -147,7 +155,7 @@ function PageLayoutOptions({
         ))}
       </select>
       <Link
-        to="/admin/layouts/$layoutId"
+        to="/{-$locale}/admin/layouts/$layoutId"
         params={{ layoutId }}
         className={styles.optionsEdit}
         aria-label="Edit layout"
@@ -174,6 +182,8 @@ export default function PageBuilder({
   pinnable = false,
   alwaysEdit = false,
   localeBadge,
+  betweenHeroAndMain,
+  embedded = false,
 }: PageBuilderProps) {
   const { editMode } = useEditMode();
   const inEditMode = editMode || alwaysEdit;
@@ -325,6 +335,9 @@ export default function PageBuilder({
   }
 
   const zoneIds = layout.zones.map((z) => z.id);
+  // Caller content renders right after the hero zone; if the layout dropped the hero
+  // it falls back to the top of <main> so the slot is never silently lost.
+  const hasHero = layout.zones.some((z) => z.name === "hero");
 
   if (!inEditMode) {
     // The nav zone is hoisted out of <main> into its own top-level <nav> landmark
@@ -334,48 +347,72 @@ export default function PageBuilder({
     // "none"): the zone already is the nav landmark, so they shed their own wrapper.
     const navZone = layout.zones.find((z) => z.name === "nav");
     const navWidgets = navZone ? visibleWidgets(navZone) : [];
-    return (
+    const navEl =
+      navWidgets.length > 0 && navZone ? (
+        // Embedded: the nav lives inside the host's <main> grid, so span all columns.
+        <nav id="top" style={embedded ? { gridColumn: "1 / -1" } : undefined}>
+          {navWidgets.map((widget) => (
+            <WidgetContent
+              key={widget.id}
+              kind={widget.kind}
+              options={
+                widget.kind === "menu" ? { ...widget.options, element: "none" } : widget.options
+              }
+              content={widget.content}
+            />
+          ))}
+        </nav>
+      ) : null;
+    const zoneEls = (
       <>
-        {navWidgets.length > 0 && navZone ? (
-          <nav id="top">
-            {navWidgets.map((widget) => (
-              <WidgetContent
-                key={widget.id}
-                kind={widget.kind}
-                options={
-                  widget.kind === "menu" ? { ...widget.options, element: "none" } : widget.options
-                }
-                content={widget.content}
-              />
-            ))}
-          </nav>
-        ) : null}
-        <main>
-          {layout.zones.map((zone) => {
-            if (zone.name === "nav") return null;
-            const visible = visibleWidgets(zone);
-            if (visible.length === 0) return null;
-            return (
+        {!hasHero ? betweenHeroAndMain : null}
+        {layout.zones.map((zone) => {
+          if (zone.name === "nav") return null;
+          const visible = visibleWidgets(zone);
+          const zoneEl =
+            visible.length === 0 ? null : (
               <div key={zone.id} className={cx(styles.viewZone, zone.size)}>
                 {visible.map((widget) => (
                   <WidgetView key={widget.id} widget={widget} />
                 ))}
               </div>
             );
-          })}
-        </main>
+          // The caller's content sits directly after the hero zone (rendered even
+          // when the hero has no widgets of its own).
+          if (zone.name === "hero") {
+            return (
+              <Fragment key={`${zone.id}:hero-slot`}>
+                {zoneEl}
+                {betweenHeroAndMain}
+              </Fragment>
+            );
+          }
+          return zoneEl;
+        })}
+      </>
+    );
+    // Embedded mode omits the <main> wrapper so the builder nests inside a host's main.
+    return embedded ? (
+      <>
+        {navEl}
+        {zoneEls}
+      </>
+    ) : (
+      <>
+        {navEl}
+        <main>{zoneEls}</main>
       </>
     );
   }
 
-  return (
-    <ClientOnly fallback={null}>
-      <main>
-        {layoutId && onLayoutChange ? (
-          <PageLayoutOptions layoutId={layoutId} onLayoutChange={onLayoutChange} />
-        ) : null}
-        {toolbar ? <div style={{ gridColumn: "1 / -1" }}>{toolbar}</div> : null}
-        <DndContext
+  const editInner = (
+    <>
+      {layoutId && onLayoutChange ? (
+        <PageLayoutOptions layoutId={layoutId} onLayoutChange={onLayoutChange} />
+      ) : null}
+      {toolbar ? <div style={{ gridColumn: "1 / -1" }}>{toolbar}</div> : null}
+      {!hasHero ? betweenHeroAndMain : null}
+      <DndContext
           sensors={sensors}
           collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
@@ -383,31 +420,43 @@ export default function PageBuilder({
           onDragCancel={handleDragCancel}
         >
           <SortableContext items={zoneIds} strategy={rectSortingStrategy}>
-            {layout.zones.map((zone) => (
-              <Zone
-                key={zone.id}
-                id={zone.id}
-                name={zone.name}
-                title={zone.title}
-                size={zone.size}
-                defaultOpen={zone.defaultOpen}
-                locked={zonesLocked}
-                widgets={zone.widgets}
-                ownSource={ownSource}
-                pinnable={pinnable}
-                localeBadge={localeBadge}
-                onSizeChange={(size) => handleZoneSizeChange(zone.id, size)}
-                onWidgetDelete={(widgetId) => handleWidgetDelete(zone.id, widgetId)}
-                onWidgetOptionsChange={(widgetId, options) =>
-                  handleWidgetOptionsChange(zone.id, widgetId, options)
-                }
-                onWidgetContentChange={(widgetId, content) =>
-                  handleWidgetContentChange(zone.id, widgetId, content)
-                }
-                onWidgetAdd={(kind, definitionId) => handleWidgetAdd(zone.id, kind, definitionId)}
-                onWidgetHiddenChange={(widgetId) => handleWidgetHiddenChange(zone.id, widgetId)}
-              />
-            ))}
+            {layout.zones.map((zone) => {
+              const zoneEl = (
+                <Zone
+                  key={zone.id}
+                  id={zone.id}
+                  name={zone.name}
+                  title={zone.title}
+                  size={zone.size}
+                  defaultOpen={zone.defaultOpen}
+                  locked={zonesLocked}
+                  widgets={zone.widgets}
+                  ownSource={ownSource}
+                  pinnable={pinnable}
+                  localeBadge={localeBadge}
+                  onSizeChange={(size) => handleZoneSizeChange(zone.id, size)}
+                  onWidgetDelete={(widgetId) => handleWidgetDelete(zone.id, widgetId)}
+                  onWidgetOptionsChange={(widgetId, options) =>
+                    handleWidgetOptionsChange(zone.id, widgetId, options)
+                  }
+                  onWidgetContentChange={(widgetId, content) =>
+                    handleWidgetContentChange(zone.id, widgetId, content)
+                  }
+                  onWidgetAdd={(kind, definitionId) => handleWidgetAdd(zone.id, kind, definitionId)}
+                  onWidgetHiddenChange={(widgetId) => handleWidgetHiddenChange(zone.id, widgetId)}
+                />
+              );
+              // Mirror the view-mode placement: caller content sits after the hero zone.
+              if (zone.name === "hero") {
+                return (
+                  <Fragment key={`${zone.id}:hero-slot`}>
+                    {zoneEl}
+                    {betweenHeroAndMain}
+                  </Fragment>
+                );
+              }
+              return zoneEl;
+            })}
           </SortableContext>
           <DragOverlay>
             {activeDragType === "widget" && activeDragId ? (
@@ -417,7 +466,11 @@ export default function PageBuilder({
             ) : null}
           </DragOverlay>
         </DndContext>
-      </main>
-    </ClientOnly>
+    </>
+  );
+
+  // Embedded mode omits the <main> wrapper so the builder nests inside a host's main.
+  return (
+    <ClientOnly fallback={null}>{embedded ? editInner : <main>{editInner}</main>}</ClientOnly>
   );
 }

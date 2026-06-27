@@ -9,39 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as Char123LocaleChar125RouteRouteImport } from './routes/{-$locale}/route'
 import { Route as Char123LocaleChar125IndexRouteImport } from './routes/{-$locale}/index'
+import { Route as Char123LocaleChar125LoginRouteImport } from './routes/{-$locale}/login'
 import { Route as Char123LocaleChar125SplatRouteImport } from './routes/{-$locale}/$'
 import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api/openapi[.]json'
-import { Route as AuthedAdminRouteRouteImport } from './routes/_authed/admin/route'
+import { Route as Char123LocaleChar125AuthedRouteRouteImport } from './routes/{-$locale}/_authed/route'
 import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
 import { Route as ApiTaxonomyIndexRouteImport } from './routes/api/taxonomy/index'
-import { Route as AuthedAdminIndexRouteImport } from './routes/_authed/admin/index'
 import { Route as ApiUsersIdRouteImport } from './routes/api/users/$id'
 import { Route as ApiTaxonomyIdRouteImport } from './routes/api/taxonomy/$id'
 import { Route as ApiLayoutsIdRouteImport } from './routes/api/layouts/$id'
 import { Route as ApiAuthSessionsRouteImport } from './routes/api/auth/sessions'
-import { Route as AuthedAdminZonesIndexRouteImport } from './routes/_authed/admin/zones/index'
-import { Route as AuthedAdminUsersIndexRouteImport } from './routes/_authed/admin/users/index'
-import { Route as AuthedAdminTaxonomyIndexRouteImport } from './routes/_authed/admin/taxonomy/index'
-import { Route as AuthedAdminPagesIndexRouteImport } from './routes/_authed/admin/pages/index'
-import { Route as AuthedAdminMenusIndexRouteImport } from './routes/_authed/admin/menus/index'
-import { Route as AuthedAdminLayoutsIndexRouteImport } from './routes/_authed/admin/layouts/index'
-import { Route as AuthedAdminCustomWidgetsIndexRouteImport } from './routes/_authed/admin/custom-widgets/index'
-import { Route as AuthedAdminConfigIndexRouteImport } from './routes/_authed/admin/config/index'
-import { Route as AuthedAdminUsersUserIdRouteImport } from './routes/_authed/admin/users/$userId'
-import { Route as AuthedAdminTaxonomyTaxonomyIdRouteImport } from './routes/_authed/admin/taxonomy/$taxonomyId'
-import { Route as AuthedAdminMenusMenuIdRouteImport } from './routes/_authed/admin/menus/$menuId'
-import { Route as AuthedAdminLayoutsLayoutIdRouteImport } from './routes/_authed/admin/layouts/$layoutId'
-import { Route as AuthedAdminCustomWidgetsWidgetIdRouteImport } from './routes/_authed/admin/custom-widgets/$widgetId'
-import { Route as AuthedAdminConfigConfigIdRouteImport } from './routes/_authed/admin/config/$configId'
+import { Route as Char123LocaleChar125AuthedAdminRouteRouteImport } from './routes/{-$locale}/_authed/admin/route'
+import { Route as Char123LocaleChar125AuthedAdminIndexRouteImport } from './routes/{-$locale}/_authed/admin/index'
+import { Route as Char123LocaleChar125AuthedAdminZonesIndexRouteImport } from './routes/{-$locale}/_authed/admin/zones/index'
+import { Route as Char123LocaleChar125AuthedAdminUsersIndexRouteImport } from './routes/{-$locale}/_authed/admin/users/index'
+import { Route as Char123LocaleChar125AuthedAdminTaxonomyIndexRouteImport } from './routes/{-$locale}/_authed/admin/taxonomy/index'
+import { Route as Char123LocaleChar125AuthedAdminPagesIndexRouteImport } from './routes/{-$locale}/_authed/admin/pages/index'
+import { Route as Char123LocaleChar125AuthedAdminMenusIndexRouteImport } from './routes/{-$locale}/_authed/admin/menus/index'
+import { Route as Char123LocaleChar125AuthedAdminLayoutsIndexRouteImport } from './routes/{-$locale}/_authed/admin/layouts/index'
+import { Route as Char123LocaleChar125AuthedAdminCustomWidgetsIndexRouteImport } from './routes/{-$locale}/_authed/admin/custom-widgets/index'
+import { Route as Char123LocaleChar125AuthedAdminConfigIndexRouteImport } from './routes/{-$locale}/_authed/admin/config/index'
+import { Route as Char123LocaleChar125AuthedAdminUsersUserIdRouteImport } from './routes/{-$locale}/_authed/admin/users/$userId'
+import { Route as Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRouteImport } from './routes/{-$locale}/_authed/admin/taxonomy/$taxonomyId'
+import { Route as Char123LocaleChar125AuthedAdminMenusMenuIdRouteImport } from './routes/{-$locale}/_authed/admin/menus/$menuId'
+import { Route as Char123LocaleChar125AuthedAdminLayoutsLayoutIdRouteImport } from './routes/{-$locale}/_authed/admin/layouts/$layoutId'
+import { Route as Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRouteImport } from './routes/{-$locale}/_authed/admin/custom-widgets/$widgetId'
+import { Route as Char123LocaleChar125AuthedAdminConfigConfigIdRouteImport } from './routes/{-$locale}/_authed/admin/config/$configId'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const Char123LocaleChar125RouteRoute =
   Char123LocaleChar125RouteRouteImport.update({
     id: '/{-$locale}',
@@ -52,6 +48,12 @@ const Char123LocaleChar125IndexRoute =
   Char123LocaleChar125IndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
+const Char123LocaleChar125LoginRoute =
+  Char123LocaleChar125LoginRouteImport.update({
+    id: '/login',
+    path: '/login',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
 const Char123LocaleChar125SplatRoute =
@@ -65,11 +67,11 @@ const ApiOpenapiDotjsonRoute = ApiOpenapiDotjsonRouteImport.update({
   path: '/api/openapi.json',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedAdminRouteRoute = AuthedAdminRouteRouteImport.update({
-  id: '/_authed/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const Char123LocaleChar125AuthedRouteRoute =
+  Char123LocaleChar125AuthedRouteRouteImport.update({
+    id: '/_authed',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
+  } as any)
 const ApiUsersIndexRoute = ApiUsersIndexRouteImport.update({
   id: '/api/users/',
   path: '/api/users/',
@@ -79,11 +81,6 @@ const ApiTaxonomyIndexRoute = ApiTaxonomyIndexRouteImport.update({
   id: '/api/taxonomy/',
   path: '/api/taxonomy/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthedAdminRouteRoute,
 } as any)
 const ApiUsersIdRoute = ApiUsersIdRouteImport.update({
   id: '/api/users/$id',
@@ -105,261 +102,281 @@ const ApiAuthSessionsRoute = ApiAuthSessionsRouteImport.update({
   path: '/api/auth/sessions',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthedAdminZonesIndexRoute = AuthedAdminZonesIndexRouteImport.update({
-  id: '/zones/',
-  path: '/zones/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminUsersIndexRoute = AuthedAdminUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminTaxonomyIndexRoute =
-  AuthedAdminTaxonomyIndexRouteImport.update({
+const Char123LocaleChar125AuthedAdminRouteRoute =
+  Char123LocaleChar125AuthedAdminRouteRouteImport.update({
+    id: '/admin',
+    path: '/admin',
+    getParentRoute: () => Char123LocaleChar125AuthedRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminIndexRoute =
+  Char123LocaleChar125AuthedAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminZonesIndexRoute =
+  Char123LocaleChar125AuthedAdminZonesIndexRouteImport.update({
+    id: '/zones/',
+    path: '/zones/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminUsersIndexRoute =
+  Char123LocaleChar125AuthedAdminUsersIndexRouteImport.update({
+    id: '/users/',
+    path: '/users/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminTaxonomyIndexRoute =
+  Char123LocaleChar125AuthedAdminTaxonomyIndexRouteImport.update({
     id: '/taxonomy/',
     path: '/taxonomy/',
-    getParentRoute: () => AuthedAdminRouteRoute,
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
-const AuthedAdminPagesIndexRoute = AuthedAdminPagesIndexRouteImport.update({
-  id: '/pages/',
-  path: '/pages/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminMenusIndexRoute = AuthedAdminMenusIndexRouteImport.update({
-  id: '/menus/',
-  path: '/menus/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminLayoutsIndexRoute = AuthedAdminLayoutsIndexRouteImport.update({
-  id: '/layouts/',
-  path: '/layouts/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminCustomWidgetsIndexRoute =
-  AuthedAdminCustomWidgetsIndexRouteImport.update({
+const Char123LocaleChar125AuthedAdminPagesIndexRoute =
+  Char123LocaleChar125AuthedAdminPagesIndexRouteImport.update({
+    id: '/pages/',
+    path: '/pages/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminMenusIndexRoute =
+  Char123LocaleChar125AuthedAdminMenusIndexRouteImport.update({
+    id: '/menus/',
+    path: '/menus/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminLayoutsIndexRoute =
+  Char123LocaleChar125AuthedAdminLayoutsIndexRouteImport.update({
+    id: '/layouts/',
+    path: '/layouts/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute =
+  Char123LocaleChar125AuthedAdminCustomWidgetsIndexRouteImport.update({
     id: '/custom-widgets/',
     path: '/custom-widgets/',
-    getParentRoute: () => AuthedAdminRouteRoute,
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
-const AuthedAdminConfigIndexRoute = AuthedAdminConfigIndexRouteImport.update({
-  id: '/config/',
-  path: '/config/',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminUsersUserIdRoute = AuthedAdminUsersUserIdRouteImport.update({
-  id: '/users/$userId',
-  path: '/users/$userId',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminTaxonomyTaxonomyIdRoute =
-  AuthedAdminTaxonomyTaxonomyIdRouteImport.update({
+const Char123LocaleChar125AuthedAdminConfigIndexRoute =
+  Char123LocaleChar125AuthedAdminConfigIndexRouteImport.update({
+    id: '/config/',
+    path: '/config/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminUsersUserIdRoute =
+  Char123LocaleChar125AuthedAdminUsersUserIdRouteImport.update({
+    id: '/users/$userId',
+    path: '/users/$userId',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute =
+  Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRouteImport.update({
     id: '/taxonomy/$taxonomyId',
     path: '/taxonomy/$taxonomyId',
-    getParentRoute: () => AuthedAdminRouteRoute,
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
-const AuthedAdminMenusMenuIdRoute = AuthedAdminMenusMenuIdRouteImport.update({
-  id: '/menus/$menuId',
-  path: '/menus/$menuId',
-  getParentRoute: () => AuthedAdminRouteRoute,
-} as any)
-const AuthedAdminLayoutsLayoutIdRoute =
-  AuthedAdminLayoutsLayoutIdRouteImport.update({
+const Char123LocaleChar125AuthedAdminMenusMenuIdRoute =
+  Char123LocaleChar125AuthedAdminMenusMenuIdRouteImport.update({
+    id: '/menus/$menuId',
+    path: '/menus/$menuId',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute =
+  Char123LocaleChar125AuthedAdminLayoutsLayoutIdRouteImport.update({
     id: '/layouts/$layoutId',
     path: '/layouts/$layoutId',
-    getParentRoute: () => AuthedAdminRouteRoute,
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
-const AuthedAdminCustomWidgetsWidgetIdRoute =
-  AuthedAdminCustomWidgetsWidgetIdRouteImport.update({
+const Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute =
+  Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRouteImport.update({
     id: '/custom-widgets/$widgetId',
     path: '/custom-widgets/$widgetId',
-    getParentRoute: () => AuthedAdminRouteRoute,
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
-const AuthedAdminConfigConfigIdRoute =
-  AuthedAdminConfigConfigIdRouteImport.update({
+const Char123LocaleChar125AuthedAdminConfigConfigIdRoute =
+  Char123LocaleChar125AuthedAdminConfigConfigIdRouteImport.update({
     id: '/config/$configId',
     path: '/config/$configId',
-    getParentRoute: () => AuthedAdminRouteRoute,
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
-  '/login': typeof LoginRoute
-  '/admin': typeof AuthedAdminRouteRouteWithChildren
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/{-$locale}/$': typeof Char123LocaleChar125SplatRoute
+  '/{-$locale}/login': typeof Char123LocaleChar125LoginRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/{-$locale}/admin': typeof Char123LocaleChar125AuthedAdminRouteRouteWithChildren
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/taxonomy/$id': typeof ApiTaxonomyIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
-  '/admin/': typeof AuthedAdminIndexRoute
   '/api/taxonomy/': typeof ApiTaxonomyIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
-  '/admin/config/$configId': typeof AuthedAdminConfigConfigIdRoute
-  '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
-  '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
-  '/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
-  '/admin/taxonomy/$taxonomyId': typeof AuthedAdminTaxonomyTaxonomyIdRoute
-  '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
-  '/admin/config/': typeof AuthedAdminConfigIndexRoute
-  '/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
-  '/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
-  '/admin/menus/': typeof AuthedAdminMenusIndexRoute
-  '/admin/pages/': typeof AuthedAdminPagesIndexRoute
-  '/admin/taxonomy/': typeof AuthedAdminTaxonomyIndexRoute
-  '/admin/users/': typeof AuthedAdminUsersIndexRoute
-  '/admin/zones/': typeof AuthedAdminZonesIndexRoute
+  '/{-$locale}/admin/': typeof Char123LocaleChar125AuthedAdminIndexRoute
+  '/{-$locale}/admin/config/$configId': typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
+  '/{-$locale}/admin/custom-widgets/$widgetId': typeof Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute
+  '/{-$locale}/admin/layouts/$layoutId': typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
+  '/{-$locale}/admin/menus/$menuId': typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
+  '/{-$locale}/admin/taxonomy/$taxonomyId': typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  '/{-$locale}/admin/users/$userId': typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
+  '/{-$locale}/admin/config/': typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
+  '/{-$locale}/admin/custom-widgets/': typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
+  '/{-$locale}/admin/layouts/': typeof Char123LocaleChar125AuthedAdminLayoutsIndexRoute
+  '/{-$locale}/admin/menus/': typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
+  '/{-$locale}/admin/pages/': typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
+  '/{-$locale}/admin/taxonomy/': typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  '/{-$locale}/admin/users/': typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
+  '/{-$locale}/admin/zones/': typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
+  '/{-$locale}': typeof Char123LocaleChar125IndexRoute
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/{-$locale}/$': typeof Char123LocaleChar125SplatRoute
-  '/{-$locale}': typeof Char123LocaleChar125IndexRoute
+  '/{-$locale}/login': typeof Char123LocaleChar125LoginRoute
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/taxonomy/$id': typeof ApiTaxonomyIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
-  '/admin': typeof AuthedAdminIndexRoute
   '/api/taxonomy': typeof ApiTaxonomyIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
-  '/admin/config/$configId': typeof AuthedAdminConfigConfigIdRoute
-  '/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
-  '/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
-  '/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
-  '/admin/taxonomy/$taxonomyId': typeof AuthedAdminTaxonomyTaxonomyIdRoute
-  '/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
-  '/admin/config': typeof AuthedAdminConfigIndexRoute
-  '/admin/custom-widgets': typeof AuthedAdminCustomWidgetsIndexRoute
-  '/admin/layouts': typeof AuthedAdminLayoutsIndexRoute
-  '/admin/menus': typeof AuthedAdminMenusIndexRoute
-  '/admin/pages': typeof AuthedAdminPagesIndexRoute
-  '/admin/taxonomy': typeof AuthedAdminTaxonomyIndexRoute
-  '/admin/users': typeof AuthedAdminUsersIndexRoute
-  '/admin/zones': typeof AuthedAdminZonesIndexRoute
+  '/{-$locale}/admin': typeof Char123LocaleChar125AuthedAdminIndexRoute
+  '/{-$locale}/admin/config/$configId': typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
+  '/{-$locale}/admin/custom-widgets/$widgetId': typeof Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute
+  '/{-$locale}/admin/layouts/$layoutId': typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
+  '/{-$locale}/admin/menus/$menuId': typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
+  '/{-$locale}/admin/taxonomy/$taxonomyId': typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  '/{-$locale}/admin/users/$userId': typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
+  '/{-$locale}/admin/config': typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
+  '/{-$locale}/admin/custom-widgets': typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
+  '/{-$locale}/admin/layouts': typeof Char123LocaleChar125AuthedAdminLayoutsIndexRoute
+  '/{-$locale}/admin/menus': typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
+  '/{-$locale}/admin/pages': typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
+  '/{-$locale}/admin/taxonomy': typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  '/{-$locale}/admin/users': typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
+  '/{-$locale}/admin/zones': typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_authed/admin': typeof AuthedAdminRouteRouteWithChildren
+  '/{-$locale}/_authed': typeof Char123LocaleChar125AuthedRouteRouteWithChildren
   '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/{-$locale}/$': typeof Char123LocaleChar125SplatRoute
+  '/{-$locale}/login': typeof Char123LocaleChar125LoginRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/{-$locale}/_authed/admin': typeof Char123LocaleChar125AuthedAdminRouteRouteWithChildren
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/taxonomy/$id': typeof ApiTaxonomyIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
-  '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/api/taxonomy/': typeof ApiTaxonomyIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
-  '/_authed/admin/config/$configId': typeof AuthedAdminConfigConfigIdRoute
-  '/_authed/admin/custom-widgets/$widgetId': typeof AuthedAdminCustomWidgetsWidgetIdRoute
-  '/_authed/admin/layouts/$layoutId': typeof AuthedAdminLayoutsLayoutIdRoute
-  '/_authed/admin/menus/$menuId': typeof AuthedAdminMenusMenuIdRoute
-  '/_authed/admin/taxonomy/$taxonomyId': typeof AuthedAdminTaxonomyTaxonomyIdRoute
-  '/_authed/admin/users/$userId': typeof AuthedAdminUsersUserIdRoute
-  '/_authed/admin/config/': typeof AuthedAdminConfigIndexRoute
-  '/_authed/admin/custom-widgets/': typeof AuthedAdminCustomWidgetsIndexRoute
-  '/_authed/admin/layouts/': typeof AuthedAdminLayoutsIndexRoute
-  '/_authed/admin/menus/': typeof AuthedAdminMenusIndexRoute
-  '/_authed/admin/pages/': typeof AuthedAdminPagesIndexRoute
-  '/_authed/admin/taxonomy/': typeof AuthedAdminTaxonomyIndexRoute
-  '/_authed/admin/users/': typeof AuthedAdminUsersIndexRoute
-  '/_authed/admin/zones/': typeof AuthedAdminZonesIndexRoute
+  '/{-$locale}/_authed/admin/': typeof Char123LocaleChar125AuthedAdminIndexRoute
+  '/{-$locale}/_authed/admin/config/$configId': typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
+  '/{-$locale}/_authed/admin/custom-widgets/$widgetId': typeof Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute
+  '/{-$locale}/_authed/admin/layouts/$layoutId': typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
+  '/{-$locale}/_authed/admin/menus/$menuId': typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
+  '/{-$locale}/_authed/admin/taxonomy/$taxonomyId': typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  '/{-$locale}/_authed/admin/users/$userId': typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
+  '/{-$locale}/_authed/admin/config/': typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
+  '/{-$locale}/_authed/admin/custom-widgets/': typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
+  '/{-$locale}/_authed/admin/layouts/': typeof Char123LocaleChar125AuthedAdminLayoutsIndexRoute
+  '/{-$locale}/_authed/admin/menus/': typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
+  '/{-$locale}/_authed/admin/pages/': typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
+  '/{-$locale}/_authed/admin/taxonomy/': typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  '/{-$locale}/_authed/admin/users/': typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
+  '/{-$locale}/_authed/admin/zones/': typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/{-$locale}'
-    | '/login'
-    | '/admin'
     | '/api/openapi.json'
     | '/{-$locale}/$'
+    | '/{-$locale}/login'
     | '/{-$locale}/'
+    | '/{-$locale}/admin'
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/taxonomy/$id'
     | '/api/users/$id'
-    | '/admin/'
     | '/api/taxonomy/'
     | '/api/users/'
-    | '/admin/config/$configId'
-    | '/admin/custom-widgets/$widgetId'
-    | '/admin/layouts/$layoutId'
-    | '/admin/menus/$menuId'
-    | '/admin/taxonomy/$taxonomyId'
-    | '/admin/users/$userId'
-    | '/admin/config/'
-    | '/admin/custom-widgets/'
-    | '/admin/layouts/'
-    | '/admin/menus/'
-    | '/admin/pages/'
-    | '/admin/taxonomy/'
-    | '/admin/users/'
-    | '/admin/zones/'
+    | '/{-$locale}/admin/'
+    | '/{-$locale}/admin/config/$configId'
+    | '/{-$locale}/admin/custom-widgets/$widgetId'
+    | '/{-$locale}/admin/layouts/$layoutId'
+    | '/{-$locale}/admin/menus/$menuId'
+    | '/{-$locale}/admin/taxonomy/$taxonomyId'
+    | '/{-$locale}/admin/users/$userId'
+    | '/{-$locale}/admin/config/'
+    | '/{-$locale}/admin/custom-widgets/'
+    | '/{-$locale}/admin/layouts/'
+    | '/{-$locale}/admin/menus/'
+    | '/{-$locale}/admin/pages/'
+    | '/{-$locale}/admin/taxonomy/'
+    | '/{-$locale}/admin/users/'
+    | '/{-$locale}/admin/zones/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/login'
+    | '/{-$locale}'
     | '/api/openapi.json'
     | '/{-$locale}/$'
-    | '/{-$locale}'
+    | '/{-$locale}/login'
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/taxonomy/$id'
     | '/api/users/$id'
-    | '/admin'
     | '/api/taxonomy'
     | '/api/users'
-    | '/admin/config/$configId'
-    | '/admin/custom-widgets/$widgetId'
-    | '/admin/layouts/$layoutId'
-    | '/admin/menus/$menuId'
-    | '/admin/taxonomy/$taxonomyId'
-    | '/admin/users/$userId'
-    | '/admin/config'
-    | '/admin/custom-widgets'
-    | '/admin/layouts'
-    | '/admin/menus'
-    | '/admin/pages'
-    | '/admin/taxonomy'
-    | '/admin/users'
-    | '/admin/zones'
+    | '/{-$locale}/admin'
+    | '/{-$locale}/admin/config/$configId'
+    | '/{-$locale}/admin/custom-widgets/$widgetId'
+    | '/{-$locale}/admin/layouts/$layoutId'
+    | '/{-$locale}/admin/menus/$menuId'
+    | '/{-$locale}/admin/taxonomy/$taxonomyId'
+    | '/{-$locale}/admin/users/$userId'
+    | '/{-$locale}/admin/config'
+    | '/{-$locale}/admin/custom-widgets'
+    | '/{-$locale}/admin/layouts'
+    | '/{-$locale}/admin/menus'
+    | '/{-$locale}/admin/pages'
+    | '/{-$locale}/admin/taxonomy'
+    | '/{-$locale}/admin/users'
+    | '/{-$locale}/admin/zones'
   id:
     | '__root__'
     | '/{-$locale}'
-    | '/login'
-    | '/_authed/admin'
+    | '/{-$locale}/_authed'
     | '/api/openapi.json'
     | '/{-$locale}/$'
+    | '/{-$locale}/login'
     | '/{-$locale}/'
+    | '/{-$locale}/_authed/admin'
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/taxonomy/$id'
     | '/api/users/$id'
-    | '/_authed/admin/'
     | '/api/taxonomy/'
     | '/api/users/'
-    | '/_authed/admin/config/$configId'
-    | '/_authed/admin/custom-widgets/$widgetId'
-    | '/_authed/admin/layouts/$layoutId'
-    | '/_authed/admin/menus/$menuId'
-    | '/_authed/admin/taxonomy/$taxonomyId'
-    | '/_authed/admin/users/$userId'
-    | '/_authed/admin/config/'
-    | '/_authed/admin/custom-widgets/'
-    | '/_authed/admin/layouts/'
-    | '/_authed/admin/menus/'
-    | '/_authed/admin/pages/'
-    | '/_authed/admin/taxonomy/'
-    | '/_authed/admin/users/'
-    | '/_authed/admin/zones/'
+    | '/{-$locale}/_authed/admin/'
+    | '/{-$locale}/_authed/admin/config/$configId'
+    | '/{-$locale}/_authed/admin/custom-widgets/$widgetId'
+    | '/{-$locale}/_authed/admin/layouts/$layoutId'
+    | '/{-$locale}/_authed/admin/menus/$menuId'
+    | '/{-$locale}/_authed/admin/taxonomy/$taxonomyId'
+    | '/{-$locale}/_authed/admin/users/$userId'
+    | '/{-$locale}/_authed/admin/config/'
+    | '/{-$locale}/_authed/admin/custom-widgets/'
+    | '/{-$locale}/_authed/admin/layouts/'
+    | '/{-$locale}/_authed/admin/menus/'
+    | '/{-$locale}/_authed/admin/pages/'
+    | '/{-$locale}/_authed/admin/taxonomy/'
+    | '/{-$locale}/_authed/admin/users/'
+    | '/{-$locale}/_authed/admin/zones/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   Char123LocaleChar125RouteRoute: typeof Char123LocaleChar125RouteRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  AuthedAdminRouteRoute: typeof AuthedAdminRouteRouteWithChildren
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   ApiAuthSessionsRoute: typeof ApiAuthSessionsRoute
   ApiLayoutsIdRoute: typeof ApiLayoutsIdRoute
@@ -371,13 +388,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/{-$locale}': {
       id: '/{-$locale}'
       path: '/{-$locale}'
@@ -390,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/{-$locale}/'
       preLoaderRoute: typeof Char123LocaleChar125IndexRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
+    }
+    '/{-$locale}/login': {
+      id: '/{-$locale}/login'
+      path: '/login'
+      fullPath: '/{-$locale}/login'
+      preLoaderRoute: typeof Char123LocaleChar125LoginRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
     }
     '/{-$locale}/$': {
@@ -406,12 +423,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOpenapiDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/admin': {
-      id: '/_authed/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthedAdminRouteRouteImport
-      parentRoute: typeof rootRouteImport
+    '/{-$locale}/_authed': {
+      id: '/{-$locale}/_authed'
+      path: ''
+      fullPath: '/{-$locale}'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedRouteRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
     '/api/users/': {
       id: '/api/users/'
@@ -426,13 +443,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/taxonomy/'
       preLoaderRoute: typeof ApiTaxonomyIndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authed/admin/': {
-      id: '/_authed/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AuthedAdminIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
     }
     '/api/users/$id': {
       id: '/api/users/$id'
@@ -462,115 +472,206 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSessionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authed/admin/zones/': {
-      id: '/_authed/admin/zones/'
+    '/{-$locale}/_authed/admin': {
+      id: '/{-$locale}/_authed/admin'
+      path: '/admin'
+      fullPath: '/{-$locale}/admin'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminRouteRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedRouteRoute
+    }
+    '/{-$locale}/_authed/admin/': {
+      id: '/{-$locale}/_authed/admin/'
+      path: '/'
+      fullPath: '/{-$locale}/admin/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
+    }
+    '/{-$locale}/_authed/admin/zones/': {
+      id: '/{-$locale}/_authed/admin/zones/'
       path: '/zones'
-      fullPath: '/admin/zones/'
-      preLoaderRoute: typeof AuthedAdminZonesIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/zones/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminZonesIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/users/': {
-      id: '/_authed/admin/users/'
+    '/{-$locale}/_authed/admin/users/': {
+      id: '/{-$locale}/_authed/admin/users/'
       path: '/users'
-      fullPath: '/admin/users/'
-      preLoaderRoute: typeof AuthedAdminUsersIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/users/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminUsersIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/taxonomy/': {
-      id: '/_authed/admin/taxonomy/'
+    '/{-$locale}/_authed/admin/taxonomy/': {
+      id: '/{-$locale}/_authed/admin/taxonomy/'
       path: '/taxonomy'
-      fullPath: '/admin/taxonomy/'
-      preLoaderRoute: typeof AuthedAdminTaxonomyIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/taxonomy/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/pages/': {
-      id: '/_authed/admin/pages/'
+    '/{-$locale}/_authed/admin/pages/': {
+      id: '/{-$locale}/_authed/admin/pages/'
       path: '/pages'
-      fullPath: '/admin/pages/'
-      preLoaderRoute: typeof AuthedAdminPagesIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/pages/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminPagesIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/menus/': {
-      id: '/_authed/admin/menus/'
+    '/{-$locale}/_authed/admin/menus/': {
+      id: '/{-$locale}/_authed/admin/menus/'
       path: '/menus'
-      fullPath: '/admin/menus/'
-      preLoaderRoute: typeof AuthedAdminMenusIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/menus/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminMenusIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/layouts/': {
-      id: '/_authed/admin/layouts/'
+    '/{-$locale}/_authed/admin/layouts/': {
+      id: '/{-$locale}/_authed/admin/layouts/'
       path: '/layouts'
-      fullPath: '/admin/layouts/'
-      preLoaderRoute: typeof AuthedAdminLayoutsIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/layouts/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminLayoutsIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/custom-widgets/': {
-      id: '/_authed/admin/custom-widgets/'
+    '/{-$locale}/_authed/admin/custom-widgets/': {
+      id: '/{-$locale}/_authed/admin/custom-widgets/'
       path: '/custom-widgets'
-      fullPath: '/admin/custom-widgets/'
-      preLoaderRoute: typeof AuthedAdminCustomWidgetsIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/custom-widgets/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/config/': {
-      id: '/_authed/admin/config/'
+    '/{-$locale}/_authed/admin/config/': {
+      id: '/{-$locale}/_authed/admin/config/'
       path: '/config'
-      fullPath: '/admin/config/'
-      preLoaderRoute: typeof AuthedAdminConfigIndexRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/config/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminConfigIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/users/$userId': {
-      id: '/_authed/admin/users/$userId'
+    '/{-$locale}/_authed/admin/users/$userId': {
+      id: '/{-$locale}/_authed/admin/users/$userId'
       path: '/users/$userId'
-      fullPath: '/admin/users/$userId'
-      preLoaderRoute: typeof AuthedAdminUsersUserIdRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/users/$userId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminUsersUserIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/taxonomy/$taxonomyId': {
-      id: '/_authed/admin/taxonomy/$taxonomyId'
+    '/{-$locale}/_authed/admin/taxonomy/$taxonomyId': {
+      id: '/{-$locale}/_authed/admin/taxonomy/$taxonomyId'
       path: '/taxonomy/$taxonomyId'
-      fullPath: '/admin/taxonomy/$taxonomyId'
-      preLoaderRoute: typeof AuthedAdminTaxonomyTaxonomyIdRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/taxonomy/$taxonomyId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/menus/$menuId': {
-      id: '/_authed/admin/menus/$menuId'
+    '/{-$locale}/_authed/admin/menus/$menuId': {
+      id: '/{-$locale}/_authed/admin/menus/$menuId'
       path: '/menus/$menuId'
-      fullPath: '/admin/menus/$menuId'
-      preLoaderRoute: typeof AuthedAdminMenusMenuIdRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/menus/$menuId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminMenusMenuIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/layouts/$layoutId': {
-      id: '/_authed/admin/layouts/$layoutId'
+    '/{-$locale}/_authed/admin/layouts/$layoutId': {
+      id: '/{-$locale}/_authed/admin/layouts/$layoutId'
       path: '/layouts/$layoutId'
-      fullPath: '/admin/layouts/$layoutId'
-      preLoaderRoute: typeof AuthedAdminLayoutsLayoutIdRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/layouts/$layoutId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/custom-widgets/$widgetId': {
-      id: '/_authed/admin/custom-widgets/$widgetId'
+    '/{-$locale}/_authed/admin/custom-widgets/$widgetId': {
+      id: '/{-$locale}/_authed/admin/custom-widgets/$widgetId'
       path: '/custom-widgets/$widgetId'
-      fullPath: '/admin/custom-widgets/$widgetId'
-      preLoaderRoute: typeof AuthedAdminCustomWidgetsWidgetIdRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/custom-widgets/$widgetId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
-    '/_authed/admin/config/$configId': {
-      id: '/_authed/admin/config/$configId'
+    '/{-$locale}/_authed/admin/config/$configId': {
+      id: '/{-$locale}/_authed/admin/config/$configId'
       path: '/config/$configId'
-      fullPath: '/admin/config/$configId'
-      preLoaderRoute: typeof AuthedAdminConfigConfigIdRouteImport
-      parentRoute: typeof AuthedAdminRouteRoute
+      fullPath: '/{-$locale}/admin/config/$configId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminConfigConfigIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
   }
 }
 
+interface Char123LocaleChar125AuthedAdminRouteRouteChildren {
+  Char123LocaleChar125AuthedAdminIndexRoute: typeof Char123LocaleChar125AuthedAdminIndexRoute
+  Char123LocaleChar125AuthedAdminConfigConfigIdRoute: typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
+  Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute: typeof Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute
+  Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute: typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
+  Char123LocaleChar125AuthedAdminMenusMenuIdRoute: typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
+  Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute: typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  Char123LocaleChar125AuthedAdminUsersUserIdRoute: typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
+  Char123LocaleChar125AuthedAdminConfigIndexRoute: typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
+  Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute: typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
+  Char123LocaleChar125AuthedAdminLayoutsIndexRoute: typeof Char123LocaleChar125AuthedAdminLayoutsIndexRoute
+  Char123LocaleChar125AuthedAdminMenusIndexRoute: typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
+  Char123LocaleChar125AuthedAdminPagesIndexRoute: typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
+  Char123LocaleChar125AuthedAdminTaxonomyIndexRoute: typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  Char123LocaleChar125AuthedAdminUsersIndexRoute: typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
+  Char123LocaleChar125AuthedAdminZonesIndexRoute: typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
+}
+
+const Char123LocaleChar125AuthedAdminRouteRouteChildren: Char123LocaleChar125AuthedAdminRouteRouteChildren =
+  {
+    Char123LocaleChar125AuthedAdminIndexRoute:
+      Char123LocaleChar125AuthedAdminIndexRoute,
+    Char123LocaleChar125AuthedAdminConfigConfigIdRoute:
+      Char123LocaleChar125AuthedAdminConfigConfigIdRoute,
+    Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute:
+      Char123LocaleChar125AuthedAdminCustomWidgetsWidgetIdRoute,
+    Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute:
+      Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute,
+    Char123LocaleChar125AuthedAdminMenusMenuIdRoute:
+      Char123LocaleChar125AuthedAdminMenusMenuIdRoute,
+    Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute:
+      Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute,
+    Char123LocaleChar125AuthedAdminUsersUserIdRoute:
+      Char123LocaleChar125AuthedAdminUsersUserIdRoute,
+    Char123LocaleChar125AuthedAdminConfigIndexRoute:
+      Char123LocaleChar125AuthedAdminConfigIndexRoute,
+    Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute:
+      Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute,
+    Char123LocaleChar125AuthedAdminLayoutsIndexRoute:
+      Char123LocaleChar125AuthedAdminLayoutsIndexRoute,
+    Char123LocaleChar125AuthedAdminMenusIndexRoute:
+      Char123LocaleChar125AuthedAdminMenusIndexRoute,
+    Char123LocaleChar125AuthedAdminPagesIndexRoute:
+      Char123LocaleChar125AuthedAdminPagesIndexRoute,
+    Char123LocaleChar125AuthedAdminTaxonomyIndexRoute:
+      Char123LocaleChar125AuthedAdminTaxonomyIndexRoute,
+    Char123LocaleChar125AuthedAdminUsersIndexRoute:
+      Char123LocaleChar125AuthedAdminUsersIndexRoute,
+    Char123LocaleChar125AuthedAdminZonesIndexRoute:
+      Char123LocaleChar125AuthedAdminZonesIndexRoute,
+  }
+
+const Char123LocaleChar125AuthedAdminRouteRouteWithChildren =
+  Char123LocaleChar125AuthedAdminRouteRoute._addFileChildren(
+    Char123LocaleChar125AuthedAdminRouteRouteChildren,
+  )
+
+interface Char123LocaleChar125AuthedRouteRouteChildren {
+  Char123LocaleChar125AuthedAdminRouteRoute: typeof Char123LocaleChar125AuthedAdminRouteRouteWithChildren
+}
+
+const Char123LocaleChar125AuthedRouteRouteChildren: Char123LocaleChar125AuthedRouteRouteChildren =
+  {
+    Char123LocaleChar125AuthedAdminRouteRoute:
+      Char123LocaleChar125AuthedAdminRouteRouteWithChildren,
+  }
+
+const Char123LocaleChar125AuthedRouteRouteWithChildren =
+  Char123LocaleChar125AuthedRouteRoute._addFileChildren(
+    Char123LocaleChar125AuthedRouteRouteChildren,
+  )
+
 interface Char123LocaleChar125RouteRouteChildren {
+  Char123LocaleChar125AuthedRouteRoute: typeof Char123LocaleChar125AuthedRouteRouteWithChildren
   Char123LocaleChar125SplatRoute: typeof Char123LocaleChar125SplatRoute
+  Char123LocaleChar125LoginRoute: typeof Char123LocaleChar125LoginRoute
   Char123LocaleChar125IndexRoute: typeof Char123LocaleChar125IndexRoute
 }
 
 const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChildren =
   {
+    Char123LocaleChar125AuthedRouteRoute:
+      Char123LocaleChar125AuthedRouteRouteWithChildren,
     Char123LocaleChar125SplatRoute: Char123LocaleChar125SplatRoute,
+    Char123LocaleChar125LoginRoute: Char123LocaleChar125LoginRoute,
     Char123LocaleChar125IndexRoute: Char123LocaleChar125IndexRoute,
   }
 
@@ -579,49 +680,8 @@ const Char123LocaleChar125RouteRouteWithChildren =
     Char123LocaleChar125RouteRouteChildren,
   )
 
-interface AuthedAdminRouteRouteChildren {
-  AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
-  AuthedAdminConfigConfigIdRoute: typeof AuthedAdminConfigConfigIdRoute
-  AuthedAdminCustomWidgetsWidgetIdRoute: typeof AuthedAdminCustomWidgetsWidgetIdRoute
-  AuthedAdminLayoutsLayoutIdRoute: typeof AuthedAdminLayoutsLayoutIdRoute
-  AuthedAdminMenusMenuIdRoute: typeof AuthedAdminMenusMenuIdRoute
-  AuthedAdminTaxonomyTaxonomyIdRoute: typeof AuthedAdminTaxonomyTaxonomyIdRoute
-  AuthedAdminUsersUserIdRoute: typeof AuthedAdminUsersUserIdRoute
-  AuthedAdminConfigIndexRoute: typeof AuthedAdminConfigIndexRoute
-  AuthedAdminCustomWidgetsIndexRoute: typeof AuthedAdminCustomWidgetsIndexRoute
-  AuthedAdminLayoutsIndexRoute: typeof AuthedAdminLayoutsIndexRoute
-  AuthedAdminMenusIndexRoute: typeof AuthedAdminMenusIndexRoute
-  AuthedAdminPagesIndexRoute: typeof AuthedAdminPagesIndexRoute
-  AuthedAdminTaxonomyIndexRoute: typeof AuthedAdminTaxonomyIndexRoute
-  AuthedAdminUsersIndexRoute: typeof AuthedAdminUsersIndexRoute
-  AuthedAdminZonesIndexRoute: typeof AuthedAdminZonesIndexRoute
-}
-
-const AuthedAdminRouteRouteChildren: AuthedAdminRouteRouteChildren = {
-  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
-  AuthedAdminConfigConfigIdRoute: AuthedAdminConfigConfigIdRoute,
-  AuthedAdminCustomWidgetsWidgetIdRoute: AuthedAdminCustomWidgetsWidgetIdRoute,
-  AuthedAdminLayoutsLayoutIdRoute: AuthedAdminLayoutsLayoutIdRoute,
-  AuthedAdminMenusMenuIdRoute: AuthedAdminMenusMenuIdRoute,
-  AuthedAdminTaxonomyTaxonomyIdRoute: AuthedAdminTaxonomyTaxonomyIdRoute,
-  AuthedAdminUsersUserIdRoute: AuthedAdminUsersUserIdRoute,
-  AuthedAdminConfigIndexRoute: AuthedAdminConfigIndexRoute,
-  AuthedAdminCustomWidgetsIndexRoute: AuthedAdminCustomWidgetsIndexRoute,
-  AuthedAdminLayoutsIndexRoute: AuthedAdminLayoutsIndexRoute,
-  AuthedAdminMenusIndexRoute: AuthedAdminMenusIndexRoute,
-  AuthedAdminPagesIndexRoute: AuthedAdminPagesIndexRoute,
-  AuthedAdminTaxonomyIndexRoute: AuthedAdminTaxonomyIndexRoute,
-  AuthedAdminUsersIndexRoute: AuthedAdminUsersIndexRoute,
-  AuthedAdminZonesIndexRoute: AuthedAdminZonesIndexRoute,
-}
-
-const AuthedAdminRouteRouteWithChildren =
-  AuthedAdminRouteRoute._addFileChildren(AuthedAdminRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   Char123LocaleChar125RouteRoute: Char123LocaleChar125RouteRouteWithChildren,
-  LoginRoute: LoginRoute,
-  AuthedAdminRouteRoute: AuthedAdminRouteRouteWithChildren,
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   ApiAuthSessionsRoute: ApiAuthSessionsRoute,
   ApiLayoutsIdRoute: ApiLayoutsIdRoute,

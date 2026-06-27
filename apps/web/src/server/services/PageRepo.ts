@@ -101,22 +101,31 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
     const db = yield* Database;
     const menuCache = yield* MenuCache;
 
-    // The default layout id every new page is linked to. Resolved once and cached.
-    let defaultLayoutId: string | undefined;
-    const resolveDefaultLayoutId = async () => {
-      if (defaultLayoutId) return defaultLayoutId;
-      const layout = await db.query.layouts.findFirst({
-        where: eq(layouts.name, DEFAULT_LAYOUT_NAME),
-      });
-      if (!layout) throw new Error(`default layout "${DEFAULT_LAYOUT_NAME}" is missing`);
-      defaultLayoutId = layout.id;
-      return defaultLayoutId;
+    // Layout ids resolved by name (cached). New pages link to the requested layout; an
+    // unknown name falls back to the default layout so callers can ask for an optional
+    // layout (e.g. "admin") without having to guarantee it exists.
+    const layoutIdByName = new Map<string, string>();
+    const resolveLayoutIdByName = async (name: string): Promise<string> => {
+      const cached = layoutIdByName.get(name);
+      if (cached) return cached;
+      const layout = await db.query.layouts.findFirst({ where: eq(layouts.name, name) });
+      if (layout) {
+        layoutIdByName.set(name, layout.id);
+        return layout.id;
+      }
+      if (name !== DEFAULT_LAYOUT_NAME) return resolveLayoutIdByName(DEFAULT_LAYOUT_NAME);
+      throw new Error(`default layout "${DEFAULT_LAYOUT_NAME}" is missing`);
     };
 
-    // Upserts the page row for a ref, linking new pages to the default layout, and
-    // returns it. Page-level arrangement comes from the layout, so nothing else is seeded.
-    const ensurePage = async ({ slug, locale = DEFAULT_LOCALE, title }: PageRef) => {
-      const layoutId = await resolveDefaultLayoutId();
+    // Upserts the page row for a ref, linking new pages to the named layout (default when
+    // omitted), and returns it. The link only applies to newly created pages — an existing
+    // page keeps its assigned layout (onConflictDoNothing). Page-level arrangement comes
+    // from the layout, so nothing else is seeded.
+    const ensurePage = async (
+      { slug, locale = DEFAULT_LOCALE, title }: PageRef,
+      layoutName: string = DEFAULT_LAYOUT_NAME,
+    ) => {
+      const layoutId = await resolveLayoutIdByName(layoutName);
       const inserted = await db
         .insert(pages)
         .values({ slug, locale, title: title ?? titleFromSlug(slug), layoutId })
@@ -167,10 +176,10 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
 
     // Loads a page's layout by (slug, locale): the zone arrangement comes from the
     // page's layout (layoutZone ⋈ zone), the widget content from the page itself.
-    const getPageLayout = (ref: PageRef) =>
+    const getPageLayout = (ref: PageRef, layoutName?: string) =>
       Effect.tryPromise({
         try: async (): Promise<PageLayout & { layoutId: string }> => {
-          const page = await ensurePage(ref);
+          const page = await ensurePage(ref, layoutName);
 
           // Zone arrangement for this page's layout, ordered by the stored order.
           const zoneRows = await db

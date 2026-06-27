@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import PageBuilder from "@/components/PageBuilder";
 import PageMetaPanel from "@/components/meta/PageMetaPanel";
@@ -12,15 +13,25 @@ import type { PageMeta } from "@/server/services/PageRepo";
  * index and the dynamic slug route — locale + slug come from the loader (router context),
  * so this component just needs the resolved ref, layout, metadata, and the current pathname
  * for saves. The metadata editor surfaces in edit mode via PageBuilder's toolbar slot.
+ *
+ * `children`, when provided, render between the hero and main zones (see PageBuilder). This
+ * lets callers (e.g. admin screens) embed their own content inside the page-builder chrome.
+ *
+ * `embedded` renders the builder without its own <main> wrapper, so the page-builder chrome
+ * can nest inside a host that already provides one (e.g. the admin layout's <main>).
  */
 export default function CmsPage({
   ref,
   page,
   meta,
+  children,
+  embedded = false,
 }: {
   ref: PageRef;
   page: PageLayout & { layoutId: string };
   meta: PageMeta | null;
+  children?: ReactNode;
+  embedded?: boolean;
 }) {
   const pathname = useLocation({ select: (l) => l.pathname });
   const router = useRouter();
@@ -30,6 +41,8 @@ export default function CmsPage({
       initialLayout={page}
       layoutId={page.layoutId}
       zonesLocked
+      embedded={embedded}
+      betweenHeroAndMain={children}
       toolbar={
         <PageMetaPanel
           meta={meta}
