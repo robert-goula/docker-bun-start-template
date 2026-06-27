@@ -3,7 +3,7 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import CustomWidgetFieldsBuilder from "@/components/CustomWidgetFieldsBuilder";
-import { Field, FieldBody, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   type CustomWidgetField,
@@ -39,7 +39,6 @@ function RouteComponent() {
   const [template, setTemplate] = useState(widget.template ?? "");
   const [element, setElement] = useState<WidgetElement | "">(widget.element ?? "");
   const [description, setDescription] = useState(widget.description ?? "");
-  const [fieldsError, setFieldsError] = useState<string | null>(null);
 
   // Autosave a partial patch and write the returned detail straight into the cache.
   function save(patch: UpdateCustomWidgetAttributes) {
@@ -55,26 +54,22 @@ function RouteComponent() {
       });
   }
 
-  // The builder hands over the full field list when the user clicks Save; only persist
-  // once it passes the schema (unique/valid names, min<=max, valid regex) and surface
-  // why not. Resolves true on success so the builder can clear its dirty markers.
-  async function saveFields(fields: CustomWidgetField[]): Promise<boolean> {
+  // The builder hands over the full field list when the user clicks Save; only persist once it
+  // passes the schema (unique/valid names, min<=max, valid regex). Resolves `null` on success so
+  // the builder clears its dirty markers, or the error message (shown inline by the Save button)
+  // so a failed save isn't silent.
+  async function saveFields(fields: CustomWidgetField[]): Promise<string | null> {
     const result = customWidgetFieldsSchema.safeParse(fields);
     if (!result.success) {
-      setFieldsError(result.error.issues[0]?.message ?? "Some fields are invalid.");
-      return false;
+      return result.error.issues[0]?.message ?? "Some fields are invalid.";
     }
-    setFieldsError(null);
     try {
       const updated = await updateCustomWidgetFn({ data: { id, patch: { fields: result.data } } });
       qc.setQueryData(customWidgetsRepo.byId(id).queryKey, updated);
       qc.invalidateQueries({ queryKey: customWidgetsKeys.list() });
-      return true;
+      return null;
     } catch (err) {
-      toast.error("Couldn’t save changes", {
-        description: err instanceof Error ? err.message : "Please try again.",
-      });
-      return false;
+      return err instanceof Error ? err.message : "Couldn’t save changes. Please try again.";
     }
   }
 
@@ -152,7 +147,6 @@ function RouteComponent() {
           Drag a field to reorder it; the order here is how the fields are shown when editing and
           displaying an instance. Edits stay local until you click Save changes.
         </p>
-        {fieldsError && <FieldError>{fieldsError}</FieldError>}
       </section>
 
       <section className="full">

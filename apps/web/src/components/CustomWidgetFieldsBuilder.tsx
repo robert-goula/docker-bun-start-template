@@ -29,6 +29,7 @@ import {
   type AdvancedFieldOption,
   fieldControlDescriptorByKey,
   fieldControlDescriptors,
+  fieldControlPluginNames,
 } from "@/plugins/fieldControls";
 import type { FieldControlDescriptor } from "@/plugins/fieldControls";
 import { TaxonomyParentPicker } from "@/plugins/fieldControls/select";
@@ -42,7 +43,8 @@ import s from "./CustomWidgetFieldsBuilder.module.css";
 const PLUGINS_ENABLED = "plugins.enabled";
 
 // Resolve the enabled-control allow-list from config. `null` means "no restriction" (key absent or
-// empty array); otherwise the explicit set of enabled control keys.
+// empty array); otherwise the explicit set of enabled identifiers. An entry may be a control key
+// ("input") or the registering plugin's name ("input-field") — both resolve to the same control.
 function useEnabledControls(): ReadonlySet<string> | null {
   const { data: configs } = useQuery(configRepo.list());
   return useMemo(() => {
@@ -65,10 +67,11 @@ interface FieldRowState {
 
 interface CustomWidgetFieldsBuilderProps {
   initialFields: ReadonlyArray<CustomWidgetField>;
-  // Persist the current field list. Resolves `true` on success (the builder then
-  // re-baselines and clears its dirty markers) or `false` on a validation/save
-  // failure (the draft and dirty markers are kept so the user can retry).
-  onSave: (fields: CustomWidgetField[]) => Promise<boolean>;
+  // Persist the current field list. Resolves `null` on success (the builder then re-baselines and
+  // clears its dirty markers) or an error **message** on a validation/save failure (the draft and
+  // dirty markers are kept so the user can retry, and the message is shown inline by the Save
+  // button).
+  onSave: (fields: CustomWidgetField[]) => Promise<string | null>;
 }
 
 const numOrUndef = (value: string): number | undefined => {
@@ -139,6 +142,9 @@ export default function CustomWidgetFieldsBuilder({
   // register as dirty. Reset after a successful save.
   const [baseline, setBaseline] = useState<ReadonlyArray<CustomWidgetField>>(initialFields);
   const [saving, setSaving] = useState(false);
+  // Why the last save attempt was rejected (validation or network), shown inline by the Save
+  // button. Null when the last attempt succeeded or none has been made.
+  const [saveError, setSaveError] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
 
   // Controls the builder dropdown offers, restricted by the `plugins.enabled` config (all when
@@ -147,7 +153,10 @@ export default function CustomWidgetFieldsBuilder({
   const visibleDescriptors = useMemo(
     () =>
       enabled
-        ? fieldControlDescriptors.filter((d) => enabled.has(d.control))
+        ? fieldControlDescriptors.filter(
+            // A config entry can name the control by its key or its plugin name.
+            (d) => enabled.has(d.control) || enabled.has(fieldControlPluginNames[d.control]),
+          )
         : fieldControlDescriptors,
     [enabled],
   );
@@ -192,15 +201,17 @@ export default function CustomWidgetFieldsBuilder({
   async function handleSave() {
     const draft = rows.map((r) => r.field);
     setSaving(true);
-    const ok = await onSave(draft);
+    const error = await onSave(draft);
     setSaving(false);
-    if (!ok) return;
+    setSaveError(error);
+    if (error) return;
     // The draft is now the persisted state: re-baseline so dirty markers clear.
     setBaseline(draft);
     setRows((prev) => prev.map((r) => ({ ...r, saved: r.field })));
   }
 
   function discard() {
+    setSaveError(null);
     setRows(baseline.map((field) => ({ id: crypto.randomUUID(), field, saved: field })));
   }
 
@@ -231,6 +242,11 @@ export default function CustomWidgetFieldsBuilder({
           </Button>
           {dirty && (
             <div className={s.saveActions}>
+              {saveError && (
+                <span role="alert" style={{ color: "var(--danger-strong)" }}>
+                  {saveError}
+                </span>
+              )}
               <span className={s.dirtyHint}>Unsaved changes</span>
               <Button type="button" variant="outline" size="sm" onClick={discard} disabled={saving}>
                 Discard

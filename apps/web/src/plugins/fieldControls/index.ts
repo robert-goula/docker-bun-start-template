@@ -49,6 +49,16 @@ export const fieldControlDescriptorByKey = Object.fromEntries(
   fieldControlDescriptors.map((d) => [d.control, d]),
 ) as Record<FieldControl, FieldControlDescriptor>;
 
+// Maps a control key to its registering plugin's name. Lets config that gates controls (e.g.
+// `plugins.enabled`) accept either identifier — the control key ("input") or the plugin name
+// ("input-field") — and resolve both to the same control. Keep in sync when adding a control.
+export const fieldControlPluginNames: Record<FieldControl, string> = {
+  input: inputPlugin.name,
+  textarea: textareaPlugin.name,
+  number: numberPlugin.name,
+  select: selectPlugin.name,
+};
+
 export { defaultMeasures, fieldControls } from "./keys";
 export type { FieldControl, MeasureConfig } from "./keys";
 export type {
