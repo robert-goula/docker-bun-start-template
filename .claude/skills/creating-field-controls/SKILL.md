@@ -14,7 +14,7 @@ things — the component, its descriptor, and its plugin — composed in `fieldC
 | --- | --- | --- |
 | **Component** (client React) | The `<input>`/UI. Implements `FieldControlProps`. | — |
 | **Descriptor** (`FieldControlDescriptor`) | The control *key*, builder label, advanced config, optional view `format`. | Built from `./shared` types. Used by the builder + view, **not** the server schema. |
-| **Plugin** (`Plugin`) | `setup(api)` calls `api.registerFieldControl(key, Component)`. | Added to `builtinPlugins` in `index.ts`. |
+| **Plugin** (`Plugin`) | `setup(api)` calls `api.registerFieldControl(key, Component)` — and, optionally, `api.registerFieldView(key, ViewComponent)` for a React view (below). | Added to `builtinPlugins` in `index.ts`. |
 
 Supporting files (don't duplicate their contents into a control module):
 
@@ -31,6 +31,10 @@ Supporting files (don't duplicate their contents into a control module):
 - Simple control module: `fieldControls/input.tsx` (and `textarea.tsx` / `number.tsx`).
 - Compound + parked control: `plugins/extra/measurement.tsx` (structured value, named sub-fields,
   view formatter — and the worked example of a **parked** control: see below).
+- Data-backed control with a **React view** + a **bespoke dynamic builder input**:
+  `plugins/fieldControls/select.tsx` (the taxonomy-backed `select` control — stores an id, resolves
+  the localized label at view time via `registerFieldView`; its builder config is a live taxonomy
+  picker, not a static select).
 - Per-field config: `customWidgetFieldSchema` in `apps/web/src/db/schema/customWidgets.ts`.
 - Edit/view dispatch: `DynamicField`, `RepeatableField`, `DynamicView` in `apps/web/src/components/widgets/Dynamic.tsx`.
 - Builder UI (driven by descriptors): `apps/web/src/components/CustomWidgetFieldsBuilder.tsx`.
@@ -140,6 +144,14 @@ The builder renders control-specific inputs from the active descriptor's `advanc
   component (`MeasuresEditor`); reuse the pattern if you add another structured config type.
 - `key` is the `CustomWidgetField` prop it edits; `width` is `"¼" | "½" | "full"`.
 
+**Bespoke / dynamic builder input** (when a static `options` list won't do — e.g. the choices are
+fetched live, or the input creates a record): add a new `inputType` literal to `AdvancedFieldSpec`
+in `shared.ts` and a matching branch in `CustomWidgetFieldsBuilder`'s `advancedFields.map`, rendering
+your own component that calls `onChange({ [spec.key]: value })`. The `select` control's
+`taxonomyParent` input is the worked example: the branch renders `<TaxonomyParentPicker>` (exported
+from the control module), which lists taxonomies via a query and can create one inline, writing
+`field.taxonomyId`.
+
 ### 6. View formatting (only if the raw stored value isn't presentable)
 
 `DynamicView` shows the descriptor's `format(value, field)` if present, else `asString(value)`. The
@@ -150,6 +162,25 @@ a minimal structural shape — not `CustomWidgetField`) so it runs during SSR. I
 be added to the **public render projection** `renderCustomWidgetSchema` in `customWidgets.ts` — it's a
 `z.object` that strips unknown keys, so a value only reaches view mode if it's listed there. Keep the
 projection public-safe (no validation/defaults/helper text).
+
+### 6b. React view (when `format` can't produce the display text)
+
+`format` is **React-free and synchronous** — it can't fetch or use hooks. If a control stores a
+reference whose display text must be **fetched or localized at render** (e.g. the `select` control
+stores a taxonomy id, not its label), register a **React view component** instead:
+
+- Export a component implementing `FieldViewProps` (`{ field, value }`, where `field` is the
+  PUBLIC render-projection shape — a minimal structural subset, **not** `CustomWidgetField`) and
+  register it in the plugin's `setup`: `api.registerFieldView(key, ViewComponent)`.
+- `DynamicView` prefers a registered view (`getFieldView(field.control)`) over the `format`/string
+  path. It renders the component inside the `<Field>` wrapper and skips the field when the **raw**
+  stored value is empty (so empties still drop out). Return `null` from the view when there's
+  nothing to show.
+- Any config the view reads (e.g. `taxonomyId`) must be added to **`renderCustomWidgetSchema`** —
+  the projection strips unknown keys, so a value only reaches the view if it's listed there.
+- The view runs during SSR; without a loader prefetch its query resolves on the client after
+  hydration (server renders `null`, client's first render also has no data → no mismatch). Prefetch
+  in the page loader if you need a flash-free server-rendered label.
 
 ## Repeatable fields (already generic — do nothing per control)
 

@@ -20,7 +20,9 @@ export interface AdvancedFieldOption {
 export interface AdvancedFieldSpec {
   key: string;
   label: string;
-  inputType: "text" | "number" | "select";
+  // "text"/"number"/"select" are rendered generically by the builder. "taxonomyParent" is a
+  // bespoke branch (a live taxonomy picker) — see CustomWidgetFieldsBuilder.
+  inputType: "text" | "number" | "select" | "taxonomyParent";
   // Fixed choices for `inputType: "select"`. A blank "—" option is added by the builder so a
   // select-backed config value stays optional (clearing it sets the field prop to undefined).
   options?: ReadonlyArray<AdvancedFieldOption>;

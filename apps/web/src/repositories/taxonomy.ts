@@ -14,6 +14,7 @@ import {
   createTaxonomyFn,
   deleteTaxonomyFn,
   getTaxonomyByIdFn,
+  getTaxonomyOptionGroupsFn,
   getTaxonomyOptionsFn,
   listTaxonomiesFn,
   listTaxonomyChildrenFn,
@@ -30,6 +31,8 @@ export const taxonomyKeys = {
   byParent: (parentId: TaxonomyId | null) => [...taxonomyKeys.all, "byParent", parentId] as const,
   options: (parentId: TaxonomyId | null, locale: Locale) =>
     [...taxonomyKeys.all, "options", parentId, locale] as const,
+  optionGroups: (parentId: TaxonomyId | null, locale: Locale) =>
+    [...taxonomyKeys.all, "optionGroups", parentId, locale] as const,
 };
 
 export const taxonomyRepo = {
@@ -57,6 +60,14 @@ export const taxonomyRepo = {
     queryOptions({
       queryKey: taxonomyKeys.options(parentId, locale),
       queryFn: ({ signal }) => getTaxonomyOptionsFn({ data: { parentId, locale }, signal }),
+    }),
+
+  // Public: the same options grouped one level deep (children with their own children), for a
+  // select that renders nested children as `<optgroup>`s.
+  optionGroups: (parentId: TaxonomyId | null, locale: Locale) =>
+    queryOptions({
+      queryKey: taxonomyKeys.optionGroups(parentId, locale),
+      queryFn: ({ signal }) => getTaxonomyOptionGroupsFn({ data: { parentId, locale }, signal }),
     }),
 
   create: (qc: QueryClient) =>

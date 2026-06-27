@@ -1,4 +1,5 @@
-import { Activity, useCallback, useState } from "react";
+import { Activity, useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ClientOnly } from "@tanstack/react-router";
 import {
   closestCenter,
@@ -29,7 +30,28 @@ import {
   fieldControlDescriptorByKey,
   fieldControlDescriptors,
 } from "@/plugins/fieldControls";
+import type { FieldControlDescriptor } from "@/plugins/fieldControls";
+import { TaxonomyParentPicker } from "@/plugins/fieldControls/select";
+import { configRepo } from "@/repositories/config";
 import s from "./CustomWidgetFieldsBuilder.module.css";
+
+// Config key whose value (a `string[]` of control keys) restricts which controls the builder
+// offers. Missing or empty → all built-in controls are available (opt-out model). Disabling a
+// control only hides it from the dropdown; fields already using it keep rendering (their control
+// still resolves via `getFieldControl`).
+const PLUGINS_ENABLED = "plugins.enabled";
+
+// Resolve the enabled-control allow-list from config. `null` means "no restriction" (key absent or
+// empty array); otherwise the explicit set of enabled control keys.
+function useEnabledControls(): ReadonlySet<string> | null {
+  const { data: configs } = useQuery(configRepo.list());
+  return useMemo(() => {
+    const value = configs?.find((c) => c.id === PLUGINS_ENABLED)?.value;
+    if (!Array.isArray(value)) return null;
+    const keys = value.filter((v): v is string => typeof v === "string");
+    return keys.length > 0 ? new Set(keys) : null;
+  }, [configs]);
+}
 
 // Each row carries a stable internal id so drag/keys survive while the editable
 // `name` is still being typed. The id is never persisted. `saved` is the last
@@ -119,6 +141,17 @@ export default function CustomWidgetFieldsBuilder({
   const [saving, setSaving] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor));
 
+  // Controls the builder dropdown offers, restricted by the `plugins.enabled` config (all when
+  // unrestricted). A field already using a now-disabled control keeps it (see FieldRow).
+  const enabled = useEnabledControls();
+  const visibleDescriptors = useMemo(
+    () =>
+      enabled
+        ? fieldControlDescriptors.filter((d) => enabled.has(d.control))
+        : fieldControlDescriptors,
+    [enabled],
+  );
+
   const draftFields = rows.map((r) => r.field);
   const dirty = !listEqual(draftFields, baseline);
 
@@ -184,6 +217,7 @@ export default function CustomWidgetFieldsBuilder({
               <FieldRow
                 key={row.id}
                 row={row}
+                descriptors={visibleDescriptors}
                 onChange={(patch) => updateField(row.id, patch)}
                 onRemove={() => removeField(row.id)}
               />
@@ -220,10 +254,12 @@ export default function CustomWidgetFieldsBuilder({
 
 function FieldRow({
   row,
+  descriptors,
   onChange,
   onRemove,
 }: {
   row: FieldRowState;
+  descriptors: ReadonlyArray<FieldControlDescriptor>;
   onChange: (patch: Partial<CustomWidgetField>) => void;
   onRemove: () => void;
 }) {
@@ -237,6 +273,13 @@ function FieldRow({
   };
   const { field } = row;
   const idBase = row.id;
+  // The dropdown shows the enabled controls, but always keeps this field's current control present
+  // (even if since-disabled) so its selection stays visible and isn't silently changed.
+  const controlOptions = useMemo(() => {
+    if (descriptors.some((d) => d.control === field.control)) return descriptors;
+    const current = fieldControlDescriptorByKey[field.control];
+    return current ? [...descriptors, current] : descriptors;
+  }, [descriptors, field.control]);
   // Dirty markers: a row added since the last save is "New"; an existing row whose
   // content diverged from its persisted snapshot is "Edited".
   const isNew = row.saved === null;
@@ -300,7 +343,7 @@ function FieldRow({
                         onChange({ control: e.target.value as CustomWidgetField["control"] })
                       }
                     >
-                      {fieldControlDescriptors.map(({ control, label }) => (
+                      {controlOptions.map(({ control, label }) => (
                         <option key={control} value={control}>
                           {label}
                         </option>
@@ -442,7 +485,14 @@ function FieldRow({
                     <Field key={spec.key} className={spec.width ?? "½"}>
                       <FieldLabel htmlFor={`${idBase}-${spec.key}`}>{spec.label}</FieldLabel>
                       <FieldBody>
-                        {spec.inputType === "select" ? (
+                        {spec.inputType === "taxonomyParent" ? (
+                          <TaxonomyParentPicker
+                            value={raw == null ? undefined : String(raw)}
+                            onChange={(taxonomyId) =>
+                              onChange({ [spec.key]: taxonomyId } as Partial<CustomWidgetField>)
+                            }
+                          />
+                        ) : spec.inputType === "select" ? (
                           <select
                             id={`${idBase}-${spec.key}`}
                             className={s.select}

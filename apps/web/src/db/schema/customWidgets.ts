@@ -73,6 +73,10 @@ export const customWidgetFieldSchema = z
     min: z.number().optional(),
     max: z.number().optional(),
     precision: z.number().int().nonnegative().max(10).optional(),
+    // Select control: the parent taxonomy whose children populate the options. Stored as the
+    // parent's uuid; the control fetches that parent's children (nested children become optgroups)
+    // and persists the selected child's id. Set via the builder's taxonomy picker.
+    taxonomyId: z.uuid().optional(),
     // Compound "measurement" control config. All sub-measurements share one fraction
     // granularity (`denominator`) and `unit`. `measures` is the ordered set of named/labeled
     // sub-measurements; absent → the defaults in `fieldControls/keys.ts`. The measurement control
@@ -232,6 +236,9 @@ export const renderCustomWidgetSchema = z.object({
       denominator: z.union([z.literal(4), z.literal(8), z.literal(16), z.literal(32)]).optional(),
       unit: z.string().optional(),
       measures: z.array(z.object({ name: z.string(), label: z.string() })).optional(),
+      // The select control's option source — the view resolves the stored id to a per-locale
+      // label via this parent. Public-safe (just an id).
+      taxonomyId: z.uuid().optional(),
     }),
   ),
 });

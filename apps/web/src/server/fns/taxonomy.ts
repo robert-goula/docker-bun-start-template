@@ -6,12 +6,14 @@ import {
   insertTaxonomySchema,
   ListTaxonomiesInput,
   selectTaxonomySchema,
+  taxonomyOptionGroupSchema,
   taxonomyOptionSchema,
   updateTaxonomySchema,
   type ListTaxonomiesPagedMeta,
   type PageSize,
   type TaxonomyId,
   type TaxonomyOption,
+  type TaxonomyOptionGroup,
 } from "@/db/schema/taxonomy";
 import { authMiddleware } from "@/server/fns/auth";
 import { runtime } from "@/server/runtime";
@@ -108,6 +110,25 @@ export const getTaxonomyOptionsFn = createServerFn({ method: "GET" })
             data.locale,
           );
           return z.array(taxonomyOptionSchema).parse(options);
+        }).pipe(Effect.catchTags({ DatabaseError: () => Effect.succeed([]) })),
+      ),
+  );
+
+// PUBLIC (no auth): the locale-resolved options of a parent, grouped one level deep — each
+// direct child carries its own children. A child with children renders as an `<optgroup>`; a
+// childless one as a plain option. Like `getTaxonomyOptionsFn`, never throws (errors → []).
+export const getTaxonomyOptionGroupsFn = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => OptionsInput.parse(input))
+  .handler(
+    ({ data }): Promise<TaxonomyOptionGroup[]> =>
+      runtime.runPromise(
+        Effect.gen(function* () {
+          const repo = yield* TaxonomyRepo;
+          const groups = yield* repo.listForRenderGrouped(
+            data.parentId as TaxonomyId | null,
+            data.locale,
+          );
+          return z.array(taxonomyOptionGroupSchema).parse(groups);
         }).pipe(Effect.catchTags({ DatabaseError: () => Effect.succeed([]) })),
       ),
   );

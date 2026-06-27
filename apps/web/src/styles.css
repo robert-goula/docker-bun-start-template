@@ -732,6 +732,13 @@ blockquote {
   border-radius: var(--borderRadius-md);
   corner-shape: squircle;
 }
+
+.breadcrumb-item + .breadcrumb-item::before {
+  color: var(--text-muted);
+  content: "❯";
+  padding-inline: 0 0.75ch;
+}
+
 input {
   &[type="checkbox"] {
     margin-inline-end: 0.5ch;

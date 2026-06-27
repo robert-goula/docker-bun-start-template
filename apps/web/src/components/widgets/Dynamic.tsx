@@ -2,7 +2,7 @@ import { type ComponentType, useEffect, useId, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Field, FieldBody, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { bus, getFieldControl } from "@/plugins";
+import { bus, getFieldControl, getFieldView } from "@/plugins";
 import { fieldControlDescriptorByKey } from "@/plugins/fieldControls";
 import type { FieldControlProps } from "@/plugins";
 import { customWidgetsRepo } from "@/repositories/customWidgets";
@@ -335,7 +335,18 @@ function displayLines(
   return single === "" ? [] : [single];
 }
 
-// Generic view-mode renderer: the definition's fields, in order, as a dl/dt/dd list.
+// True when a raw stored value carries something to show (string non-empty, or an array with at
+// least one non-empty entry). Used to drop empty fields for React-view controls, mirroring the
+// `displayLines().length > 0` check the string path uses.
+function rawHasValue(raw: Json | undefined): boolean {
+  if (Array.isArray(raw)) return raw.some((v) => asString(v).trim() !== "");
+  return asString(raw).trim() !== "";
+}
+
+// Generic view-mode renderer: the definition's fields, in order, as a dl/dt/dd list. A control may
+// register a React view (`getFieldView`) when its stored value needs async/localized resolution
+// (e.g. the select control stores an id); otherwise the field formats to string line(s) via the
+// descriptor's `format` hook.
 function DynamicView({
   definition,
   values,
@@ -346,8 +357,14 @@ function DynamicView({
   editable: boolean;
 }) {
   const rendered = definition.fields
-    .map((field) => ({ field, lines: displayLines(field, values[field.name]) }))
-    .filter((entry) => entry.lines.length > 0);
+    .map((field) => {
+      const raw = values[field.name];
+      const View = getFieldView(field.control);
+      if (View) return { field, raw, View, lines: null, hasValue: rawHasValue(raw) };
+      const lines = displayLines(field, raw);
+      return { field, raw, View: null, lines, hasValue: lines.length > 0 };
+    })
+    .filter((entry) => entry.hasValue);
 
   if (rendered.length === 0) {
     return editable ? (
@@ -357,15 +374,19 @@ function DynamicView({
   return (
     <div className={s.view}>
       <FieldGroup>
-        {rendered.map(({ field, lines }) => (
+        {rendered.map(({ field, raw, View, lines }) => (
           <Field key={field.name}>
             <FieldLabel>{field.label}</FieldLabel>
             <FieldBody>
-              {lines.length === 1 ? (
+              {View ? (
+                <span className={s.preline}>
+                  <View field={field} value={raw} />
+                </span>
+              ) : lines && lines.length === 1 ? (
                 <span className={s.preline}>{lines[0]}</span>
               ) : (
                 <ul className={s.repeatList}>
-                  {lines.map((line, i) => (
+                  {(lines ?? []).map((line, i) => (
                     // Display-only list of formatted blocks; index keys are fine.
                     // eslint-disable-next-line react/no-array-index-key
                     <li key={i} className={s.preline}>

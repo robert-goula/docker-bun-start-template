@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import { Database, DatabaseLive } from "@/db/layer";
 import { DEFAULT_LOCALE, type Locale } from "@/db/schema/pages";
@@ -8,6 +8,7 @@ import {
   type ListTaxonomiesParams,
   type TaxonomyId,
   type TaxonomyOption,
+  type TaxonomyOptionGroup,
   type UpdateTaxonomyInput,
 } from "@/db/schema/taxonomy";
 import { CurrentUser } from "./CurrentUser";
@@ -30,6 +31,13 @@ export class DatabaseError extends Data.TaggedError("DatabaseError")<{
 // Children of a parent, ordered by (sort, value); `parentId === null` returns the roots.
 const childrenWhere = (parentId: TaxonomyId | null) =>
   parentId === null ? isNull(taxonomies.parentId) : eq(taxonomies.parentId, parentId);
+
+// Resolve a row's display label for `locale`, falling back to the default locale, then to the
+// canonical `value` only if no label exists at all. `value` is never assumed to be a label.
+const resolveLabel = (
+  row: { locales: Partial<Record<string, string>>; value: string },
+  locale: Locale,
+): string => row.locales[locale] ?? row.locales[DEFAULT_LOCALE] ?? row.value;
 
 export class TaxonomyRepo extends Effect.Service<TaxonomyRepo>()("app/TaxonomyRepo", {
   effect: Effect.gen(function* () {
@@ -78,8 +86,51 @@ export class TaxonomyRepo extends Effect.Service<TaxonomyRepo>()("app/TaxonomyRe
         return rows.map(
           (row): TaxonomyOption => ({
             id: row.id,
-            label: row.locales[locale] ?? row.locales[DEFAULT_LOCALE] ?? row.value,
+            label: resolveLabel(row, locale),
             meta: row.meta,
+          }),
+        );
+      });
+
+    // PUBLIC render projection (NO policy check), one level deep: the chosen parent's direct
+    // children, each with its own children. A child with no children renders as a plain option;
+    // a child with children renders as an `<optgroup>` of its grandchildren. Two queries total
+    // (children, then all grandchildren via `inArray`) — no N+1.
+    const listForRenderGrouped = (parentId: TaxonomyId | null, locale: Locale) =>
+      Effect.gen(function* () {
+        const children = yield* Effect.tryPromise({
+          try: () =>
+            db.query.taxonomies.findMany({
+              where: childrenWhere(parentId),
+              orderBy: [asc(taxonomies.sort), asc(taxonomies.value)],
+            }),
+          catch: (cause) => new DatabaseError({ cause }),
+        });
+        if (children.length === 0) return [] as TaxonomyOptionGroup[];
+        const grandchildren = yield* Effect.tryPromise({
+          try: () =>
+            db.query.taxonomies.findMany({
+              where: inArray(
+                taxonomies.parentId,
+                children.map((c) => c.id),
+              ),
+              orderBy: [asc(taxonomies.sort), asc(taxonomies.value)],
+            }),
+          catch: (cause) => new DatabaseError({ cause }),
+        });
+        const byParent = new Map<string, TaxonomyOption[]>();
+        for (const row of grandchildren) {
+          if (!row.parentId) continue;
+          const list = byParent.get(row.parentId) ?? [];
+          list.push({ id: row.id, label: resolveLabel(row, locale), meta: row.meta });
+          byParent.set(row.parentId, list);
+        }
+        return children.map(
+          (row): TaxonomyOptionGroup => ({
+            id: row.id,
+            label: resolveLabel(row, locale),
+            meta: row.meta,
+            children: byParent.get(row.id) ?? [],
           }),
         );
       });
@@ -168,7 +219,16 @@ export class TaxonomyRepo extends Effect.Service<TaxonomyRepo>()("app/TaxonomyRe
         return { id } as const;
       });
 
-    return { findById, listByParent, listForRender, list, create, update, remove } as const;
+    return {
+      findById,
+      listByParent,
+      listForRender,
+      listForRenderGrouped,
+      list,
+      create,
+      update,
+      remove,
+    } as const;
   }),
   dependencies: [DatabaseLive],
 }) {}

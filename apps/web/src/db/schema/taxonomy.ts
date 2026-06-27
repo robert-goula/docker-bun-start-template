@@ -111,6 +111,15 @@ export const taxonomyOptionSchema = z.object({
 });
 export type TaxonomyOption = z.infer<typeof taxonomyOptionSchema>;
 
+// One level of nesting for grouped rendering: a direct child of the chosen parent, plus its own
+// children. A child with `children: []` is a plain option; a child with children renders as an
+// `<optgroup>` (Base UI SelectGroup) whose `label` is the group heading and whose `children` are
+// the selectable options. Only one level deep — grandchildren are the deepest options.
+export const taxonomyOptionGroupSchema = taxonomyOptionSchema.extend({
+  children: z.array(taxonomyOptionSchema),
+});
+export type TaxonomyOptionGroup = z.infer<typeof taxonomyOptionGroupSchema>;
+
 // ---------------------------------------------------------------------------
 // Listing: server-side search, optional parent filter, sorting, pagination.
 // ---------------------------------------------------------------------------

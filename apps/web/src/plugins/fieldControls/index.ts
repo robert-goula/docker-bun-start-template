@@ -9,6 +9,7 @@
 
 import { inputDescriptor, inputPlugin } from "./input";
 import { numberDescriptor, numberPlugin } from "./number";
+import { selectDescriptor, selectPlugin } from "./select";
 import { textareaDescriptor, textareaPlugin } from "./textarea";
 import type { FieldControl } from "./keys";
 import type { FieldControlDescriptor } from "./shared";
@@ -30,6 +31,7 @@ export const builtinPlugins: ReadonlyArray<Plugin> = [
   inputPlugin,
   textareaPlugin,
   numberPlugin,
+  selectPlugin,
   lifecycleDemoPlugin,
 ];
 
@@ -38,6 +40,7 @@ export const fieldControlDescriptors: ReadonlyArray<FieldControlDescriptor> = [
   inputDescriptor,
   textareaDescriptor,
   numberDescriptor,
+  selectDescriptor,
 ];
 
 // Lookup by key. Partial in practice — keys without a committed descriptor (e.g. "measurement")

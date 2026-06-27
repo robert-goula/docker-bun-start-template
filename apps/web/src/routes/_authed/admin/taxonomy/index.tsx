@@ -160,16 +160,13 @@ function RouteComponent() {
 
       {/* Breadcrumb: roots → current node. */}
       <nav style={{ marginBlockEnd: "1rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        <Link to="/admin/taxonomy" search={{ parent: undefined }}>
+        <Link to="/admin/taxonomy" search={{ parent: undefined }} className="breadcrumb-item">
           All taxonomies
         </Link>
         {parentId ? (
-          <>
-            <span aria-hidden>»</span>
-            <span>
-              {current?.locales?.[DEFAULT_LOCALE] ?? current?.value ?? "…"}
-            </span>
-          </>
+          <span className="breadcrumb-item">
+            {current?.locales?.[DEFAULT_LOCALE] ?? current?.value ?? "…"}
+          </span>
         ) : null}
       </nav>
 
