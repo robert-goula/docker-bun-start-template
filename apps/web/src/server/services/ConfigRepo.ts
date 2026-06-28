@@ -101,7 +101,15 @@ export class ConfigRepo extends Effect.Service<ConfigRepo>()("app/ConfigRepo", {
         return { id } as const;
       });
 
-    return { list, get, set, remove } as const;
+    // Policy-free read of a public, safe config value (e.g. site.name) for unauthenticated
+    // render paths like the page <head>. Returns null when unset; never 404s.
+    const getPublicValue = (id: ConfigId) =>
+      Effect.tryPromise({
+        try: () => db.query.config.findFirst({ where: eq(config.id, id) }),
+        catch: (cause) => new DatabaseError({ cause }),
+      }).pipe(Effect.map((row) => row?.value ?? null));
+
+    return { list, get, set, remove, getPublicValue } as const;
   }),
   dependencies: [DatabaseLive],
 }) {}

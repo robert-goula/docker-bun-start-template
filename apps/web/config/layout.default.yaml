@@ -1,0 +1,66 @@
+kind: layout
+version: 1
+id: 019ed1c0-98e2-7a2e-9047-ddc5c0a3ebde
+name: default
+description: Default layout seeded for new pages.
+zones:
+  - zone: nav
+    options:
+      size: full
+      order: -1
+      title: Primary Nav
+      defaultOpen: true
+  - zone: hero
+    options:
+      size: full
+      order: 0
+      title: Hero
+      defaultOpen: true
+  - zone: main
+    options:
+      size: ⅗
+      order: 1
+      title: Main
+      defaultOpen: true
+  - zone: sidebar
+    options:
+      size: ⅖
+      order: 2
+      title: Sidebar
+      defaultOpen: true
+  - zone: footer
+    options:
+      size: full
+      order: 3
+      title: Footer
+      defaultOpen: true
+widgets:
+  - id: 019f0cd0-37aa-7154-91e0-9a3baa41ea59
+    zone: footer
+    locale: null
+    kind: menu
+    order: 0
+    options:
+      as: nav
+      pin: top
+      size: ⅓
+      menuId: 019ef7a1-d6b3-7289-8129-019d8d214b29
+    content: {}
+  - id: 019f0cd0-37aa-7f93-815c-0ab26c4421d9
+    zone: footer
+    locale: null
+    kind: debug
+    order: 1
+    options:
+      pin: bottom
+      size: full
+      className: sunken
+    content: {}
+  - id: 019f0cd0-37aa-7fe5-81a7-5202b20e20fd
+    zone: nav
+    locale: null
+    kind: menu
+    order: 0
+    options:
+      menuId: 019efcf4-fe69-74ab-ab1b-66d7a29aba82
+    content: {}

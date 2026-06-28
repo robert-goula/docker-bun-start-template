@@ -1,9 +1,11 @@
 import { notFound } from "@tanstack/react-router";
 import type { QueryClient } from "@tanstack/react-query";
+import type { SiteName } from "@/config/registry";
 import type { CustomWidgetId } from "@/db/schema/customWidgets";
 import type { MenuId } from "@/db/schema/menus";
-import type { Locale } from "@/db/schema/pages";
+import { DEFAULT_LOCALE, type Locale } from "@/db/schema/pages";
 import { buildHref, resolveLocale } from "@/lib/locale";
+import { configRepo } from "@/repositories/config";
 import { headTagsForPage } from "@/lib/meta/registry";
 import type { PageMetaData } from "@/lib/meta/types";
 import { markdownQueryOptions } from "@/server/fns/markdown";
@@ -29,9 +31,30 @@ export interface PageRef {
 // assignment, and an absent "admin" layout falls back to the default one server-side.
 export const ADMIN_LAYOUT_NAME = "admin";
 
-/** Like {@link loadPage}, but creates the page on the "admin" layout when it doesn't exist. */
-export function loadAdminPage(queryClient: QueryClient, ref: PageRef) {
-  return loadPage(queryClient, ref, ADMIN_LAYOUT_NAME);
+/**
+ * Like {@link loadPage}, but for a route-owned admin screen: creates the page on the "admin"
+ * layout as a `system` page (locale rows share a groupId), and also returns its metadata
+ * (for the browser-tab title) and the resolved localized site name.
+ */
+export async function loadAdminPage(queryClient: QueryClient, ref: PageRef) {
+  const layout = await loadPage(queryClient, ref, ADMIN_LAYOUT_NAME, true);
+  // The page row now exists (loadPage bootstrapped it), so meta resolves non-null.
+  const [meta, siteName] = await Promise.all([
+    resolvePageMetaFn({ data: ref }),
+    loadSiteName(queryClient, ref.locale),
+  ]);
+  return { layout, meta, siteName };
+}
+
+// Resolves the localized site name from the (cached) `site.name` config for the head title.
+async function loadSiteName(queryClient: QueryClient, locale: Locale | undefined): Promise<string> {
+  const value = await queryClient.ensureQueryData(configRepo.siteName());
+  return localizedSiteName(value, locale ?? DEFAULT_LOCALE);
+}
+
+/** The site name for a locale, falling back to the default locale then to "". */
+export function localizedSiteName(value: SiteName, locale: Locale): string {
+  return value[locale] ?? value[DEFAULT_LOCALE] ?? "";
 }
 
 /**
@@ -55,8 +78,13 @@ function refFromPathname(pathname: string): PageRef {
  * the DB (derived from the slug on first creation). Locale is resolved before render by the
  * root resolver and passed in via router context — never re-derived from a module global.
  */
-export async function loadPage(queryClient: QueryClient, ref: PageRef, layoutName?: string) {
-  const layout = await loadPageLayoutFn({ data: { ...ref, layoutName } });
+export async function loadPage(
+  queryClient: QueryClient,
+  ref: PageRef,
+  layoutName?: string,
+  system?: boolean,
+) {
+  const layout = await loadPageLayoutFn({ data: { ...ref, layoutName, system } });
   await Promise.all(
     layout.zones.flatMap((zone) =>
       zone.widgets.flatMap((w) => {
@@ -104,7 +132,8 @@ export async function loadCmsPage(queryClient: QueryClient, ref: PageRef) {
   // Home's first-ever visit just created the row above; re-read so the title is real.
   if (meta === null) meta = await resolvePageMetaFn({ data: ref });
 
-  return { layout, meta, ref };
+  const siteName = await loadSiteName(queryClient, ref.locale);
+  return { layout, meta, ref, siteName };
 }
 
 /**
@@ -114,7 +143,7 @@ export async function loadCmsPage(queryClient: QueryClient, ref: PageRef) {
  * alternates are added here since they need buildHref + the slug's sibling locales — all
  * URLs built through buildHref so the prefix rule lives in exactly one place.
  */
-export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
+export function buildPageHead(ref: PageRef, meta: PageMeta | null, siteName = "") {
   const slug = meta?.canonicalSlug ?? ref.slug;
   // Slugs are per-locale, so each alternate uses its own translation's slug (not this
   // page's). Falls back to the current page when metadata is unavailable.
@@ -123,7 +152,7 @@ export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
     ? headTagsForPage(meta.modules, { ref, slug, locale: ref.locale })
     : { meta: [{ title: "Page" }], links: [] as Record<string, string>[] };
   return {
-    meta: fromModules.meta,
+    meta: withSiteName(fromModules.meta, siteName),
     links: [
       ...fromModules.links,
       { rel: "canonical", href: buildHref(ref.locale, slug) },
@@ -134,6 +163,24 @@ export function buildPageHead(ref: PageRef, meta: PageMeta | null) {
       })),
     ],
   };
+}
+
+// Appends " - {siteName}" to the title meta tag (the browser tab / bookmark label) without
+// touching other tags. No-op when siteName is empty.
+function withSiteName<T extends Record<string, unknown>>(tags: T[], siteName: string): T[] {
+  if (!siteName) return tags;
+  return tags.map((tag) =>
+    typeof tag.title === "string" ? { ...tag, title: `${tag.title} - ${siteName}` } : tag,
+  );
+}
+
+/**
+ * Browser-tab title for a route-owned admin screen: "{page title} - {site name}". Admin pages
+ * carry no SEO head, so this only emits the title tag; the on-screen <h1> stays intlayer-driven.
+ */
+export function buildAdminHead(_ref: PageRef, meta: PageMeta | null, siteName = "") {
+  const title = meta?.meta.title ?? "Admin";
+  return { meta: [{ title: siteName ? `${title} - ${siteName}` : title }] };
 }
 
 /**

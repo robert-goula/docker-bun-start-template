@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import type { ConfigId } from "@/db/schema/config";
 import {
   getConfigFn,
+  getSiteNameFn,
   listConfigFn,
   removeConfigFn,
   type SafeConfig,
@@ -13,6 +14,7 @@ export const configKeys = {
   all: ["config"] as const,
   list: () => [...configKeys.all, "list"] as const,
   byId: (id: ConfigId) => [...configKeys.all, "byId", id] as const,
+  siteName: () => [...configKeys.all, "siteName"] as const,
 };
 
 // One config entry write — `set` upserts by id (create or update share the same path).
@@ -33,6 +35,13 @@ export const configRepo = {
     queryOptions({
       queryKey: configKeys.byId(id),
       queryFn: ({ signal }) => getConfigFn({ data: { id }, signal }),
+    }),
+
+  // Public, localized site name for the page <head> title (one fetch, cached app-wide).
+  siteName: () =>
+    queryOptions({
+      queryKey: configKeys.siteName(),
+      queryFn: ({ signal }) => getSiteNameFn({ signal }),
     }),
 
   set: (qc: QueryClient) =>

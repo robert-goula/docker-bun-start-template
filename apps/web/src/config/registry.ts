@@ -3,9 +3,16 @@ import * as z from "zod";
 // Source of truth for known config keys → their Zod schema. Known keys are validated on
 // write/import; any key not listed here is stored as free-form jsonb (passthrough). This is
 // React-free so the repo, server fns, and CLI scripts can all import it.
+// The site name shown in the browser-tab title ("Page - Site Name"), per locale. Permissive
+// locale keys (any string → string) so an unknown locale can't reject an otherwise-valid value.
+export const siteNameSchema = z.record(z.string(), z.string());
+export type SiteName = z.infer<typeof siteNameSchema>;
+
 export const configSchemas = {
   // The plugin/control names that are enabled for the pluggable field-control system.
   "plugins.enabled": z.array(z.string()),
+  // Localized site name; resolved per-locale for the page <head> title.
+  "site.name": siteNameSchema,
 } as const;
 
 export type ConfigKey = keyof typeof configSchemas;

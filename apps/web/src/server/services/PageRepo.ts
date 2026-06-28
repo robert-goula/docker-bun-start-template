@@ -47,6 +47,9 @@ export interface PageRef {
   locale?: Locale;
   // Title used only when the page is first created; defaults to a titleized slug.
   title?: string;
+  // Marks a route-owned page (admin screen). On creation its locale rows share a groupId
+  // (so menus translate the label) and the row is flagged `system`.
+  system?: boolean;
 }
 
 // Derives a human title from a slug when none is supplied (e.g. "about" -> "About").
@@ -85,6 +88,8 @@ export interface PageMeta {
   readonly modules: PageMetaData;
   readonly canonicalSlug: string;
   readonly translations: ReadonlyArray<PageTranslation>;
+  // Route-owned page: the editor hides slug/description and edits only the per-locale title.
+  readonly system: boolean;
 }
 
 // Patch for updatePageMeta: the slug (→ column, per-locale), the basic fields (→ columns)
@@ -122,13 +127,33 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
     // page keeps its assigned layout (onConflictDoNothing). Page-level arrangement comes
     // from the layout, so nothing else is seeded.
     const ensurePage = async (
-      { slug, locale = DEFAULT_LOCALE, title }: PageRef,
+      { slug, locale = DEFAULT_LOCALE, title, system = false }: PageRef,
       layoutName: string = DEFAULT_LAYOUT_NAME,
     ) => {
       const layoutId = await resolveLayoutIdByName(layoutName);
+
+      // System pages share their slug across locales, so a new locale row joins the existing
+      // translation group (so menus translate the label) and inherits a default title until
+      // it's localized.
+      const sibling = system
+        ? await db.query.pages.findFirst({
+            where: eq(pages.slug, slug),
+            columns: { groupId: true, title: true },
+          })
+        : undefined;
+
+      const values: typeof pages.$inferInsert = {
+        slug,
+        locale,
+        title: title ?? sibling?.title ?? titleFromSlug(slug),
+        layoutId,
+        system,
+        ...(sibling ? { groupId: sibling.groupId } : {}),
+      };
+
       const inserted = await db
         .insert(pages)
-        .values({ slug, locale, title: title ?? titleFromSlug(slug), layoutId })
+        .values(values)
         .onConflictDoNothing({ target: [pages.slug, pages.locale] })
         .returning();
 
@@ -256,7 +281,14 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
           const locale = ref.locale ?? DEFAULT_LOCALE;
           const page = await db.query.pages.findFirst({
             where: and(eq(pages.slug, ref.slug), eq(pages.locale, locale)),
-            columns: { title: true, description: true, slug: true, meta: true, groupId: true },
+            columns: {
+              title: true,
+              description: true,
+              slug: true,
+              meta: true,
+              groupId: true,
+              system: true,
+            },
           });
           if (!page) return null;
 
@@ -279,6 +311,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
             modules,
             canonicalSlug: page.slug,
             translations: siblings.map((s) => ({ locale: s.locale as Locale, slug: s.slug })),
+            system: page.system,
           };
         },
         catch: (cause) => new DatabaseError({ cause }),
@@ -295,7 +328,8 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
           catch: (cause) => new DatabaseError({ cause }),
         });
 
-        const renaming = patch.slug !== undefined && patch.slug !== page.slug;
+        // System pages own their slug via the file route, so slug/description are not editable.
+        const renaming = !page.system && patch.slug !== undefined && patch.slug !== page.slug;
         if (renaming) {
           const clash = yield* Effect.tryPromise({
             try: () =>
@@ -315,7 +349,7 @@ export class PageRepo extends Effect.Service<PageRepo>()("app/PageRepo", {
         const set: Partial<typeof pages.$inferInsert> = {};
         if (renaming) set.slug = patch.slug;
         if (patch.title !== undefined) set.title = patch.title;
-        if (patch.description !== undefined) set.description = patch.description;
+        if (!page.system && patch.description !== undefined) set.description = patch.description;
         if (patch.modules !== undefined) {
           set.meta = { ...page.meta, ...sanitizeModules(patch.modules) };
         }

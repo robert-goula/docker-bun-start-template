@@ -1,0 +1,29 @@
+kind: custom-widget
+version: 1
+id: 019ee6e4-7e2f-713d-8f83-c43163eafebc
+name: Headline
+slug: headline
+template: Headline
+element: hgroup
+description: A headline with optional kicker
+fields:
+  - name: kicker
+    type: text
+    label: Kicker
+    control: input
+    required: false
+    repeatable: false
+    description: Optional overline/kicker/topper above the Headline
+  - name: headline
+    type: text
+    label: Headline
+    control: input
+    required: true
+    repeatable: false
+  - name: subhead
+    type: text
+    label: Subhead
+    control: textarea
+    required: false
+    repeatable: false
+    description: Optional subhead

@@ -10,7 +10,8 @@ export const Route = createFileRoute("/{-$locale}/")({
       slug: context.i18n.path,
       locale: context.i18n.locale,
     }),
-  head: ({ loaderData }) => (loaderData ? buildPageHead(loaderData.ref, loaderData.meta) : {}),
+  head: ({ loaderData }) =>
+    loaderData ? buildPageHead(loaderData.ref, loaderData.meta, loaderData.siteName) : {},
   component: RouteComponent,
 });
 

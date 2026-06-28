@@ -9,7 +9,7 @@ import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { ConfigId } from "@/db/schema/config";
-import { loadAdminPage } from "@/lib/loadPage";
+import { buildAdminHead, loadAdminPage } from "@/lib/loadPage";
 import { configRepo } from "@/repositories/config";
 
 const PAGE_SLUG = "/admin/config";
@@ -17,19 +17,21 @@ const PAGE_SLUG = "/admin/config";
 export const Route = createFileRoute("/{-$locale}/_authed/admin/config/$configId")({
   loader: async ({ context, params }) => {
     const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
-    const [pageLayout] = await Promise.all([
+    const [{ layout: pageLayout, meta, siteName }] = await Promise.all([
       loadAdminPage(context.queryClient, ref),
       context.queryClient.ensureQueryData(configRepo.byId(params.configId as ConfigId)),
     ]);
-    return { pageLayout, ref };
+    return { pageLayout, meta, siteName, ref };
   },
+  head: ({ loaderData }) =>
+    loaderData ? buildAdminHead(loaderData.ref, loaderData.meta, loaderData.siteName) : {},
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { pageLayout, ref } = Route.useLoaderData();
+  const { pageLayout, meta, ref } = Route.useLoaderData();
   return (
-    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+    <AdminCmsPage pageRef={ref} layout={pageLayout} meta={meta}>
       <ConfigDetail />
     </AdminCmsPage>
   );

@@ -1,0 +1,77 @@
+kind: page
+version: 1
+groupId: 019ef6b7-da2a-7c91-a9bf-e5b3305412ed
+system: false
+layout: home
+locales:
+  - locale: en-us
+    slug: /
+    title: Home
+    description: Add meta description
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets:
+      - zone: footer
+        kind: markdown
+        order: 0
+        options:
+          size: ⅔
+        content: Editable markdown widget `footer` zone…
+      - zone: main
+        kind: dynamic
+        order: 0
+        options:
+          size: full
+          className: headline
+          definitionId: 019ee6e4-7e2f-713d-8f83-c43163eafebc
+        content:
+          kicker: Kicker
+          subhead: Subheading below the headline
+          headline: Headline
+      - zone: main
+        kind: markdown
+        order: 1
+        options:
+          size: full
+        content: Editable markdown widget `main` zone…
+      - zone: main
+        kind: markdown
+        order: 2
+        options:
+          size: full
+        content: |-
+          # Heading 1
+          ## Heading 2
+          ### Heading 3
+          #### Heading 4
+          ##### Heading 5
+          ###### Heading 6
+          - [x] Done
+          - [ ] TODO
+          > blockquote lorem ipsum dolor sit amet
+          > …
+      - zone: sidebar
+        kind: markdown
+        order: 0
+        options: {}
+        content: Editable markdown widget `sidebar` zone…
+  - locale: es-us
+    slug: /
+    title: Inicio
+    description: Coming soon…
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets:
+      - zone: main
+        kind: dynamic
+        order: 0
+        options:
+          definitionId: 019ee6e4-7e2f-713d-8f83-c43163eafebc
+        content:
+          kicker: Kicker (es-us)
+          headline: Headline (es-us)
+      - zone: sidebar
+        kind: debug
+        order: 0
+        options: {}
+        content: {}

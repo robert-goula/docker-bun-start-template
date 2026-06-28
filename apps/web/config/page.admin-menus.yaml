@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f0b56-ebe8-7b00-937d-c01c1748b1c3
+system: true
+layout: admin
+locales:
+  - locale: en-us
+    slug: /admin/menus
+    title: Menus
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /admin/menus
+    title: Menús
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []

@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { loadAdminPage } from "@/lib/loadPage";
+import { buildAdminHead, loadAdminPage } from "@/lib/loadPage";
 import { decodeIdParam, encodeId } from "@/lib/shortId";
 import { taxonomyRepo, type SafeTaxonomy } from "@/repositories/taxonomy";
 import { toast } from "sonner";
@@ -40,24 +40,26 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin/taxonomy/")({
   loader: async ({ context, deps }) => {
     const pid = (decodeIdParam(deps.parent) ?? null) as TaxonomyId | null;
     const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
-    const [layout] = await Promise.all([
+    const [{ layout, meta, siteName }] = await Promise.all([
       loadAdminPage(context.queryClient, ref),
       context.queryClient.ensureQueryData(taxonomyRepo.byParent(pid)),
       pid
         ? context.queryClient.ensureQueryData(taxonomyRepo.byId(pid))
         : Promise.resolve(undefined),
     ]);
-    return { layout, ref };
+    return { layout, meta, siteName, ref };
   },
+  head: ({ loaderData }) =>
+    loaderData ? buildAdminHead(loaderData.ref, loaderData.meta, loaderData.siteName) : {},
   component: RouteComponent,
 });
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
 function RouteComponent() {
-  const { layout, ref } = Route.useLoaderData();
+  const { layout, meta, ref } = Route.useLoaderData();
   return (
-    <AdminCmsPage pageRef={ref} layout={layout}>
+    <AdminCmsPage pageRef={ref} layout={layout} meta={meta}>
       <TaxonomyList />
     </AdminCmsPage>
   );

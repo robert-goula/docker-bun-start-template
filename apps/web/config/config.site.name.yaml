@@ -1,0 +1,7 @@
+kind: config
+version: 1
+id: site.name
+description: Localized site name appended to the browser-tab title ("Page - Site Name").
+value:
+  en-us: My Site
+  es-us: Mi Sitio

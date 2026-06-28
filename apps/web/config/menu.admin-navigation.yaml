@@ -1,0 +1,44 @@
+kind: menu
+version: 1
+id: 019f099b-b093-7a1b-82a7-b5414e86a6b3
+name: Admin Navigation
+slug: admin-navigation
+orientation: horizontal
+submenuMode: expanded
+items:
+  - id: 27f3f6b5-d1e1-4b8f-8605-7ac4b37f6659
+    type: page
+    groupId: 019f09a5-ebf2-7e4a-8701-19ca13634ce5
+    children: []
+  - id: b59bc259-734b-456f-83a8-c6fe17aa0264
+    type: page
+    groupId: 019f0b30-8bac-790b-9fd9-6f47aed88057
+    children: []
+  - id: ca352236-8518-43a6-a259-4be5bb7ff984
+    type: page
+    groupId: 019f0b3c-6522-7a7e-89ea-bb3a487fa8ad
+    children: []
+  - id: 7a5e8c8d-3324-4354-91cd-6f3f0dbba679
+    type: page
+    groupId: 019f0b57-1383-7f37-b0f8-9602f9840c99
+    children: []
+  - id: b1d4d757-ed2d-40e8-9615-3ff578561bb6
+    type: page
+    groupId: 019f0b4c-5c75-7fe5-bb14-163d51e126c6
+    children: []
+  - id: 7482b81d-1448-46e3-9174-3540b7588ef5
+    type: page
+    groupId: 019f0b56-ebe8-7b00-937d-c01c1748b1c3
+    children: []
+  - id: 55aeb316-d5a9-4edc-91c4-942c049d6eef
+    type: page
+    groupId: 019f0b4c-58c5-7b65-bd88-c6e1962f456e
+    children: []
+  - id: 9e02a7c3-c45d-4d5d-8277-79b3027dddae
+    type: page
+    groupId: 019f0b57-10ba-7afb-9a26-ab12ec1d0f25
+    children: []
+  - id: c4bbaba7-9c6c-42d9-8789-ccc44a46c22d
+    type: page
+    groupId: 019f0b4c-55f5-706f-965f-30a6b29f4a29
+    children: []

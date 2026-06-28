@@ -1,0 +1,68 @@
+kind: layout
+version: 1
+id: 019ed34e-51e6-7684-af95-dcf076caa42c
+name: home
+description: Home page layout
+zones:
+  - zone: nav
+    options:
+      size: full
+      order: -1
+      title: Primary Nav
+      defaultOpen: true
+  - zone: hero
+    options:
+      size: full
+      order: 0
+      title: Hero
+      defaultOpen: true
+  - zone: main
+    options:
+      size: full
+      order: 1
+      title: Main
+      defaultOpen: true
+  - zone: sidebar
+    options:
+      size: full
+      order: 2
+      title: Updates
+      defaultOpen: true
+  - zone: footer
+    options:
+      size: full
+      order: 3
+      title: Footer
+      defaultOpen: true
+widgets:
+  - id: 019f0cd0-37ca-7db3-9450-a6914f33f860
+    zone: footer
+    locale: null
+    kind: menu
+    order: 0
+    options:
+      as: nav
+      pin: top
+      size: ⅓
+      menuId: 019ef7a1-d6b3-7289-8129-019d8d214b29
+    content: {}
+  - id: 019f0cd0-37cb-7d34-9f09-c7465801b1a5
+    zone: footer
+    locale: null
+    kind: debug
+    order: 1
+    options:
+      pin: bottom
+      size: full
+    content: {}
+  - id: 019f0cd0-37cb-7d79-957b-81bc02350da3
+    zone: nav
+    locale: null
+    kind: menu
+    order: 0
+    options:
+      pin: top
+      size: full
+      menuId: 019efcf4-fe69-74ab-ab1b-66d7a29aba82
+      element: none
+    content: {}

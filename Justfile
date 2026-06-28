@@ -42,13 +42,18 @@ db-migrate:
   eval "$(varlock load --format shell)" && \
     docker compose exec web bun run db:migrate
 
-config-export:
+# Export committed YAML to apps/web/config. KIND/KEY optional:
+#   just export            all kinds
+#   just export menu       all menus
+#   just export menu main-nav   one menu
+export KIND="" KEY="":
   eval "$(varlock load --format shell)" && \
-    docker compose exec web bun run config:export
+    docker compose exec web bun run sync:export {{KIND}} {{KEY}}
 
-config-import:
+# Import committed YAML (dependency-ordered). KIND optional to limit to one kind.
+import KIND="":
   eval "$(varlock load --format shell)" && \
-    docker compose exec web bun run config:import
+    docker compose exec web bun run sync:import {{KIND}}
 
 bump TYPE="patch|minor|major|preminor|premajor|beta|rc":
   #!/usr/bin/env bash

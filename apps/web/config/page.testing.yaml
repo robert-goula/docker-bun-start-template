@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f021e-d88c-7d7e-82d0-e7c10c942a04
+system: false
+layout: default
+locales:
+  - locale: en-us
+    slug: /testing
+    title: Testing
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /testing
+    title: Testing
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []

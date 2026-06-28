@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useLocation, useRouter } from "@tanstack/react-router";
+import { toast } from "sonner";
 import PageBuilder from "@/components/PageBuilder";
 import PageMetaPanel from "@/components/meta/PageMetaPanel";
 import { savePage, savePageMeta, setPageLayout } from "@/lib/loadPage";
@@ -56,12 +57,18 @@ export default function CmsPage({
             savePageMeta(pathname, patch)
               .then(() => {
                 if (renamedHref && renamedHref !== pathname) {
+                  // A full navigation reloads the page at its new URL; no toast needed.
                   globalThis.location.assign(renamedHref);
                 } else {
+                  toast.success("Page metadata saved");
                   router.invalidate();
                 }
               })
-              .catch(console.error);
+              .catch((err) => {
+                toast.error("Couldn't save page metadata", {
+                  description: err instanceof Error ? err.message : "Please try again.",
+                });
+              });
           }}
         />
       }

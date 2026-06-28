@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Effect } from "effect";
 import * as z from "zod";
+import { siteNameSchema } from "@/config/registry";
 import { insertConfigSchema, selectConfigSchema } from "@/db/schema/config";
 import type { ConfigId } from "@/db/schema/config";
 import { authMiddleware } from "@/server/fns/auth";
@@ -34,6 +35,18 @@ export const listConfigFn = createServerFn({ method: "GET" })
       ),
     ),
   );
+
+// Public (no auth): the localized site name for the page <head> title. Returns {} when unset
+// so the head can fall back gracefully. Safe to expose — it's already visible in every tab.
+export const getSiteNameFn = createServerFn({ method: "GET" }).handler(() =>
+  runtime.runPromise(
+    Effect.gen(function* () {
+      const repo = yield* ConfigRepo;
+      const value = yield* repo.getPublicValue("site.name" as ConfigId);
+      return siteNameSchema.parse(value ?? {});
+    }).pipe(Effect.catchTags({ DatabaseError: dbError })),
+  ),
+);
 
 export const getConfigFn = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => ConfigIdInput.parse(input))

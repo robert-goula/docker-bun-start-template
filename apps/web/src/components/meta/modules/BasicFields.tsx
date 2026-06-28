@@ -12,11 +12,14 @@ export default function BasicFields({
   description,
   onTitleChange,
   onDescriptionChange,
+  hideDescription = false,
 }: {
   title: string;
   description: string;
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
+  // System (admin) pages carry no SEO, so the editor shows only the title.
+  hideDescription?: boolean;
 }) {
   return (
     <>
@@ -31,18 +34,20 @@ export default function BasicFields({
           />
         </FieldBody>
       </Field>
-      <Field>
-        <FieldLabel htmlFor="meta-description">Description</FieldLabel>
-        <FieldBody>
-          <Textarea
-            id="meta-description"
-            value={description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            rows={2}
-            placeholder="Shown in search results and social previews"
-          />
-        </FieldBody>
-      </Field>
+      {!hideDescription && (
+        <Field>
+          <FieldLabel htmlFor="meta-description">Description</FieldLabel>
+          <FieldBody>
+            <Textarea
+              id="meta-description"
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              rows={2}
+              placeholder="Shown in search results and social previews"
+            />
+          </FieldBody>
+        </Field>
+      )}
     </>
   );
 }

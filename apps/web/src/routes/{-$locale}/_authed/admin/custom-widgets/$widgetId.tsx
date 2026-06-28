@@ -13,7 +13,7 @@ import {
   customWidgetFieldsSchema,
 } from "@/db/schema/customWidgets";
 import { type WidgetElement, widgetElements } from "@/db/schema/widgets";
-import { loadAdminPage } from "@/lib/loadPage";
+import { buildAdminHead, loadAdminPage } from "@/lib/loadPage";
 import { idParam } from "@/lib/shortId";
 import { customWidgetsKeys, customWidgetsRepo } from "@/repositories/customWidgets";
 import {
@@ -28,21 +28,23 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin/custom-widgets/$
   params: idParam("widgetId"),
   loader: async ({ context, params }) => {
     const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
-    const [pageLayout] = await Promise.all([
+    const [{ layout: pageLayout, meta, siteName }] = await Promise.all([
       loadAdminPage(context.queryClient, ref),
       context.queryClient.ensureQueryData(
         customWidgetsRepo.byId(params.widgetId as CustomWidgetId),
       ),
     ]);
-    return { pageLayout, ref };
+    return { pageLayout, meta, siteName, ref };
   },
+  head: ({ loaderData }) =>
+    loaderData ? buildAdminHead(loaderData.ref, loaderData.meta, loaderData.siteName) : {},
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { pageLayout, ref } = Route.useLoaderData();
+  const { pageLayout, meta, ref } = Route.useLoaderData();
   return (
-    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+    <AdminCmsPage pageRef={ref} layout={pageLayout} meta={meta}>
       <CustomWidgetDetail />
     </AdminCmsPage>
   );

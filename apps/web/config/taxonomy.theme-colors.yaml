@@ -1,0 +1,31 @@
+kind: taxonomy
+version: 1
+id: 019f0700-89f6-7ec7-82ba-416dd765114f
+value: theme-colors
+locales:
+  en-us: Colors
+meta: {}
+sort: 0
+children:
+  - id: 019f0700-f4b5-73d1-bc11-c20f30d4ab17
+    value: "#ff0000"
+    locales:
+      en-us: Red
+      es-us: Rojo
+    meta: {}
+    sort: 0
+    children: []
+  - id: 019f076e-4e22-7572-a8a3-706043cdbaff
+    value: "#00ff00"
+    locales:
+      en-us: Green
+    meta: {}
+    sort: 1
+    children: []
+  - id: 019f076e-7847-7881-95c4-23b0dea861ec
+    value: "#0000ff"
+    locales:
+      en-us: Blue
+    meta: {}
+    sort: 2
+    children: []
