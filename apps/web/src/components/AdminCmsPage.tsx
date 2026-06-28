@@ -20,7 +20,7 @@ export default function AdminCmsPage({
   children: ReactNode;
 }) {
   return (
-    <CmsPage ref={pageRef} page={layout} meta={null} embedded>
+    <CmsPage ref={pageRef} page={layout} meta={null} >
       {children}
     </CmsPage>
   );
