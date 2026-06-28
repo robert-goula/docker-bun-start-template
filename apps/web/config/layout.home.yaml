@@ -35,7 +35,8 @@ zones:
       title: Footer
       defaultOpen: true
 widgets:
-  - zone: footer
+  - id: 019f0cd0-37ca-7db3-9450-a6914f33f860
+    zone: footer
     locale: null
     kind: menu
     order: 0
@@ -45,7 +46,8 @@ widgets:
       size: ⅓
       menuId: 019ef7a1-d6b3-7289-8129-019d8d214b29
     content: {}
-  - zone: footer
+  - id: 019f0cd0-37cb-7d34-9f09-c7465801b1a5
+    zone: footer
     locale: null
     kind: debug
     order: 1
@@ -53,7 +55,8 @@ widgets:
       pin: bottom
       size: full
     content: {}
-  - zone: nav
+  - id: 019f0cd0-37cb-7d79-957b-81bc02350da3
+    zone: nav
     locale: null
     kind: menu
     order: 0

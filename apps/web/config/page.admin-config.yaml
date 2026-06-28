@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f0b4c-55f5-706f-965f-30a6b29f4a29
+system: true
+layout: admin
+locales:
+  - locale: en-us
+    slug: /admin/config
+    title: Config
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /admin/config
+    title: Configuración
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []

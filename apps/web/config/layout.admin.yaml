@@ -35,7 +35,8 @@ zones:
       title: Footer
       defaultOpen: true
 widgets:
-  - zone: nav
+  - id: 019f0cd0-3785-7e0a-9118-f6f90ed3899b
+    zone: nav
     locale: null
     kind: menu
     order: 0

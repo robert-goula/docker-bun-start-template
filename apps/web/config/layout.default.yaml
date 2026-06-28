@@ -35,7 +35,8 @@ zones:
       title: Footer
       defaultOpen: true
 widgets:
-  - zone: footer
+  - id: 019f0cd0-37aa-7154-91e0-9a3baa41ea59
+    zone: footer
     locale: null
     kind: menu
     order: 0
@@ -45,7 +46,8 @@ widgets:
       size: ⅓
       menuId: 019ef7a1-d6b3-7289-8129-019d8d214b29
     content: {}
-  - zone: footer
+  - id: 019f0cd0-37aa-7f93-815c-0ab26c4421d9
+    zone: footer
     locale: null
     kind: debug
     order: 1
@@ -54,7 +56,8 @@ widgets:
       size: full
       className: sunken
     content: {}
-  - zone: nav
+  - id: 019f0cd0-37aa-7fe5-81a7-5202b20e20fd
+    zone: nav
     locale: null
     kind: menu
     order: 0

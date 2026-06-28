@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f0b30-8bac-790b-9fd9-6f47aed88057
+system: true
+layout: admin
+locales:
+  - locale: en-us
+    slug: /admin/users
+    title: Users
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /admin/users
+    title: Usuarios
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []

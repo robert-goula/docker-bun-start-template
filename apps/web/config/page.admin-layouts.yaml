@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f0b57-1383-7f37-b0f8-9602f9840c99
+system: true
+layout: admin
+locales:
+  - locale: en-us
+    slug: /admin/layouts
+    title: Layouts
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /admin/layouts
+    title: Diseños
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []

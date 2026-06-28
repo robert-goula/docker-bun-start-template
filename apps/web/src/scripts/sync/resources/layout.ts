@@ -18,6 +18,9 @@ const bodySchema = z.object({
   zones: z.array(z.object({ zone: z.enum(ZONE_NAMES), options: layoutZoneOptionsSchema })),
   widgets: z.array(
     z.object({
+      // Stable id kept so `page.hiddenLayoutWidgets` references survive re-import (these
+      // rows are replaced wholesale below, but reusing the id keeps those soft refs valid).
+      id: z.uuid(),
       zone: z.enum(ZONE_NAMES),
       locale: z.enum(LOCALES).nullable(),
       kind: z.enum(widgetKinds),
@@ -48,6 +51,7 @@ export const layoutResource: SyncResource = {
         .orderBy(sql`(${layoutZones.options} ->> 'order')::int`);
       const widgetRows = await db
         .select({
+          id: layoutWidgets.id,
           zone: zones.name,
           locale: layoutWidgets.locale,
           kind: layoutWidgets.kind,
@@ -67,6 +71,7 @@ export const layoutResource: SyncResource = {
           ...(layout.description ? { description: layout.description } : {}),
           zones: zoneRows,
           widgets: widgetRows.map((w) => ({
+            id: w.id,
             zone: w.zone,
             locale: w.locale,
             kind: w.kind,
@@ -118,6 +123,7 @@ export const layoutResource: SyncResource = {
             const zoneId = zoneIdByName.get(w.zone);
             if (!zoneId) throw new Error(`layout ${doc.name}: unknown zone "${w.zone}"`);
             return {
+              id: w.id,
               layoutId: doc.id,
               zoneId,
               locale: w.locale,

@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f09a5-ebf2-7e4a-8701-19ca13634ce5
+system: false
+layout: admin
+locales:
+  - locale: en-us
+    slug: /admin
+    title: Administration
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /admin
+    title: Administración
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []

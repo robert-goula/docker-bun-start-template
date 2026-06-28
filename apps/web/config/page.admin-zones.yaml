@@ -1,0 +1,18 @@
+kind: page
+version: 1
+groupId: 019f0b57-10ba-7afb-9a26-ab12ec1d0f25
+system: true
+layout: admin
+locales:
+  - locale: en-us
+    slug: /admin/zones
+    title: Zones
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
+  - locale: es-us
+    slug: /admin/zones
+    title: Zonas
+    meta: {}
+    hiddenLayoutWidgets: []
+    widgets: []
