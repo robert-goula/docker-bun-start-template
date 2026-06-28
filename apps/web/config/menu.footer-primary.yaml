@@ -1,0 +1,24 @@
+kind: menu
+version: 1
+id: 019ef7a1-d6b3-7289-8129-019d8d214b29
+name: Footer - Primary
+slug: footer-primary
+orientation: vertical
+submenuMode: expanded
+items:
+  - id: 45c3afd5-a907-4ccc-bbd1-54c4b3dd4747
+    type: heading
+    label: Navigation
+    children:
+      - id: dc7b30f3-a5a9-4b2d-98ae-95874ade9883
+        type: page
+        groupId: 019ef6b7-da2a-7c91-a9bf-e5b3305412ed
+        children: []
+      - id: ff66cce2-fa7d-417d-989b-c5149f24e1b2
+        type: page
+        groupId: 019ef6b7-da2c-7ecb-b0d5-94002fc067c9
+        children: []
+      - id: bd96c95a-9f0d-4e2a-a1ee-90e070688d77
+        type: page
+        groupId: 019f021e-d88c-7d7e-82d0-e7c10c942a04
+        children: []

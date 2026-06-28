@@ -1,4 +1,4 @@
-import { Suspense, useId, useState } from "react";
+import { Suspense, useId, useRef, useState } from "react";
 import { cx } from "class-variance-authority";
 import { ArrowDropDownIcon } from "@/components/icons";
 import { Field, FieldBody, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -46,10 +46,31 @@ export default function PageMetaPanel({
   const [description, setDescription] = useState(meta?.meta.description ?? "");
   const [modules, setModules] = useState<PageMetaData>(() => extensionModules(meta));
 
+  // Route-owned page: the slug is fixed by the file route and there's no SEO, so the editor
+  // shows only the per-locale title (slug/description/modules are hidden and never written).
+  const system = meta?.system ?? false;
+
+  // The single bubbled onBlur fires on every focus-out, so only persist when something
+  // actually changed since the last commit — otherwise tabbing through the fields would
+  // re-save (and re-toast) unchanged data. Seeded from the initial state on first render.
+  const lastCommitted = useRef<string | null>(null);
+  const snapshot = () => JSON.stringify({ slug, title, description, modules });
+  if (lastCommitted.current === null) lastCommitted.current = snapshot();
+
   // Persist current state. Title/slug map to NOT NULL columns, so an empty value is omitted
   // (the existing one is kept) rather than sent and rejected. A changed slug renames the
   // page's URL for this locale; the parent navigates there after the save resolves.
   const commit = () => {
+    const current = snapshot();
+    if (current === lastCommitted.current) return;
+    lastCommitted.current = current;
+
+    // System pages only carry a per-locale title; never send slug/description/modules.
+    if (system) {
+      if (title.trim() !== "") onSave({ title });
+      return;
+    }
+
     const patch: PageMetaPatch = {
       description: description.trim() === "" ? null : description,
       modules,
@@ -72,31 +93,40 @@ export default function PageMetaPanel({
           <span className={cx(styles.indicator, !open && styles.collapsed)}>
             <ArrowDropDownIcon aria-hidden="true" />
           </span>
-          <span className={styles.title}>Page metadata</span>
+          <span className={styles.title}>{system ? "Page title" : "Page metadata"}</span>
         </button>
       </header>
 
       {/* A single bubbled onBlur persists every field; the editors stay controlled. */}
       <div id={contentId} className={styles.content} hidden={!open} onBlur={commit}>
-        <Field>
-          <FieldLabel htmlFor="meta-slug">Slug</FieldLabel>
-          <FieldBody>
-            <Input id="meta-slug" value={slug} onChange={(e) => setSlug(e.target.value)} required />
-            <FieldDescription>
-              The URL path for this locale (e.g. <code>/about</code>). Renaming changes the page
-              address.
-            </FieldDescription>
-          </FieldBody>
-        </Field>
+        {!system && (
+          <Field>
+            <FieldLabel htmlFor="meta-slug">Slug</FieldLabel>
+            <FieldBody>
+              <Input
+                id="meta-slug"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                required
+              />
+              <FieldDescription>
+                The URL path for this locale (e.g. <code>/about</code>). Renaming changes the page
+                address.
+              </FieldDescription>
+            </FieldBody>
+          </Field>
+        )}
 
         <BasicFields
           title={title}
           description={description}
           onTitleChange={setTitle}
           onDescriptionChange={setDescription}
+          hideDescription={system}
         />
 
-        {Object.entries(metaEditorRegistry).map(([id, Fields]) => (
+        {!system &&
+          Object.entries(metaEditorRegistry).map(([id, Fields]) => (
           <details key={id} className={styles.module}>
             <summary className={styles.moduleSummary}>{getMetaModule(id)?.label ?? id}</summary>
             <div className={styles.moduleBody}>

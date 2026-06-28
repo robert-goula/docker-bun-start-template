@@ -9,7 +9,7 @@ import LayoutBuilder, { type LayoutZoneState } from "@/components/LayoutBuilder"
 import PageBuilder from "@/components/PageBuilder";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { loadAdminPage } from "@/lib/loadPage";
+import { buildAdminHead, loadAdminPage } from "@/lib/loadPage";
 import { idParam } from "@/lib/shortId";
 import { layoutsKeys, layoutsRepo } from "@/repositories/layouts";
 import { layoutWidgetsRepo, saveLayoutWidgets } from "@/repositories/layoutWidgets";
@@ -22,19 +22,21 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin/layouts/$layoutI
   params: idParam("layoutId"),
   loader: async ({ context, params }) => {
     const ref = { slug: PAGE_SLUG, locale: context.i18n.locale };
-    const [pageLayout] = await Promise.all([
+    const [{ layout: pageLayout, meta, siteName }] = await Promise.all([
       loadAdminPage(context.queryClient, ref),
       context.queryClient.ensureQueryData(layoutsRepo.byId(params.layoutId as LayoutId)),
     ]);
-    return { pageLayout, ref };
+    return { pageLayout, meta, siteName, ref };
   },
+  head: ({ loaderData }) =>
+    loaderData ? buildAdminHead(loaderData.ref, loaderData.meta, loaderData.siteName) : {},
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { pageLayout, ref } = Route.useLoaderData();
+  const { pageLayout, meta, ref } = Route.useLoaderData();
   return (
-    <AdminCmsPage pageRef={ref} layout={pageLayout}>
+    <AdminCmsPage pageRef={ref} layout={pageLayout} meta={meta}>
       <LayoutDetail />
     </AdminCmsPage>
   );

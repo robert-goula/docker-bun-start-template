@@ -1,0 +1,46 @@
+kind: layout
+version: 1
+id: 019f0b32-67dc-736c-b52e-fcfb9836469e
+name: admin
+description: Administration pages only
+zones:
+  - zone: nav
+    options:
+      size: full
+      order: -1
+      title: Nav
+      defaultOpen: true
+  - zone: hero
+    options:
+      size: full
+      order: 0
+      title: Hero
+      defaultOpen: true
+  - zone: main
+    options:
+      size: ⅔
+      order: 1
+      title: Main
+      defaultOpen: true
+  - zone: sidebar
+    options:
+      size: ⅓
+      order: 2
+      title: Sidebar
+      defaultOpen: true
+  - zone: footer
+    options:
+      size: full
+      order: 3
+      title: Footer
+      defaultOpen: true
+widgets:
+  - zone: nav
+    locale: null
+    kind: menu
+    order: 0
+    options:
+      pin: top
+      size: full
+      menuId: 019f099b-b093-7a1b-82a7-b5414e86a6b3
+    content: {}

@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import AdminCmsPage from "@/components/AdminCmsPage";
-import { loadAdminPage } from "@/lib/loadPage";
+import { buildAdminHead, loadAdminPage } from "@/lib/loadPage";
 import { usersRepo, type SafeUser } from "@/repositories/users";
 
 // The admin users list is a page-builder–controlled page: it loads the CMS layout for this
@@ -42,12 +42,14 @@ export const Route = createFileRoute("/{-$locale}/_authed/admin/users/")({
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
     const ref = { slug: USERS_PAGE_SLUG, locale: context.i18n.locale };
-    const [layout] = await Promise.all([
+    const [{ layout, meta, siteName }] = await Promise.all([
       loadAdminPage(context.queryClient, ref),
       context.queryClient.ensureQueryData(usersRepo.list(toListParams(deps))),
     ]);
-    return { layout, ref };
+    return { layout, meta, siteName, ref };
   },
+  head: ({ loaderData }) =>
+    loaderData ? buildAdminHead(loaderData.ref, loaderData.meta, loaderData.siteName) : {},
   component: RouteComponent,
 });
 
@@ -56,9 +58,9 @@ const dateFormatter = new Intl.DateTimeFormat(undefined, {
 });
 
 function RouteComponent() {
-  const { layout, ref } = Route.useLoaderData();
+  const { layout, meta, ref } = Route.useLoaderData();
   return (
-    <AdminCmsPage pageRef={ref} layout={layout}>
+    <AdminCmsPage pageRef={ref} layout={layout} meta={meta}>
       <UsersList />
     </AdminCmsPage>
   );

@@ -1,5 +1,5 @@
 import { type InferInsertModel, type InferSelectModel, sql } from "drizzle-orm";
-import { index, pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 import type { PageMetaData } from "@/lib/meta/types";
@@ -31,6 +31,10 @@ export const pages = pgTable(
       .default(sql`uuidv7()`),
     title: varchar({ length: 255 }).notNull(),
     description: varchar({ length: 500 }),
+    // A route-owned "system" page (e.g. an admin screen): its slug is fixed by the file
+    // route, so the metadata editor hides slug/description and edits only the per-locale
+    // title. Its locale rows share a groupId so menus translate the linked label.
+    system: boolean().notNull().default(false),
     // Extensible SEO metadata, keyed by module id (Open Graph, Twitter, …). The basic
     // module's fields live in title/description above; everything else lives here. See
     // src/lib/meta. Uses the custom jsonb helper to avoid double-encoding (see ../jsonb).
