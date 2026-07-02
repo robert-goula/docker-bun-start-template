@@ -16,8 +16,10 @@ import { Route as Char123LocaleChar125SplatRouteImport } from './routes/{-$local
 import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api/openapi[.]json'
 import { Route as Char123LocaleChar125AuthedRouteRouteImport } from './routes/{-$locale}/_authed/route'
 import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
+import { Route as ApiTenantsIndexRouteImport } from './routes/api/tenants/index'
 import { Route as ApiTaxonomyIndexRouteImport } from './routes/api/taxonomy/index'
 import { Route as ApiUsersIdRouteImport } from './routes/api/users/$id'
+import { Route as ApiTenantsIdRouteImport } from './routes/api/tenants/$id'
 import { Route as ApiTaxonomyIdRouteImport } from './routes/api/taxonomy/$id'
 import { Route as ApiLayoutsIdRouteImport } from './routes/api/layouts/$id'
 import { Route as ApiAuthSessionsRouteImport } from './routes/api/auth/sessions'
@@ -25,6 +27,7 @@ import { Route as Char123LocaleChar125AuthedAdminRouteRouteImport } from './rout
 import { Route as Char123LocaleChar125AuthedAdminIndexRouteImport } from './routes/{-$locale}/_authed/admin/index'
 import { Route as Char123LocaleChar125AuthedAdminZonesIndexRouteImport } from './routes/{-$locale}/_authed/admin/zones/index'
 import { Route as Char123LocaleChar125AuthedAdminUsersIndexRouteImport } from './routes/{-$locale}/_authed/admin/users/index'
+import { Route as Char123LocaleChar125AuthedAdminTenantsIndexRouteImport } from './routes/{-$locale}/_authed/admin/tenants/index'
 import { Route as Char123LocaleChar125AuthedAdminTaxonomyIndexRouteImport } from './routes/{-$locale}/_authed/admin/taxonomy/index'
 import { Route as Char123LocaleChar125AuthedAdminPagesIndexRouteImport } from './routes/{-$locale}/_authed/admin/pages/index'
 import { Route as Char123LocaleChar125AuthedAdminMenusIndexRouteImport } from './routes/{-$locale}/_authed/admin/menus/index'
@@ -32,6 +35,7 @@ import { Route as Char123LocaleChar125AuthedAdminLayoutsIndexRouteImport } from 
 import { Route as Char123LocaleChar125AuthedAdminCustomWidgetsIndexRouteImport } from './routes/{-$locale}/_authed/admin/custom-widgets/index'
 import { Route as Char123LocaleChar125AuthedAdminConfigIndexRouteImport } from './routes/{-$locale}/_authed/admin/config/index'
 import { Route as Char123LocaleChar125AuthedAdminUsersUserIdRouteImport } from './routes/{-$locale}/_authed/admin/users/$userId'
+import { Route as Char123LocaleChar125AuthedAdminTenantsTenantIdRouteImport } from './routes/{-$locale}/_authed/admin/tenants/$tenantId'
 import { Route as Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRouteImport } from './routes/{-$locale}/_authed/admin/taxonomy/$taxonomyId'
 import { Route as Char123LocaleChar125AuthedAdminMenusMenuIdRouteImport } from './routes/{-$locale}/_authed/admin/menus/$menuId'
 import { Route as Char123LocaleChar125AuthedAdminLayoutsLayoutIdRouteImport } from './routes/{-$locale}/_authed/admin/layouts/$layoutId'
@@ -77,6 +81,11 @@ const ApiUsersIndexRoute = ApiUsersIndexRouteImport.update({
   path: '/api/users/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTenantsIndexRoute = ApiTenantsIndexRouteImport.update({
+  id: '/api/tenants/',
+  path: '/api/tenants/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTaxonomyIndexRoute = ApiTaxonomyIndexRouteImport.update({
   id: '/api/taxonomy/',
   path: '/api/taxonomy/',
@@ -85,6 +94,11 @@ const ApiTaxonomyIndexRoute = ApiTaxonomyIndexRouteImport.update({
 const ApiUsersIdRoute = ApiUsersIdRouteImport.update({
   id: '/api/users/$id',
   path: '/api/users/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTenantsIdRoute = ApiTenantsIdRouteImport.update({
+  id: '/api/tenants/$id',
+  path: '/api/tenants/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTaxonomyIdRoute = ApiTaxonomyIdRouteImport.update({
@@ -124,6 +138,12 @@ const Char123LocaleChar125AuthedAdminUsersIndexRoute =
   Char123LocaleChar125AuthedAdminUsersIndexRouteImport.update({
     id: '/users/',
     path: '/users/',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
+const Char123LocaleChar125AuthedAdminTenantsIndexRoute =
+  Char123LocaleChar125AuthedAdminTenantsIndexRouteImport.update({
+    id: '/tenants/',
+    path: '/tenants/',
     getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
 const Char123LocaleChar125AuthedAdminTaxonomyIndexRoute =
@@ -168,6 +188,12 @@ const Char123LocaleChar125AuthedAdminUsersUserIdRoute =
     path: '/users/$userId',
     getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
   } as any)
+const Char123LocaleChar125AuthedAdminTenantsTenantIdRoute =
+  Char123LocaleChar125AuthedAdminTenantsTenantIdRouteImport.update({
+    id: '/tenants/$tenantId',
+    path: '/tenants/$tenantId',
+    getParentRoute: () => Char123LocaleChar125AuthedAdminRouteRoute,
+  } as any)
 const Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute =
   Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRouteImport.update({
     id: '/taxonomy/$taxonomyId',
@@ -209,8 +235,10 @@ export interface FileRoutesByFullPath {
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/taxonomy/$id': typeof ApiTaxonomyIdRoute
+  '/api/tenants/$id': typeof ApiTenantsIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
   '/api/taxonomy/': typeof ApiTaxonomyIndexRoute
+  '/api/tenants/': typeof ApiTenantsIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AuthedAdminIndexRoute
   '/{-$locale}/admin/config/$configId': typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
@@ -218,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/layouts/$layoutId': typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
   '/{-$locale}/admin/menus/$menuId': typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
   '/{-$locale}/admin/taxonomy/$taxonomyId': typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  '/{-$locale}/admin/tenants/$tenantId': typeof Char123LocaleChar125AuthedAdminTenantsTenantIdRoute
   '/{-$locale}/admin/users/$userId': typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
   '/{-$locale}/admin/config/': typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
   '/{-$locale}/admin/custom-widgets/': typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
@@ -225,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/menus/': typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
   '/{-$locale}/admin/pages/': typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
   '/{-$locale}/admin/taxonomy/': typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  '/{-$locale}/admin/tenants/': typeof Char123LocaleChar125AuthedAdminTenantsIndexRoute
   '/{-$locale}/admin/users/': typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
   '/{-$locale}/admin/zones/': typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
@@ -236,8 +266,10 @@ export interface FileRoutesByTo {
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/taxonomy/$id': typeof ApiTaxonomyIdRoute
+  '/api/tenants/$id': typeof ApiTenantsIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
   '/api/taxonomy': typeof ApiTaxonomyIndexRoute
+  '/api/tenants': typeof ApiTenantsIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AuthedAdminIndexRoute
   '/{-$locale}/admin/config/$configId': typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
@@ -245,6 +277,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/layouts/$layoutId': typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
   '/{-$locale}/admin/menus/$menuId': typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
   '/{-$locale}/admin/taxonomy/$taxonomyId': typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  '/{-$locale}/admin/tenants/$tenantId': typeof Char123LocaleChar125AuthedAdminTenantsTenantIdRoute
   '/{-$locale}/admin/users/$userId': typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
   '/{-$locale}/admin/config': typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
   '/{-$locale}/admin/custom-widgets': typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
@@ -252,6 +285,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/menus': typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
   '/{-$locale}/admin/pages': typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
   '/{-$locale}/admin/taxonomy': typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  '/{-$locale}/admin/tenants': typeof Char123LocaleChar125AuthedAdminTenantsIndexRoute
   '/{-$locale}/admin/users': typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
   '/{-$locale}/admin/zones': typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
@@ -267,8 +301,10 @@ export interface FileRoutesById {
   '/api/auth/sessions': typeof ApiAuthSessionsRoute
   '/api/layouts/$id': typeof ApiLayoutsIdRoute
   '/api/taxonomy/$id': typeof ApiTaxonomyIdRoute
+  '/api/tenants/$id': typeof ApiTenantsIdRoute
   '/api/users/$id': typeof ApiUsersIdRoute
   '/api/taxonomy/': typeof ApiTaxonomyIndexRoute
+  '/api/tenants/': typeof ApiTenantsIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
   '/{-$locale}/_authed/admin/': typeof Char123LocaleChar125AuthedAdminIndexRoute
   '/{-$locale}/_authed/admin/config/$configId': typeof Char123LocaleChar125AuthedAdminConfigConfigIdRoute
@@ -276,6 +312,7 @@ export interface FileRoutesById {
   '/{-$locale}/_authed/admin/layouts/$layoutId': typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
   '/{-$locale}/_authed/admin/menus/$menuId': typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
   '/{-$locale}/_authed/admin/taxonomy/$taxonomyId': typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  '/{-$locale}/_authed/admin/tenants/$tenantId': typeof Char123LocaleChar125AuthedAdminTenantsTenantIdRoute
   '/{-$locale}/_authed/admin/users/$userId': typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
   '/{-$locale}/_authed/admin/config/': typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
   '/{-$locale}/_authed/admin/custom-widgets/': typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
@@ -283,6 +320,7 @@ export interface FileRoutesById {
   '/{-$locale}/_authed/admin/menus/': typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
   '/{-$locale}/_authed/admin/pages/': typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
   '/{-$locale}/_authed/admin/taxonomy/': typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  '/{-$locale}/_authed/admin/tenants/': typeof Char123LocaleChar125AuthedAdminTenantsIndexRoute
   '/{-$locale}/_authed/admin/users/': typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
   '/{-$locale}/_authed/admin/zones/': typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
@@ -298,8 +336,10 @@ export interface FileRouteTypes {
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/taxonomy/$id'
+    | '/api/tenants/$id'
     | '/api/users/$id'
     | '/api/taxonomy/'
+    | '/api/tenants/'
     | '/api/users/'
     | '/{-$locale}/admin/'
     | '/{-$locale}/admin/config/$configId'
@@ -307,6 +347,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/layouts/$layoutId'
     | '/{-$locale}/admin/menus/$menuId'
     | '/{-$locale}/admin/taxonomy/$taxonomyId'
+    | '/{-$locale}/admin/tenants/$tenantId'
     | '/{-$locale}/admin/users/$userId'
     | '/{-$locale}/admin/config/'
     | '/{-$locale}/admin/custom-widgets/'
@@ -314,6 +355,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/menus/'
     | '/{-$locale}/admin/pages/'
     | '/{-$locale}/admin/taxonomy/'
+    | '/{-$locale}/admin/tenants/'
     | '/{-$locale}/admin/users/'
     | '/{-$locale}/admin/zones/'
   fileRoutesByTo: FileRoutesByTo
@@ -325,8 +367,10 @@ export interface FileRouteTypes {
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/taxonomy/$id'
+    | '/api/tenants/$id'
     | '/api/users/$id'
     | '/api/taxonomy'
+    | '/api/tenants'
     | '/api/users'
     | '/{-$locale}/admin'
     | '/{-$locale}/admin/config/$configId'
@@ -334,6 +378,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/layouts/$layoutId'
     | '/{-$locale}/admin/menus/$menuId'
     | '/{-$locale}/admin/taxonomy/$taxonomyId'
+    | '/{-$locale}/admin/tenants/$tenantId'
     | '/{-$locale}/admin/users/$userId'
     | '/{-$locale}/admin/config'
     | '/{-$locale}/admin/custom-widgets'
@@ -341,6 +386,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/menus'
     | '/{-$locale}/admin/pages'
     | '/{-$locale}/admin/taxonomy'
+    | '/{-$locale}/admin/tenants'
     | '/{-$locale}/admin/users'
     | '/{-$locale}/admin/zones'
   id:
@@ -355,8 +401,10 @@ export interface FileRouteTypes {
     | '/api/auth/sessions'
     | '/api/layouts/$id'
     | '/api/taxonomy/$id'
+    | '/api/tenants/$id'
     | '/api/users/$id'
     | '/api/taxonomy/'
+    | '/api/tenants/'
     | '/api/users/'
     | '/{-$locale}/_authed/admin/'
     | '/{-$locale}/_authed/admin/config/$configId'
@@ -364,6 +412,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/_authed/admin/layouts/$layoutId'
     | '/{-$locale}/_authed/admin/menus/$menuId'
     | '/{-$locale}/_authed/admin/taxonomy/$taxonomyId'
+    | '/{-$locale}/_authed/admin/tenants/$tenantId'
     | '/{-$locale}/_authed/admin/users/$userId'
     | '/{-$locale}/_authed/admin/config/'
     | '/{-$locale}/_authed/admin/custom-widgets/'
@@ -371,6 +420,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/_authed/admin/menus/'
     | '/{-$locale}/_authed/admin/pages/'
     | '/{-$locale}/_authed/admin/taxonomy/'
+    | '/{-$locale}/_authed/admin/tenants/'
     | '/{-$locale}/_authed/admin/users/'
     | '/{-$locale}/_authed/admin/zones/'
   fileRoutesById: FileRoutesById
@@ -381,8 +431,10 @@ export interface RootRouteChildren {
   ApiAuthSessionsRoute: typeof ApiAuthSessionsRoute
   ApiLayoutsIdRoute: typeof ApiLayoutsIdRoute
   ApiTaxonomyIdRoute: typeof ApiTaxonomyIdRoute
+  ApiTenantsIdRoute: typeof ApiTenantsIdRoute
   ApiUsersIdRoute: typeof ApiUsersIdRoute
   ApiTaxonomyIndexRoute: typeof ApiTaxonomyIndexRoute
+  ApiTenantsIndexRoute: typeof ApiTenantsIndexRoute
   ApiUsersIndexRoute: typeof ApiUsersIndexRoute
 }
 
@@ -437,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUsersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tenants/': {
+      id: '/api/tenants/'
+      path: '/api/tenants'
+      fullPath: '/api/tenants/'
+      preLoaderRoute: typeof ApiTenantsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/taxonomy/': {
       id: '/api/taxonomy/'
       path: '/api/taxonomy'
@@ -449,6 +508,13 @@ declare module '@tanstack/react-router' {
       path: '/api/users/$id'
       fullPath: '/api/users/$id'
       preLoaderRoute: typeof ApiUsersIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tenants/$id': {
+      id: '/api/tenants/$id'
+      path: '/api/tenants/$id'
+      fullPath: '/api/tenants/$id'
+      preLoaderRoute: typeof ApiTenantsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/taxonomy/$id': {
@@ -500,6 +566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AuthedAdminUsersIndexRouteImport
       parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
+    '/{-$locale}/_authed/admin/tenants/': {
+      id: '/{-$locale}/_authed/admin/tenants/'
+      path: '/tenants'
+      fullPath: '/{-$locale}/admin/tenants/'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminTenantsIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
+    }
     '/{-$locale}/_authed/admin/taxonomy/': {
       id: '/{-$locale}/_authed/admin/taxonomy/'
       path: '/taxonomy'
@@ -549,6 +622,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AuthedAdminUsersUserIdRouteImport
       parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
     }
+    '/{-$locale}/_authed/admin/tenants/$tenantId': {
+      id: '/{-$locale}/_authed/admin/tenants/$tenantId'
+      path: '/tenants/$tenantId'
+      fullPath: '/{-$locale}/admin/tenants/$tenantId'
+      preLoaderRoute: typeof Char123LocaleChar125AuthedAdminTenantsTenantIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AuthedAdminRouteRoute
+    }
     '/{-$locale}/_authed/admin/taxonomy/$taxonomyId': {
       id: '/{-$locale}/_authed/admin/taxonomy/$taxonomyId'
       path: '/taxonomy/$taxonomyId'
@@ -594,6 +674,7 @@ interface Char123LocaleChar125AuthedAdminRouteRouteChildren {
   Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute: typeof Char123LocaleChar125AuthedAdminLayoutsLayoutIdRoute
   Char123LocaleChar125AuthedAdminMenusMenuIdRoute: typeof Char123LocaleChar125AuthedAdminMenusMenuIdRoute
   Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute: typeof Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute
+  Char123LocaleChar125AuthedAdminTenantsTenantIdRoute: typeof Char123LocaleChar125AuthedAdminTenantsTenantIdRoute
   Char123LocaleChar125AuthedAdminUsersUserIdRoute: typeof Char123LocaleChar125AuthedAdminUsersUserIdRoute
   Char123LocaleChar125AuthedAdminConfigIndexRoute: typeof Char123LocaleChar125AuthedAdminConfigIndexRoute
   Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute: typeof Char123LocaleChar125AuthedAdminCustomWidgetsIndexRoute
@@ -601,6 +682,7 @@ interface Char123LocaleChar125AuthedAdminRouteRouteChildren {
   Char123LocaleChar125AuthedAdminMenusIndexRoute: typeof Char123LocaleChar125AuthedAdminMenusIndexRoute
   Char123LocaleChar125AuthedAdminPagesIndexRoute: typeof Char123LocaleChar125AuthedAdminPagesIndexRoute
   Char123LocaleChar125AuthedAdminTaxonomyIndexRoute: typeof Char123LocaleChar125AuthedAdminTaxonomyIndexRoute
+  Char123LocaleChar125AuthedAdminTenantsIndexRoute: typeof Char123LocaleChar125AuthedAdminTenantsIndexRoute
   Char123LocaleChar125AuthedAdminUsersIndexRoute: typeof Char123LocaleChar125AuthedAdminUsersIndexRoute
   Char123LocaleChar125AuthedAdminZonesIndexRoute: typeof Char123LocaleChar125AuthedAdminZonesIndexRoute
 }
@@ -619,6 +701,8 @@ const Char123LocaleChar125AuthedAdminRouteRouteChildren: Char123LocaleChar125Aut
       Char123LocaleChar125AuthedAdminMenusMenuIdRoute,
     Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute:
       Char123LocaleChar125AuthedAdminTaxonomyTaxonomyIdRoute,
+    Char123LocaleChar125AuthedAdminTenantsTenantIdRoute:
+      Char123LocaleChar125AuthedAdminTenantsTenantIdRoute,
     Char123LocaleChar125AuthedAdminUsersUserIdRoute:
       Char123LocaleChar125AuthedAdminUsersUserIdRoute,
     Char123LocaleChar125AuthedAdminConfigIndexRoute:
@@ -633,6 +717,8 @@ const Char123LocaleChar125AuthedAdminRouteRouteChildren: Char123LocaleChar125Aut
       Char123LocaleChar125AuthedAdminPagesIndexRoute,
     Char123LocaleChar125AuthedAdminTaxonomyIndexRoute:
       Char123LocaleChar125AuthedAdminTaxonomyIndexRoute,
+    Char123LocaleChar125AuthedAdminTenantsIndexRoute:
+      Char123LocaleChar125AuthedAdminTenantsIndexRoute,
     Char123LocaleChar125AuthedAdminUsersIndexRoute:
       Char123LocaleChar125AuthedAdminUsersIndexRoute,
     Char123LocaleChar125AuthedAdminZonesIndexRoute:
@@ -686,8 +772,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSessionsRoute: ApiAuthSessionsRoute,
   ApiLayoutsIdRoute: ApiLayoutsIdRoute,
   ApiTaxonomyIdRoute: ApiTaxonomyIdRoute,
+  ApiTenantsIdRoute: ApiTenantsIdRoute,
   ApiUsersIdRoute: ApiUsersIdRoute,
   ApiTaxonomyIndexRoute: ApiTaxonomyIndexRoute,
+  ApiTenantsIndexRoute: ApiTenantsIndexRoute,
   ApiUsersIndexRoute: ApiUsersIndexRoute,
 }
 export const routeTree = rootRouteImport

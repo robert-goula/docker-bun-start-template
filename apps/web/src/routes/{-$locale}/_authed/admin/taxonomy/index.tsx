@@ -7,8 +7,17 @@ import * as z from "zod";
 import { type TaxonomyId } from "@/db/schema/taxonomy";
 import { DEFAULT_LOCALE } from "@/db/schema/pages";
 import AdminCmsPage from "@/components/AdminCmsPage";
-import { DeleteIcon, EditIcon } from "@/components/icons";
+import { AddIcon, DeleteIcon, EditIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { IconButton } from "@/components/ui/iconButton";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -259,6 +268,19 @@ function CreateTaxonomy({
   const [value, setValue] = useState("");
   const [label, setLabel] = useState("");
   const createMutation = useMutation(taxonomyRepo.create(qc));
+  const [open, setOpen] = useState(false);
+
+  const dialogTitle = parentId
+    ? `${content.newTermUnder.value} “${parentLabel ?? "…"}”`
+    : content.newRootTaxonomy.value;
+
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      setValue("");
+      setLabel("");
+    }
+    setOpen(next);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -272,6 +294,7 @@ function CreateTaxonomy({
         parentId,
         locales: { [DEFAULT_LOCALE]: trimmedLabel },
       });
+      setOpen(false);
       toast.success(
         `${content.added.value} "${created.locales?.[DEFAULT_LOCALE] ?? created.value}"`,
       );
@@ -285,41 +308,66 @@ function CreateTaxonomy({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
-      <p style={{ marginBlockEnd: "0.5rem", color: "var(--text-muted)" }}>
-        {parentId
-          ? `${content.newTermUnder.value} “${parentLabel ?? "…"}”`
-          : content.newRootTaxonomy.value}
-      </p>
-      <FieldGroup>
-        <Field className="½">
-          <FieldLabel htmlFor="new-taxonomy-value">{content.valueCanonical}</FieldLabel>
-          <FieldBody>
-            <Input
-              id="new-taxonomy-value"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder={parentId ? "#ff0000" : "colors"}
-            />
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor="new-taxonomy-label">
-            {content.labelWord} ({DEFAULT_LOCALE})
-          </FieldLabel>
-          <FieldBody>
-            <Input
-              id="new-taxonomy-label"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              placeholder={parentId ? "Red" : "Colors"}
-            />
-          </FieldBody>
-        </Field>
-        <Button type="submit" intent="primary" disabled={!value.trim() || createMutation.isPending}>
-          {createMutation.isPending ? content.creating : content.create}
-        </Button>
-      </FieldGroup>
-    </form>
+    <div style={{ display: "flex", justifyContent: "flex-end", marginBlockEnd: "1.5rem" }}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger
+          render={
+            <Button intent="primary" style={{ gap: "var(--spacing-xs)" }}>
+              <AddIcon aria-hidden="true" />
+              {content.create}
+            </Button>
+          }
+        />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-lg)" }}
+          >
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="new-taxonomy-value">{content.valueCanonical}</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id="new-taxonomy-value"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder={parentId ? "#ff0000" : "colors"}
+                    autoFocus
+                  />
+                </FieldBody>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="new-taxonomy-label">
+                  {content.labelWord} ({DEFAULT_LOCALE})
+                </FieldLabel>
+                <FieldBody>
+                  <Input
+                    id="new-taxonomy-label"
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder={parentId ? "Red" : "Colors"}
+                  />
+                </FieldBody>
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {content.cancel}
+              </DialogClose>
+              <Button
+                type="submit"
+                intent="primary"
+                disabled={!value.trim() || createMutation.isPending}
+              >
+                {createMutation.isPending ? content.creating : content.create}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

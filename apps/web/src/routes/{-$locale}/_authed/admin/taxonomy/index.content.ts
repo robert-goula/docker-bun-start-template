@@ -37,6 +37,7 @@ const adminTaxonomyContent = {
     labelWord: t({ "en-us": "Label", "es-us": "Etiqueta" }),
     creating: t({ "en-us": "Creating…", "es-us": "Creando…" }),
     create: t({ "en-us": "Create", "es-us": "Crear" }),
+    cancel: t({ "en-us": "Cancel", "es-us": "Cancelar" }),
     // Detail page
     backToList: t({ "en-us": "← Back to list", "es-us": "← Volver a la lista" }),
     editTaxonomy: t({ "en-us": "Edit taxonomy", "es-us": "Editar taxonomía" }),

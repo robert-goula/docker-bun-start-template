@@ -4,6 +4,7 @@
 // export * from "./domains";
 // export * from "./roles";
 // export * from "./translations";
+export * from './tenants';
 export * from './users';
 export * from './zones';
 export * from './layouts';

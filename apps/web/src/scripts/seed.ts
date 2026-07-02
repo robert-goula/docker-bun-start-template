@@ -2,15 +2,20 @@ import { Effect } from "effect";
 import { Database, DatabaseLive } from "@/db";
 import { layouts } from "@/db/schema/layouts";
 import { layoutZones } from "@/db/schema/layoutZones";
+import { tenants } from "@/db/schema/tenants";
 import { users } from "@/db/schema/users";
 import { zones } from "@/db/schema/zones";
 import { layoutZones as layoutZoneSeed } from "@/db/seeding/layoutZones";
 import { layouts as layoutSeed } from "@/db/seeding/layouts";
+import { tenants as tenantSeed } from "@/db/seeding/tenants";
 import { users as userSeed } from "@/db/seeding/users";
 import { zones as zoneSeed } from "@/db/seeding/zones";
 
 const program = Effect.gen(function* () {
   const db = yield* Database;
+
+  // Tenants first — the admin user references one via tenantId (FK).
+  yield* Effect.promise(() => db.insert(tenants).values(tenantSeed).onConflictDoNothing());
 
   // Admin only, for now (first entry of the user seed).
   const admin = userSeed[0];
@@ -48,7 +53,7 @@ const program = Effect.gen(function* () {
   );
 
   yield* Effect.log(
-    `Seeded ${admin ? 1 : 0} user, ${zoneSeed.length} zones, ${layoutSeed.length} layout(s), ${layoutZoneCount} layout zones`,
+    `Seeded ${tenantSeed.length} tenants, ${admin ? 1 : 0} user, ${zoneSeed.length} zones, ${layoutSeed.length} layout(s), ${layoutZoneCount} layout zones`,
   );
 });
 

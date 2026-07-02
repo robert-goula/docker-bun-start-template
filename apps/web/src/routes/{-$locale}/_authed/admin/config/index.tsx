@@ -4,7 +4,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useIntlayer } from "react-intlayer";
 import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { AddIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -134,6 +144,16 @@ function CreateConfig() {
   const [description, setDescription] = useState("");
   const [valueText, setValueText] = useState("null");
   const setMutation = useMutation(configRepo.set(qc));
+  const [open, setOpen] = useState(false);
+
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      setId("");
+      setDescription("");
+      setValueText("null");
+    }
+    setOpen(next);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -160,6 +180,7 @@ function CreateConfig() {
         value,
         description: description.trim() || null,
       });
+      setOpen(false);
       toast.success(content.savedToast.value, { description: saved.id });
       navigate({ to: "/{-$locale}/admin/config/$configId", params: { configId: saved.id } });
     } catch (err) {
@@ -170,46 +191,72 @@ function CreateConfig() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
-      <FieldGroup>
-        <Field className="½">
-          <FieldLabel htmlFor="new-config-id">{content.newKey}</FieldLabel>
-          <FieldBody>
-            <Input
-              id="new-config-id"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              placeholder="plugins.enabled"
-            />
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor="new-config-description">{content.descriptionLabel}</FieldLabel>
-          <FieldBody>
-            <Input
-              id="new-config-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={content.optional.value}
-            />
-          </FieldBody>
-        </Field>
-        <Field className="full">
-          <FieldLabel htmlFor="new-config-value">{content.valueJson}</FieldLabel>
-          <FieldBody>
-            <Textarea
-              id="new-config-value"
-              value={valueText}
-              onChange={(e) => setValueText(e.target.value)}
-              rows={4}
-              spellCheck={false}
-            />
-          </FieldBody>
-        </Field>
-        <Button type="submit" intent="primary" disabled={!id.trim() || setMutation.isPending}>
-          {setMutation.isPending ? content.saving : content.createConfig}
-        </Button>
-      </FieldGroup>
-    </form>
+    <div style={{ display: "flex", justifyContent: "flex-end", marginBlockEnd: "1.5rem" }}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger
+          render={
+            <Button intent="primary" style={{ gap: "var(--spacing-xs)" }}>
+              <AddIcon aria-hidden="true" />
+              {content.createConfig}
+            </Button>
+          }
+        />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{content.createConfig}</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-lg)" }}
+          >
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="new-config-id">{content.newKey}</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id="new-config-id"
+                    value={id}
+                    onChange={(e) => setId(e.target.value)}
+                    placeholder="plugins.enabled"
+                    autoFocus
+                  />
+                </FieldBody>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="new-config-description">{content.descriptionLabel}</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id="new-config-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={content.optional.value}
+                  />
+                </FieldBody>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="new-config-value">{content.valueJson}</FieldLabel>
+                <FieldBody>
+                  <Textarea
+                    id="new-config-value"
+                    value={valueText}
+                    onChange={(e) => setValueText(e.target.value)}
+                    rows={4}
+                    spellCheck={false}
+                  />
+                </FieldBody>
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {content.cancel}
+              </DialogClose>
+              <Button type="submit" intent="primary" disabled={!id.trim() || setMutation.isPending}>
+                {setMutation.isPending ? content.saving : content.createConfig}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
