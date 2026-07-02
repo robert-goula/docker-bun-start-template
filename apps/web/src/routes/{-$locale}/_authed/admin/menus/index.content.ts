@@ -15,6 +15,7 @@ const adminMenusContent = {
     descriptionLabel: t({ "en-us": "Description", "es-us": "Descripción" }),
     optional: t({ "en-us": "Optional", "es-us": "Opcional" }),
     createMenu: t({ "en-us": "Create menu", "es-us": "Crear menú" }),
+    cancel: t({ "en-us": "Cancel", "es-us": "Cancelar" }),
     creating: t({ "en-us": "Creating…", "es-us": "Creando…" }),
     createdToast: t({ "en-us": "Menu created", "es-us": "Menú creado" }),
     createError: t({ "en-us": "Couldn’t create menu", "es-us": "No se pudo crear el menú" }),

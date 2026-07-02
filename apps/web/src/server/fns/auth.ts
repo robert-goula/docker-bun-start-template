@@ -1,6 +1,7 @@
 import { createMiddleware, createServerFn } from "@tanstack/react-start";
 import { queryOptions } from "@tanstack/react-query";
 import * as z from "zod";
+import type { TenantId, TenantSummary } from "@/db/schema/tenants";
 import type { SessionUser } from "@/server/services/CurrentUser";
 
 export const meQueryOptions = () =>
@@ -10,10 +11,19 @@ export const meQueryOptions = () =>
     staleTime: 60_000,
   });
 
+export const availableTenantsQueryOptions = () =>
+  queryOptions({
+    queryKey: ["tenants", "available"],
+    queryFn: ({ signal }) => listAvailableTenantsFn({ signal }),
+    staleTime: 60_000,
+  });
+
 const LoginInput = z.object({
   email: z.email().max(255),
   password: z.string().min(1).max(255),
 });
+
+const SwitchTenantInput = z.object({ tenantId: z.uuidv7() });
 
 export const authMiddleware = createMiddleware({ type: "function" }).server(
   async ({ next }) => {
@@ -81,6 +91,50 @@ export const acknowledgePasswordRehashFn = createServerFn({ method: "POST" })
       ),
     );
     return { ok: true as const };
+  });
+
+export const switchTenantFn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => SwitchTenantInput.parse(input))
+  .middleware([authMiddleware])
+  .handler(async ({ data, context }) => {
+    const { Effect } = await import("effect");
+    const { setResponseStatus } = await import("@tanstack/react-start/server");
+    const { runtime } = await import("@/server/runtime");
+    const { CurrentUser } = await import("@/server/services/CurrentUser");
+    const { UserRepo } = await import("@/server/services/UserRepo");
+    const result = await runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* UserRepo;
+        yield* repo.setActiveTenant(data.tenantId as TenantId);
+        return { ok: true as const };
+      }).pipe(
+        Effect.provideService(CurrentUser, context.user),
+        Effect.catchTags({
+          TenantNotAvailable: () => Effect.succeed({ ok: false as const, status: 403 as const }),
+          UserNotFound: () => Effect.succeed({ ok: false as const, status: 404 as const }),
+          DatabaseError: () => Effect.succeed({ ok: false as const, status: 500 as const }),
+        }),
+      ),
+    );
+    if (!result.ok) {
+      setResponseStatus(result.status);
+      return { ok: false as const };
+    }
+    return { ok: true as const };
+  });
+
+export const listAvailableTenantsFn = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<ReadonlyArray<TenantSummary>> => {
+    const { Effect } = await import("effect");
+    const { runtime } = await import("@/server/runtime");
+    const { TenantRepo } = await import("@/server/services/TenantRepo");
+    return runtime.runPromise(
+      Effect.gen(function* () {
+        const repo = yield* TenantRepo;
+        return yield* repo.listByIds(context.user.availableTenants);
+      }).pipe(Effect.catchAll(() => Effect.succeed([] as ReadonlyArray<TenantSummary>))),
+    );
   });
 
 export const meFn = createServerFn({ method: "GET" }).handler(

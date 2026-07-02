@@ -18,6 +18,7 @@ const adminConfigContent = {
     optional: t({ "en-us": "Optional", "es-us": "Opcional" }),
     valueJson: t({ "en-us": "Value (JSON)", "es-us": "Valor (JSON)" }),
     createConfig: t({ "en-us": "Create config", "es-us": "Crear configuración" }),
+    cancel: t({ "en-us": "Cancel", "es-us": "Cancelar" }),
     saving: t({ "en-us": "Saving…", "es-us": "Guardando…" }),
     invalidKey: t({ "en-us": "Invalid key", "es-us": "Clave no válida" }),
     invalidKeyHint: t({

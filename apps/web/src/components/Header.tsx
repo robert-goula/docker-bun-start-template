@@ -7,6 +7,7 @@ import ThemeToggle from "./ThemeToggle";
 import FontSizeControls from "./FontSizeControls";
 import AccentControls from "./AccentControls";
 import LanguageSwitcher from "./LanguageSwitcher";
+import TenantSwitcher from "./TenantSwitcher";
 import { EditModeToggle } from "./EditMode";
 import { cx } from "class-variance-authority";
 import styles from "./Header.module.css";
@@ -56,6 +57,7 @@ export default function Header() {
         </nav>
       </section>
       <section className={cx(styles.rhs, "⅓")}>
+        <TenantSwitcher />
         <LanguageSwitcher />
         <FontSizeControls />
         <AccentControls />

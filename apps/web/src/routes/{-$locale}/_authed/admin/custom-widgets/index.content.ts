@@ -20,6 +20,7 @@ const adminCustomWidgetsContent = {
     descriptionLabel: t({ "en-us": "Description", "es-us": "Descripción" }),
     optional: t({ "en-us": "Optional", "es-us": "Opcional" }),
     createWidget: t({ "en-us": "Create custom widget", "es-us": "Crear widget personalizado" }),
+    cancel: t({ "en-us": "Cancel", "es-us": "Cancelar" }),
     creating: t({ "en-us": "Creating…", "es-us": "Creando…" }),
     createdToast: t({ "en-us": "Custom widget created", "es-us": "Widget personalizado creado" }),
     createError: t({

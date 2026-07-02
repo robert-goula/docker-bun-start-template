@@ -14,6 +14,7 @@ const adminLayoutsContent = {
     descriptionLabel: t({ "en-us": "Description", "es-us": "Descripción" }),
     optional: t({ "en-us": "Optional", "es-us": "Opcional" }),
     createLayout: t({ "en-us": "Create layout", "es-us": "Crear diseño" }),
+    cancel: t({ "en-us": "Cancel", "es-us": "Cancelar" }),
     creating: t({ "en-us": "Creating…", "es-us": "Creando…" }),
     createdToast: t({ "en-us": "Layout created", "es-us": "Diseño creado" }),
     createError: t({ "en-us": "Couldn’t create layout", "es-us": "No se pudo crear el diseño" }),

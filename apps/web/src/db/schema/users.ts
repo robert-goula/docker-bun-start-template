@@ -3,6 +3,8 @@ import { boolean, pgTable, text, timestamp, unique, uuid, varchar } from "drizzl
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import * as z from "zod";
 import { Redacted } from "effect";
+import { jsonb } from "../jsonb";
+import { tenants, type TenantId } from "./tenants";
 
 const UserIdSchema = z.uuidv7().brand<"UserId">();
 export type UserId = z.infer<typeof UserIdSchema>;
@@ -29,6 +31,11 @@ export const users = pgTable(
     locked: boolean().default(false),
     lockedBy: uuid(),
     passwordRehashedAt: timestamp({ precision: 3, withTimezone: true }),
+    // Active tenant (nullable). Invariant: when set, it is always a member of
+    // availableTenants — enforced on write in UserRepo.setActiveTenant.
+    tenantId: uuid().references(() => tenants.id),
+    // Tenants this user may switch between. Uses the custom jsonb helper (see ../jsonb).
+    availableTenants: jsonb<TenantId[]>("availableTenants").notNull().default([]),
   },
   (t) => ({
     user_username_idx: unique("user_username_idx").on(t.username),
@@ -69,6 +76,9 @@ export const selectUserSchema = createSelectSchema(users)
     created: z.coerce.date(),
     updated: z.coerce.date().nullable(),
     passwordRehashedAt: z.coerce.date().nullable(),
+    // The column is jsonb<TenantId[]>; the brand isn't wire-serializable, so expose it
+    // as plain uuid strings on the read/RPC surface.
+    availableTenants: z.array(z.uuidv7()),
   })
   .omit({
     password: true,

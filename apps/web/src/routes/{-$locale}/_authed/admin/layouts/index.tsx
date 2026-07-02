@@ -4,7 +4,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useIntlayer } from "react-intlayer";
 import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { AddIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Field, FieldBody, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -131,6 +141,15 @@ function CreateLayout() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const createMutation = useMutation(layoutsRepo.create(qc));
+  const [open, setOpen] = useState(false);
+
+  function handleOpenChange(next: boolean) {
+    if (next) {
+      setName("");
+      setDescription("");
+    }
+    setOpen(next);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -140,6 +159,7 @@ function CreateLayout() {
         name: name.trim(),
         description: description.trim() || null,
       });
+      setOpen(false);
       toast.success(content.createdToast.value, { description: created.name });
       navigate({ to: "/{-$locale}/admin/layouts/$layoutId", params: { layoutId: created.id } });
     } catch (err) {
@@ -150,34 +170,64 @@ function CreateLayout() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="form" style={{ marginBlockEnd: "1.5rem" }}>
-      <FieldGroup>
-        <Field className="½">
-          <FieldLabel htmlFor="new-layout-name">{content.newLayoutName}</FieldLabel>
-          <FieldBody>
-            <Input
-              id="new-layout-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Article"
-            />
-          </FieldBody>
-        </Field>
-        <Field className="½">
-          <FieldLabel htmlFor="new-layout-description">{content.descriptionLabel}</FieldLabel>
-          <FieldBody>
-            <Input
-              id="new-layout-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={content.optional.value}
-            />
-          </FieldBody>
-        </Field>
-        <Button type="submit" intent="primary" disabled={!name.trim() || createMutation.isPending}>
-          {createMutation.isPending ? content.creating : content.createLayout}
-        </Button>
-      </FieldGroup>
-    </form>
+    <div style={{ display: "flex", justifyContent: "flex-end", marginBlockEnd: "1.5rem" }}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger
+          render={
+            <Button intent="primary" style={{ gap: "var(--spacing-xs)" }}>
+              <AddIcon aria-hidden="true" />
+              {content.createLayout}
+            </Button>
+          }
+        />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{content.createLayout}</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-lg)" }}
+          >
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="new-layout-name">{content.newLayoutName}</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id="new-layout-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Article"
+                    autoFocus
+                  />
+                </FieldBody>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="new-layout-description">{content.descriptionLabel}</FieldLabel>
+                <FieldBody>
+                  <Input
+                    id="new-layout-description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder={content.optional.value}
+                  />
+                </FieldBody>
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {content.cancel}
+              </DialogClose>
+              <Button
+                type="submit"
+                intent="primary"
+                disabled={!name.trim() || createMutation.isPending}
+              >
+                {createMutation.isPending ? content.creating : content.createLayout}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

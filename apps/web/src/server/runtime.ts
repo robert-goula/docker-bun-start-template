@@ -7,6 +7,7 @@ import { MenuRepo } from "./services/MenuRepo";
 import { PageRepo } from "./services/PageRepo";
 import { SessionStore } from "./services/SessionStore";
 import { TaxonomyRepo } from "./services/TaxonomyRepo";
+import { TenantRepo } from "./services/TenantRepo";
 import { UserRepo } from "./services/UserRepo";
 import { ZoneRepo } from "./services/ZoneRepo";
 
@@ -25,6 +26,7 @@ const MainLive = Layer.mergeAll(
   TaxonomyRepo.Default,
   ZoneRepo.Default,
   ConfigRepo.Default,
+  TenantRepo.Default,
 );
 
 export const runtime = ManagedRuntime.make(MainLive);

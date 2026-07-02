@@ -1,4 +1,6 @@
+import type { TenantId } from "@/db/schema/tenants";
 import type { CreateUser } from "@/db/schema/users";
+import { ADMIN_TENANT_ID, TEST_TENANT_ID } from "./tenants";
 
 export const users: Array<CreateUser> = [
   {
@@ -17,5 +19,7 @@ export const users: Array<CreateUser> = [
     locked: true,
     lockedBy: "00000000-0000-0000-0000-000000000000",
     passwordRehashedAt: null,
+    tenantId: ADMIN_TENANT_ID,
+    availableTenants: [ADMIN_TENANT_ID, TEST_TENANT_ID] as TenantId[],
   },
 ];

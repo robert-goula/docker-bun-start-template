@@ -180,4 +180,42 @@ export const Policy = {
     if (hasRole(user.roles, "admin")) return;
     return yield* Effect.fail(new Forbidden({ action: "config:manage" }));
   }),
+
+  // Tenants are admin-managed. Soft delete/restore is a regular admin action;
+  // permanent (hard) delete is also admin-only and only allowed on soft-deleted rows.
+  canListTenants: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "tenant:list" }));
+  }),
+
+  canReadTenant: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "tenant:read" }));
+  }),
+
+  canCreateTenant: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "tenant:create" }));
+  }),
+
+  canUpdateTenant: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "tenant:update" }));
+  }),
+
+  canDeleteTenant: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "tenant:delete" }));
+  }),
+
+  canPermanentlyDeleteTenant: Effect.gen(function* () {
+    const user = yield* CurrentUser;
+    if (hasRole(user.roles, "admin")) return;
+    return yield* Effect.fail(new Forbidden({ action: "tenant:permanentDelete" }));
+  }),
 };

@@ -1,4 +1,5 @@
 import { Data, Effect, Either } from "effect";
+import type { TenantId } from "@/db/schema/tenants";
 import type { UserId } from "@/db/schema/users";
 import { runtime } from "@/server/runtime";
 import type { SessionUser } from "@/server/services/CurrentUser";
@@ -40,6 +41,8 @@ export function loadSessionUserFromToken(
         email: user.email,
         roles: user.roles,
         passwordRehashedAt: user.passwordRehashedAt ?? null,
+        tenantId: (user.tenantId ?? null) as TenantId | null,
+        availableTenants: user.availableTenants ?? [],
       } satisfies SessionUser;
     }).pipe(Effect.catchAll(() => Effect.succeed(null as SessionUser | null))),
   );
@@ -113,6 +116,8 @@ export async function performLogin(
           email: row.email,
           roles: row.roles,
           passwordRehashedAt,
+          tenantId: (row.tenantId ?? null) as TenantId | null,
+          availableTenants: row.availableTenants ?? [],
         } satisfies SessionUser,
       };
     }).pipe(Effect.either),

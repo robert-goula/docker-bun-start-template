@@ -1,6 +1,7 @@
 import { asc, count, desc, eq, ilike, or } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import { Database, DatabaseLive } from "@/db/layer";
+import type { TenantId } from "@/db/schema/tenants";
 import {
   users,
   type CreateUser,
@@ -25,6 +26,10 @@ export class UserNotFound extends Data.TaggedError("UserNotFound")<{
 
 export class DatabaseError extends Data.TaggedError("DatabaseError")<{
   readonly cause: unknown;
+}> {}
+
+export class TenantNotAvailable extends Data.TaggedError("TenantNotAvailable")<{
+  readonly tenantId: TenantId;
 }> {}
 
 export class UserRepo extends Effect.Service<UserRepo>()("app/UserRepo", {
@@ -125,6 +130,29 @@ export class UserRepo extends Effect.Service<UserRepo>()("app/UserRepo", {
         return row;
       });
 
+    // Self-only: switches the caller's active tenant. Enforces the invariant that
+    // tenantId is always a member of the user's availableTenants.
+    const setActiveTenant = (tenantId: TenantId) =>
+      Effect.gen(function* () {
+        const currentUser = yield* CurrentUser;
+        if (!currentUser.availableTenants.includes(tenantId)) {
+          return yield* Effect.fail(new TenantNotAvailable({ tenantId }));
+        }
+        const row = yield* Effect.tryPromise({
+          try: async () => {
+            const rows = await db
+              .update(users)
+              .set({ tenantId, updatedBy: currentUser.id })
+              .where(eq(users.id, currentUser.id))
+              .returning();
+            return rows[0];
+          },
+          catch: (cause) => new DatabaseError({ cause }),
+        });
+        if (!row) return yield* Effect.fail(new UserNotFound({ id: currentUser.id }));
+        return row;
+      });
+
     const create = (input: CreateUser) =>
       Effect.gen(function* () {
         yield* Policy.canCreateUser;
@@ -146,6 +174,7 @@ export class UserRepo extends Effect.Service<UserRepo>()("app/UserRepo", {
       list,
       create,
       update,
+      setActiveTenant,
       updatePasswordHashInternal,
       acknowledgePasswordRehash,
     } as const;
